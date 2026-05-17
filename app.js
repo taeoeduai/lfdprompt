@@ -80,7 +80,7 @@ function mkBubble(p, x, y, enter) {
   el.dataset.id = p.id;
   el.style.left = x + 'px';
   el.style.top = y + 'px';
-  const dr = 40;
+  const dr = 25;
   el.style.setProperty('--d-dur', rand(18, 30) + 's');
   el.style.setProperty('--d-del', rand(0, 6) + 's');
   el.style.setProperty('--dx1', rand(-dr, dr) + 'px');
