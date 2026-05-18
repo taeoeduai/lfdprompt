@@ -150,14 +150,6 @@ body {
   background-size: 16px 16px;
 }
 
-.canvas__inner {
-  position: relative;
-  width: 100%;
-  max-width: 1000px;
-  height: 100%;
-  margin: 0 auto;
-}
-
 /* Subtle gradient orbs for glass refraction */
 .canvas__bg {
   position: absolute;
@@ -188,8 +180,8 @@ body {
   position: relative;
   padding: var(--sp-md) var(--sp-lg);
   border-radius: var(--r-xl);
-  max-width: 600px;
-  min-width: 100px;
+  max-width: 800px;
+  min-width: 250px;
   min-height: 50px;
   background: var(--color-glass-bg);
   backdrop-filter: blur(40px) saturate(180%);
@@ -391,19 +383,33 @@ body {
 /* ============================================
    LIST VIEW
    ============================================ */
+/* --- List View --- */
 .list-view {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  align-items: center;
+  overflow-y: auto;
   background: var(--color-canvas);
+}
+
+.list-view.hidden {
+  display: none !important;
+}
+
+.list-view__header, .list-view__content {
+  width: 100%;
+  max-width: 980px;
+  padding-left: var(--sp-md);
+  padding-right: var(--sp-md);
 }
 
 .list-view__header {
   flex-shrink: 0;
-  padding: var(--sp-md) var(--sp-lg);
   display: flex;
   justify-content: flex-start;
+  margin-top: var(--sp-xl);
+  margin-bottom: var(--sp-md);
 }
 
 .list-view__filters {
@@ -440,7 +446,7 @@ body {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 0 var(--sp-lg) var(--sp-lg);
+  padding-bottom: var(--sp-lg);
 }
 
 /* List item — glass card */
