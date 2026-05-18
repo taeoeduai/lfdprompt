@@ -693,8 +693,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-primary);
-  color: var(--color-on-dark);
+  background: #FFF1BC;
+  color: #333333;
   border: none;
   border-radius: var(--r-pill);
   cursor: pointer;
