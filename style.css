@@ -196,9 +196,25 @@ body {
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border: 1px solid var(--color-glass-border);
   resize: both;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.bubble::-webkit-scrollbar {
+  width: 6px;
+}
+.bubble::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+}
+.bubble:hover::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+  .bubble {
+    max-width: calc(100vw - 32px) !important;
+  }
 }
 
 /* Glass highlight (top edge refraction) */
@@ -308,7 +324,7 @@ body {
   line-height: 1.50;
   letter-spacing: -0.14px;
   color: var(--color-ink);
-  word-break: keep-all;
+  word-break: break-word;
   overflow-wrap: break-word;
   position: relative;
   z-index: 1;

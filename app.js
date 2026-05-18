@@ -228,7 +228,12 @@ function renderFloat() {
     const existing = canvasInner.querySelector(`.bubble-wrapper[data-id="${p.id}"]`);
     
     let targetX, targetY;
-    const ew = p.width || Math.min(80 + p.text.length * 4, 250);
+    
+    // On mobile, the box cannot be wider than the screen.
+    // Calculate the effective width based on CSS max-width.
+    let ew = p.width || Math.min(80 + p.text.length * 4, 250);
+    if (ew > r.width - 32) ew = r.width - 32;
+    
     const eh = p.height || (44 + Math.ceil(p.text.length / 16) * 16);
 
     if (p.posX !== null && p.posY !== null) {
