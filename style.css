@@ -176,8 +176,8 @@ body {
   user-select: none;
   z-index: 1;
   animation: floatDrift var(--d-dur, 22s) var(--d-del, 0s) ease-in-out infinite alternate;
-  transition: transform 0.3s var(--ease);
-  will-change: transform;
+  transition: left 0.5s ease-out, top 0.5s ease-out, transform 0.3s var(--ease);
+  will-change: transform, left, top;
 }
 
 /* Glass highlight (top edge refraction) */

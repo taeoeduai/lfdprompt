@@ -80,8 +80,8 @@ function mkBubble(p, x, y, enter) {
   el.dataset.id = p.id;
   el.style.left = x + 'px';
   el.style.top = y + 'px';
-  const dr = 25;
-  el.style.setProperty('--d-dur', rand(18, 30) + 's');
+  const dr = 35;
+  el.style.setProperty('--d-dur', rand(12, 20) + 's');
   el.style.setProperty('--d-del', rand(0, 6) + 's');
   el.style.setProperty('--dx1', rand(-dr, dr) + 'px');
   el.style.setProperty('--dy1', rand(-dr, dr) + 'px');
@@ -126,6 +126,15 @@ function mkBubble(p, x, y, enter) {
     isDragging = false;
     el.classList.remove('is-dragging');
     el.releasePointerCapture(e.pointerId);
+    
+    // Save new proportional position to Firestore
+    if (!p.id.startsWith('local-')) {
+      const px = (parseFloat(el.style.left) || 0) / canvas.offsetWidth;
+      const py = (parseFloat(el.style.top) || 0) / canvas.offsetHeight;
+      db.collection('prompts').doc(p.id).update({ posX: px, posY: py }).catch(function(err) {
+        console.warn('Update position failed:', err.message);
+      });
+    }
   });
 
   el.addEventListener('pointercancel', function (e) {
@@ -177,14 +186,36 @@ function renderFloat() {
     placed.push({ x: x, y: y, w: b.offsetWidth || 200, h: b.offsetHeight || 60 });
   });
 
-  // Create new bubbles
+  // Update existing and create new bubbles
   show.forEach(p => {
-    if (!canvas.querySelector(`.bubble[data-id="${p.id}"]`)) {
-      const ew = Math.min(80 + p.text.length * 4, 250);
-      const eh = 44 + Math.ceil(p.text.length / 16) * 16;
-      const pos = findPos(r.width, r.height, ew, eh);
-      placed.push({ x: pos.x, y: pos.y, w: ew, h: eh });
-      canvas.appendChild(mkBubble(p, pos.x, pos.y, true));
+    const existing = canvas.querySelector(`.bubble[data-id="${p.id}"]`);
+    
+    let targetX, targetY;
+    const ew = Math.min(80 + p.text.length * 4, 250);
+    const eh = 44 + Math.ceil(p.text.length / 16) * 16;
+
+    if (p.posX !== null && p.posY !== null) {
+      targetX = p.posX * r.width;
+      targetY = p.posY * r.height;
+      // Clamp to bounds
+      targetX = Math.max(0, Math.min(targetX, r.width - ew));
+      targetY = Math.max(0, Math.min(targetY, r.height - eh));
+    }
+
+    if (!existing) {
+      if (targetX === undefined) {
+        const pos = findPos(r.width, r.height, ew, eh);
+        targetX = pos.x;
+        targetY = pos.y;
+      }
+      placed.push({ x: targetX, y: targetY, w: ew, h: eh });
+      canvas.appendChild(mkBubble(p, targetX, targetY, true));
+    } else {
+      // Move existing bubble if it has remote coordinates and is NOT currently being dragged by THIS user
+      if (targetX !== undefined && !existing.classList.contains('is-dragging')) {
+        existing.style.left = targetX + 'px';
+        existing.style.top = targetY + 'px';
+      }
     }
   });
 }
@@ -250,7 +281,9 @@ function startListener() {
             id: doc.id,
             text: d.text || '',
             author: d.author || '',
-            time: d.createdAt ? d.createdAt.toMillis() : Date.now()
+            time: d.createdAt ? d.createdAt.toMillis() : Date.now(),
+            posX: typeof d.posX === 'number' ? d.posX : null,
+            posY: typeof d.posY === 'number' ? d.posY : null
           };
         });
         prompts.sort(function(a, b) { return b.time - a.time; });
