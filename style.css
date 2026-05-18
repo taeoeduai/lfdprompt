@@ -21,10 +21,10 @@
   --color-canvas: #E2E2E2;
   --color-surface-black: #000000;
   --color-hairline: rgba(255, 255, 255, 0.18);
-  --color-glass-bg: rgba(255, 255, 255, 0.12);
-  --color-glass-border: rgba(255, 255, 255, 0.22);
-  --color-glass-highlight: rgba(255, 255, 255, 0.18);
-  --color-glass-bg-strong: rgba(255, 255, 255, 0.18);
+  --color-glass-bg: rgba(255, 255, 255, 0.70);
+  --color-glass-border: rgba(255, 255, 255, 0.50);
+  --color-glass-highlight: rgba(255, 255, 255, 0.40);
+  --color-glass-bg-strong: rgba(255, 255, 255, 0.60);
 
   /* Spacing */
   --sp-xs: 8px;
@@ -189,6 +189,7 @@ body {
   border: 1px solid var(--color-glass-border);
   resize: horizontal;
   overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 @media (max-width: 768px) {
