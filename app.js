@@ -104,6 +104,7 @@ function mkBubble(p, x, y, enter) {
 
   el.addEventListener('pointerdown', function (e) {
     if (e.target.closest('.delete-btn')) return;
+    if (e.pointerType === 'mouse' && e.target.closest('.bubble__text')) return;
     isDragging = true;
     el.classList.add('is-dragging');
     startX = e.clientX;
