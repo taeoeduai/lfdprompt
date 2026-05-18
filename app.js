@@ -19,7 +19,6 @@ firebase.analytics();
 const db = firebase.firestore();
 
 const canvas = document.getElementById('canvas');
-const canvasInner = document.getElementById('canvas-inner');
 const listView = document.getElementById('list-view');
 const libraryView = document.getElementById('library-view');
 const listContent = document.getElementById('list-content');
@@ -144,8 +143,8 @@ function mkBubble(p, x, y, enter) {
     let newTop = initialTop + dy;
     
     // Clamp within canvas bounds to prevent disappearing
-    newLeft = Math.max(0, Math.min(newLeft, canvasInner.offsetWidth - innerBubble.offsetWidth));
-    newTop = Math.max(0, Math.min(newTop, canvasInner.offsetHeight - innerBubble.offsetHeight));
+    newLeft = Math.max(0, Math.min(newLeft, canvas.offsetWidth - innerBubble.offsetWidth));
+    newTop = Math.max(0, Math.min(newTop, canvas.offsetHeight - innerBubble.offsetHeight));
     
     el.style.left = newLeft + 'px';
     el.style.top = newTop + 'px';
@@ -159,8 +158,8 @@ function mkBubble(p, x, y, enter) {
     
     // Save new proportional position to Firestore
     if (!p.id.startsWith('local-')) {
-      const px = (parseFloat(el.style.left) || 0) / canvasInner.offsetWidth;
-      const py = (parseFloat(el.style.top) || 0) / canvasInner.offsetHeight;
+      const px = (parseFloat(el.style.left) || 0) / canvas.offsetWidth;
+      const py = (parseFloat(el.style.top) || 0) / canvas.offsetHeight;
       db.collection('prompts').doc(p.id).update({ posX: px, posY: py }).catch(function(err) {
         console.warn('Update position failed:', err.message);
       });
@@ -180,13 +179,13 @@ function mkBubble(p, x, y, enter) {
 
 // --- Render Floating ---
 function renderFloat() {
-  const existingBubbles = Array.from(canvasInner.querySelectorAll('.bubble-wrapper'));
-  const emptyState = canvasInner.querySelector('.empty-state');
+  const existingBubbles = Array.from(canvas.querySelectorAll('.bubble-wrapper'));
+  const emptyState = canvas.querySelector('.empty-state');
 
   if (!prompts.length) {
     existingBubbles.forEach(b => b.remove());
     if (!emptyState) {
-      canvasInner.insertAdjacentHTML('beforeend',
+      canvas.insertAdjacentHTML('beforeend',
         '<div class="empty-state"><p class="empty-state__text">아직 프롬프트가 없습니다.<br>아래에서 입력해 주세요.</p></div>');
     }
     placed = [];
@@ -195,7 +194,7 @@ function renderFloat() {
 
   if (emptyState) emptyState.remove();
 
-  const r = canvasInner.getBoundingClientRect();
+  const r = canvas.getBoundingClientRect();
   const show = prompts.slice(0, 25);
   const showIds = new Set(show.map(p => p.id));
 
@@ -209,7 +208,7 @@ function renderFloat() {
   placed = [];
   
   // Register existing bubbles into 'placed'
-  const currentBubbles = Array.from(canvasInner.querySelectorAll('.bubble-wrapper'));
+  const currentBubbles = Array.from(canvas.querySelectorAll('.bubble-wrapper'));
   currentBubbles.forEach(b => {
     const x = parseFloat(b.style.left) || 0;
     const y = parseFloat(b.style.top) || 0;
@@ -219,13 +218,14 @@ function renderFloat() {
 
   // Update existing and create new bubbles
   show.forEach(p => {
-    const existing = canvasInner.querySelector(`.bubble-wrapper[data-id="${p.id}"]`);
+    const existing = canvas.querySelector(`.bubble-wrapper[data-id="${p.id}"]`);
     
     let targetX, targetY;
     
+    // Default to wider box for natural 3-4 line wrap (e.g. 350-450px)
+    let ew = p.width || Math.min(250 + p.text.length * 3, 450);
+    
     // On mobile, the box cannot be wider than the screen.
-    // Calculate the effective width based on CSS max-width.
-    let ew = p.width || Math.min(80 + p.text.length * 4, 250);
     if (ew > r.width - 32) ew = r.width - 32;
     
     const eh = p.height || (44 + Math.ceil(p.text.length / 16) * 16);
@@ -245,7 +245,7 @@ function renderFloat() {
         targetY = pos.y;
       }
       placed.push({ x: targetX, y: targetY, w: ew, h: eh });
-      canvasInner.appendChild(mkBubble(p, targetX, targetY, true));
+      canvas.appendChild(mkBubble(p, targetX, targetY, true));
     } else {
       // Sync width if updated remotely (height is always auto)
       const innerBubble = existing.querySelector('.bubble');
