@@ -40,6 +40,11 @@ let sortOrder = 'newest';
 const saved = localStorage.getItem('mc_author') || '';
 if (saved) authorInput.value = saved;
 
+// Auto-select text on focus so user can immediately overwrite
+authorInput.addEventListener('focus', function() {
+  this.select();
+});
+
 // --- Helpers ---
 function rand(a, b) { return Math.random() * (b - a) + a; }
 function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
