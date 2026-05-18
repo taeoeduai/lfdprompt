@@ -513,13 +513,26 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  align-items: center;
+  overflow-y: auto;
   background: var(--color-canvas);
+}
+
+.library-view.hidden {
+  display: none !important;
+}
+
+.library-view__header, .library-view__content {
+  width: 100%;
+  max-width: 980px;
+  padding-left: var(--sp-md);
+  padding-right: var(--sp-md);
 }
 
 .library-view__header {
   flex-shrink: 0;
-  padding: var(--sp-xl) var(--sp-lg) var(--sp-md);
+  margin-top: var(--sp-xl);
+  margin-bottom: var(--sp-md);
 }
 
 .library-view__title {
@@ -580,7 +593,7 @@ body {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 0 var(--sp-lg) var(--sp-xl);
+  padding-bottom: var(--sp-xl);
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: var(--sp-md);
