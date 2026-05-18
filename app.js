@@ -106,20 +106,6 @@ function mkBubble(p, x, y, enter) {
   let isDragging = false;
   let startX, startY, initialLeft, initialTop;
 
-  // Resize Observer to sync size
-  const ro = new ResizeObserver(entries => {
-    for (let entry of entries) {
-      if (!isDragging && !p.id.startsWith('local-')) {
-        const w = entry.contentRect.width;
-        const h = entry.contentRect.height;
-        if (p.width !== w || p.height !== h) {
-          db.collection('prompts').doc(p.id).update({ width: w, height: h }).catch(e => console.warn(e));
-        }
-      }
-    }
-  });
-  ro.observe(innerBubble);
-
   el.querySelector('.delete-btn').addEventListener('click', function (e) {
     e.stopPropagation();
     deletePrompt(p.id, el);
@@ -131,7 +117,17 @@ function mkBubble(p, x, y, enter) {
     // Prevent drag if clicking resize handle (bottom-right 24x24 px of bubble)
     if (e.target.closest('.bubble')) {
       const rect = innerBubble.getBoundingClientRect();
-      if (e.clientX >= rect.right - 24 && e.clientY >= rect.bottom - 24) return;
+      if (e.clientX >= rect.right - 24 && e.clientY >= rect.bottom - 24) {
+        // User is resizing. Save size on pointerup anywhere on screen
+        window.addEventListener('pointerup', () => {
+          if (!p.id.startsWith('local-')) {
+            const w = innerBubble.offsetWidth;
+            const h = innerBubble.offsetHeight;
+            db.collection('prompts').doc(p.id).update({ width: w, height: h }).catch(err => console.warn(err));
+          }
+        }, { once: true });
+        return;
+      }
     }
     isDragging = true;
     el.classList.add('is-dragging');
