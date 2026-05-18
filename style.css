@@ -200,6 +200,7 @@ body {
   background: #FFF1BC;
   border-color: rgba(0, 0, 0, 0.05);
   color: #000;
+  animation-play-state: paused;
 }
 
 .bubble.is-dragging {
@@ -288,6 +289,9 @@ body {
   overflow-wrap: break-word;
   position: relative;
   z-index: 1;
+  cursor: text;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 /* Floating keyframes — no rotation, gentle drift */
