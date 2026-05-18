@@ -18,8 +18,8 @@ firebase.initializeApp(firebaseConfig);
 firebase.analytics();
 const db = firebase.firestore();
 
-// --- DOM ---
 const canvas = document.getElementById('canvas');
+const canvasInner = document.getElementById('canvas-inner');
 const listView = document.getElementById('list-view');
 const libraryView = document.getElementById('library-view');
 const listContent = document.getElementById('list-content');
@@ -76,7 +76,7 @@ function findPos(cw, ch, bw, bh) {
 // --- Bubble ---
 function mkBubble(p, x, y, enter) {
   const el = document.createElement('div');
-  el.className = 'bubble' + (enter ? ' bubble--enter' : '');
+  el.className = 'bubble-wrapper' + (enter ? ' bubble-wrapper--enter' : '');
   el.dataset.id = p.id;
   el.style.left = x + 'px';
   el.style.top = y + 'px';
@@ -90,21 +90,49 @@ function mkBubble(p, x, y, enter) {
   el.style.setProperty('--dx3', rand(-dr, dr) + 'px');
   el.style.setProperty('--dy3', rand(-dr, dr) + 'px');
   const a = p.author ? escHtml(p.author) : '';
+  
+  let widthStyle = p.width ? `width: ${p.width}px; ` : '';
+  let heightStyle = p.height ? `height: ${p.height}px; ` : '';
+
   el.innerHTML =
-    '<button class="delete-btn" data-id="' + p.id + '" aria-label="삭제">&times;</button>' +
-    (a ? '<p class="bubble__author">' + a + '</p>' : '') +
-    '<p class="bubble__text">' + escHtml(p.text) + '</p>';
+    `<div class="bubble" style="${widthStyle}${heightStyle}">` +
+      (a ? '<p class="bubble__author">' + a + '</p>' : '') +
+      '<p class="bubble__text">' + escHtml(p.text) + '</p>' +
+    '</div>' +
+    '<button class="delete-btn" data-id="' + p.id + '" aria-label="삭제">&times;</button>';
+  
+  const innerBubble = el.querySelector('.bubble');
+  
+  let isDragging = false;
+  let startX, startY, initialLeft, initialTop;
+
+  // Resize Observer to sync size
+  const ro = new ResizeObserver(entries => {
+    for (let entry of entries) {
+      if (!isDragging && !p.id.startsWith('local-')) {
+        const w = entry.contentRect.width;
+        const h = entry.contentRect.height;
+        if (p.width !== w || p.height !== h) {
+          db.collection('prompts').doc(p.id).update({ width: w, height: h }).catch(e => console.warn(e));
+        }
+      }
+    }
+  });
+  ro.observe(innerBubble);
+
   el.querySelector('.delete-btn').addEventListener('click', function (e) {
     e.stopPropagation();
     deletePrompt(p.id, el);
   });
 
-  let isDragging = false;
-  let startX, startY, initialLeft, initialTop;
-
   el.addEventListener('pointerdown', function (e) {
     if (e.target.closest('.delete-btn')) return;
     if (e.pointerType === 'mouse' && e.target.closest('.bubble__text')) return;
+    // Prevent drag if clicking resize handle (bottom-right 24x24 px of bubble)
+    if (e.target.closest('.bubble')) {
+      const rect = innerBubble.getBoundingClientRect();
+      if (e.clientX >= rect.right - 24 && e.clientY >= rect.bottom - 24) return;
+    }
     isDragging = true;
     el.classList.add('is-dragging');
     startX = e.clientX;
@@ -122,8 +150,8 @@ function mkBubble(p, x, y, enter) {
     let newTop = initialTop + dy;
     
     // Clamp within canvas bounds to prevent disappearing
-    newLeft = Math.max(0, Math.min(newLeft, canvas.offsetWidth - el.offsetWidth));
-    newTop = Math.max(0, Math.min(newTop, canvas.offsetHeight - el.offsetHeight));
+    newLeft = Math.max(0, Math.min(newLeft, canvasInner.offsetWidth - innerBubble.offsetWidth));
+    newTop = Math.max(0, Math.min(newTop, canvasInner.offsetHeight - innerBubble.offsetHeight));
     
     el.style.left = newLeft + 'px';
     el.style.top = newTop + 'px';
@@ -137,8 +165,8 @@ function mkBubble(p, x, y, enter) {
     
     // Save new proportional position to Firestore
     if (!p.id.startsWith('local-')) {
-      const px = (parseFloat(el.style.left) || 0) / canvas.offsetWidth;
-      const py = (parseFloat(el.style.top) || 0) / canvas.offsetHeight;
+      const px = (parseFloat(el.style.left) || 0) / canvasInner.offsetWidth;
+      const py = (parseFloat(el.style.top) || 0) / canvasInner.offsetHeight;
       db.collection('prompts').doc(p.id).update({ posX: px, posY: py }).catch(function(err) {
         console.warn('Update position failed:', err.message);
       });
@@ -152,19 +180,19 @@ function mkBubble(p, x, y, enter) {
     el.releasePointerCapture(e.pointerId);
   });
 
-  if (enter) el.addEventListener('animationend', () => el.classList.remove('bubble--enter'), { once: true });
+  if (enter) el.addEventListener('animationend', () => el.classList.remove('bubble-wrapper--enter'), { once: true });
   return el;
 }
 
 // --- Render Floating ---
 function renderFloat() {
-  const existingBubbles = Array.from(canvas.querySelectorAll('.bubble'));
-  const emptyState = canvas.querySelector('.empty-state');
+  const existingBubbles = Array.from(canvasInner.querySelectorAll('.bubble-wrapper'));
+  const emptyState = canvasInner.querySelector('.empty-state');
 
   if (!prompts.length) {
     existingBubbles.forEach(b => b.remove());
     if (!emptyState) {
-      canvas.insertAdjacentHTML('beforeend',
+      canvasInner.insertAdjacentHTML('beforeend',
         '<div class="empty-state"><p class="empty-state__text">아직 프롬프트가 없습니다.<br>아래에서 입력해 주세요.</p></div>');
     }
     placed = [];
@@ -173,7 +201,7 @@ function renderFloat() {
 
   if (emptyState) emptyState.remove();
 
-  const r = canvas.getBoundingClientRect();
+  const r = canvasInner.getBoundingClientRect();
   const show = prompts.slice(0, 25);
   const showIds = new Set(show.map(p => p.id));
 
@@ -187,20 +215,21 @@ function renderFloat() {
   placed = [];
   
   // Register existing bubbles into 'placed'
-  const currentBubbles = Array.from(canvas.querySelectorAll('.bubble'));
+  const currentBubbles = Array.from(canvasInner.querySelectorAll('.bubble-wrapper'));
   currentBubbles.forEach(b => {
     const x = parseFloat(b.style.left) || 0;
     const y = parseFloat(b.style.top) || 0;
-    placed.push({ x: x, y: y, w: b.offsetWidth || 200, h: b.offsetHeight || 60 });
+    const inner = b.querySelector('.bubble');
+    placed.push({ x: x, y: y, w: (inner ? inner.offsetWidth : 200), h: (inner ? inner.offsetHeight : 60) });
   });
 
   // Update existing and create new bubbles
   show.forEach(p => {
-    const existing = canvas.querySelector(`.bubble[data-id="${p.id}"]`);
+    const existing = canvasInner.querySelector(`.bubble-wrapper[data-id="${p.id}"]`);
     
     let targetX, targetY;
-    const ew = Math.min(80 + p.text.length * 4, 250);
-    const eh = 44 + Math.ceil(p.text.length / 16) * 16;
+    const ew = p.width || Math.min(80 + p.text.length * 4, 250);
+    const eh = p.height || (44 + Math.ceil(p.text.length / 16) * 16);
 
     if (p.posX !== null && p.posY !== null) {
       targetX = p.posX * r.width;
@@ -217,8 +246,15 @@ function renderFloat() {
         targetY = pos.y;
       }
       placed.push({ x: targetX, y: targetY, w: ew, h: eh });
-      canvas.appendChild(mkBubble(p, targetX, targetY, true));
+      canvasInner.appendChild(mkBubble(p, targetX, targetY, true));
     } else {
+      // Sync size if updated remotely
+      const innerBubble = existing.querySelector('.bubble');
+      if (innerBubble && !existing.classList.contains('is-dragging')) {
+        if (p.width && p.width !== innerBubble.offsetWidth) innerBubble.style.width = p.width + 'px';
+        if (p.height && p.height !== innerBubble.offsetHeight) innerBubble.style.height = p.height + 'px';
+      }
+
       // Move existing bubble if it has remote coordinates and is NOT currently being dragged by THIS user
       if (targetX !== undefined && !existing.classList.contains('is-dragging')) {
         existing.style.left = targetX + 'px';
@@ -291,7 +327,9 @@ function startListener() {
             author: d.author || '',
             time: d.createdAt ? d.createdAt.toMillis() : Date.now(),
             posX: typeof d.posX === 'number' ? d.posX : null,
-            posY: typeof d.posY === 'number' ? d.posY : null
+            posY: typeof d.posY === 'number' ? d.posY : null,
+            width: typeof d.width === 'number' ? d.width : null,
+            height: typeof d.height === 'number' ? d.height : null
           };
         });
         prompts.sort(function(a, b) { return b.time - a.time; });

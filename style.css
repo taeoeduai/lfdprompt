@@ -143,7 +143,19 @@ body {
   flex: 1;
   position: relative;
   overflow: hidden;
-  background: var(--color-canvas);
+  background-color: var(--color-canvas);
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.3) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.canvas__inner {
+  position: relative;
+  width: 100%;
+  max-width: 1000px;
+  height: 100%;
+  margin: 0 auto;
 }
 
 /* Subtle gradient orbs for glass refraction */
@@ -162,18 +174,9 @@ body {
 /* ============================================
    LIQUID GLASS BUBBLE
    ============================================ */
-.bubble {
+.bubble-wrapper {
   position: absolute;
-  padding: var(--sp-md) var(--sp-lg);
-  border-radius: var(--r-xl);
-  max-width: 260px;
-  min-width: 100px;
-  background: var(--color-glass-bg);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
-  border: 1px solid var(--color-glass-border);
   cursor: grab;
-  user-select: none;
   touch-action: none;
   z-index: 1;
   animation: floatDrift var(--d-dur, 22s) var(--d-del, 0s) ease-in-out infinite alternate;
@@ -181,8 +184,25 @@ body {
   will-change: transform, left, top;
 }
 
+.bubble {
+  position: relative;
+  padding: var(--sp-md) var(--sp-lg);
+  border-radius: var(--r-xl);
+  max-width: 600px;
+  min-width: 100px;
+  min-height: 50px;
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid var(--color-glass-border);
+  resize: both;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Glass highlight (top edge refraction) */
-.bubble::after {
+.bubble::before {
   content: '';
   position: absolute;
   top: 0;
@@ -194,16 +214,19 @@ body {
   pointer-events: none;
 }
 
-.bubble:hover {
+.bubble-wrapper:hover {
   transform: scale(1.04);
   z-index: 5;
-  background: #FFF1BC;
-  border-color: rgba(0, 0, 0, 0.05);
-  color: #000;
   animation-play-state: paused;
 }
 
-.bubble.is-dragging {
+.bubble-wrapper:hover .bubble {
+  background: #FFF1BC;
+  border-color: rgba(0, 0, 0, 0.05);
+  color: #000;
+}
+
+.bubble-wrapper.is-dragging {
   animation-play-state: paused !important;
   z-index: 50 !important;
   cursor: grabbing !important;
