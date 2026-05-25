@@ -34,7 +34,7 @@ const filterOldest = document.getElementById('filter-oldest');
 
 // --- State ---
 let prompts = [];
-let currentView = 'library';
+let currentView = '';
 let sortOrder = 'newest';
 let unauthorizedClicksCount = 0;
 
