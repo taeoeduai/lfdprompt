@@ -1942,16 +1942,6 @@ const inputBar = document.getElementById('input-bar');
 function setView(v) {
   if (v === currentView) return;
 
-  // Auth gate for library
-  if (v === 'library') {
-    if (!isLoggedIn) {
-      openLoginModal(function() {
-        setView('library');
-      });
-      return;
-    }
-  }
-
   currentView = v;
   navFloat.classList.toggle('is-active', v === 'float');
   navList.classList.toggle('is-active', v === 'list');
