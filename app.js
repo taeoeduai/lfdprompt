@@ -1987,7 +1987,6 @@ function setView(v) {
 const mobileMenuBtn = document.getElementById('mobile-menu-btn');
 const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
 const globalNavRight = document.getElementById('global-nav-right');
-const inputBar = document.getElementById('input-bar');
 
 window.closeMobileMenu = function() {
   if (globalNavRight) globalNavRight.classList.remove('is-open');
