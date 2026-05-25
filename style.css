@@ -105,6 +105,8 @@ body {
   font-weight: 600;
   color: var(--color-on-dark);
   letter-spacing: -0.12px;
+  cursor: pointer;
+  user-select: none;
 }
 
 .global-nav__links {
