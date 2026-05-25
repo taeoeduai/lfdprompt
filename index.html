@@ -157,6 +157,10 @@
           </div>
 
           <!-- Read-only prompt -->
+          <div class="lib-modal__prompt-tabs" style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <button class="lib-prompt-tab is-active" id="lib-prompt-tab-ko" style="font-family: inherit; font-size: 12px; font-weight: 600; padding: 6px 16px; border-radius: var(--r-pill); border: 1px solid rgba(0,0,0,0.08); background: #f5f5f7; color: #555; cursor: pointer; transition: all 0.2s;">한글 (KO)</button>
+            <button class="lib-prompt-tab" id="lib-prompt-tab-en" style="font-family: inherit; font-size: 12px; font-weight: 600; padding: 6px 16px; border-radius: var(--r-pill); border: 1px solid rgba(0,0,0,0.08); background: transparent; color: #888; cursor: pointer; transition: all 0.2s;">영어 (EN)</button>
+          </div>
           <div class="lib-modal__prompt-wrap" id="lib-modal-prompt-wrap">
             <pre class="lib-modal__prompt" id="lib-modal-prompt"></pre>
           </div>
@@ -173,7 +177,15 @@
               </select>
             </div>
             <input type="text" class="lib-modal__edit-desc" id="lib-modal-edit-desc" placeholder="설명을 입력하세요" />
-            <textarea class="lib-modal__edit-textarea" id="lib-modal-edit-textarea" rows="10"></textarea>
+            
+            <div class="lib-modal__edit-tabs" style="display: flex; gap: 8px; margin: 8px 0;">
+              <button class="lib-edit-tab is-active" id="lib-edit-tab-ko" style="font-family: inherit; font-size: 12px; font-weight: 600; padding: 6px 16px; border-radius: var(--r-pill); border: 1px solid rgba(0,0,0,0.08); background: #FFF1BC; color: #333; cursor: pointer; transition: all 0.2s;">한글 편집 (KO)</button>
+              <button class="lib-edit-tab" id="lib-edit-tab-en" style="font-family: inherit; font-size: 12px; font-weight: 600; padding: 6px 16px; border-radius: var(--r-pill); border: 1px solid rgba(0,0,0,0.08); background: transparent; color: #888; cursor: pointer; transition: all 0.2s;">영어 편집 (EN)</button>
+            </div>
+            
+            <textarea class="lib-modal__edit-textarea" id="lib-modal-edit-textarea-ko" rows="10" placeholder="한글 프롬프트를 입력하세요"></textarea>
+            <textarea class="lib-modal__edit-textarea hidden" id="lib-modal-edit-textarea-en" rows="10" placeholder="영어 프롬프트를 입력하세요"></textarea>
+
             <div class="lib-modal__edit-actions">
               <div class="lib-modal__edit-left">
                 <label class="lib-modal__img-attach-btn" id="lib-modal-img-attach">

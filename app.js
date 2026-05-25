@@ -291,6 +291,8 @@ function loadLibraryOverrides() {
         if (overrides[item.id]) {
           if (overrides[item.id].title !== undefined) item.title = overrides[item.id].title;
           if (overrides[item.id].prompt !== undefined) item.prompt = overrides[item.id].prompt;
+          if (overrides[item.id].promptKo !== undefined) item.promptKo = overrides[item.id].promptKo;
+          if (overrides[item.id].promptEn !== undefined) item.promptEn = overrides[item.id].promptEn;
           if (overrides[item.id].images !== undefined) item.images = overrides[item.id].images;
           if (overrides[item.id].thumbnails !== undefined) item.thumbnails = overrides[item.id].thumbnails;
         }
@@ -317,6 +319,8 @@ function startLibraryOverridesListener() {
           title: data.title || '',
           desc: data.desc || '',
           prompt: data.prompt || '',
+          promptKo: data.promptKo || '',
+          promptEn: data.promptEn || '',
           images: data.images || [],
           thumbnails: data.thumbnails || []
         };
@@ -329,6 +333,8 @@ function startLibraryOverridesListener() {
         if (data.desc !== undefined) item.desc = data.desc;
         if (data.title !== undefined) item.title = data.title;
         if (data.prompt !== undefined) item.prompt = data.prompt;
+        if (data.promptKo !== undefined) item.promptKo = data.promptKo;
+        if (data.promptEn !== undefined) item.promptEn = data.promptEn;
         if (data.images !== undefined) item.images = data.images;
         if (data.thumbnails !== undefined) item.thumbnails = data.thumbnails;
       }
@@ -341,6 +347,7 @@ function startLibraryOverridesListener() {
     console.warn('Failed to listen to library overrides from Firestore:', error);
   });
 }
+
 
 function saveLibraryOverride(itemId, data) {
   // 1. Sync to Firestore
@@ -818,6 +825,111 @@ Recover and enhance fine-grain detail with natural realism:
 - ❌ No text, watermarks, or graphic overlays
 - ❌ No hallucinated details not present in the original
 - ❌ No flat or muddy lighting — maintain dimensional depth at all times`,
+    promptKo: `[우선순위 1 — 신원 고정: 다른 모든 지침보다 우선함]
+대상의 원래 얼굴 해부학적 구조, 골격, 비율 및 고유 신원을 절대적으로 유지합니다. 미세한 표정, 시선 방향, 눈 모양, 콧대, 턱선, 입술 형태를 편차 없이 완벽하게 보존하세요. 어떤 상황에서도 얼굴 특징을 왜곡하거나 변형하지 마십시오. 원본 이미지와 똑같은 포즈, 몸의 위치, 손의 배치를 유지합니다. 이 규칙은 아래의 조명, 색상 또는 스타일 관련 지침에 의해 무시될 수 없습니다.
+
+[우선순위 2 — 배경 구조 고정]
+원본과 동일하게 배경의 모든 물체, 위치, 레이아웃, 공간 배열 및 구도를 보존합니다. 어떠한 오브젝트도 추가, 삭제 또는 재배치할 수 없습니다. 단, 씬(Scene)의 영화적인 리라이팅(Relighting)으로 인한 배경 색온도, 밝기, 그림자 깊이 및 톤 변화는 허용되며 적극 반영되어야 합니다. 배경은 새로운 조명 환경에 자연스럽게 반응해야 합니다.
+
+[우선순위 3 — 시네마틱 리라이팅(Cinematic Relighting)]
+전체 장면의 조명을 시네마틱하고 피사체 중심의 스타일로 업그레이드합니다:
+
+- 피사체에 부드러운 방향성 키 라이트(따뜻한 골드 톤)와 쿨한 섀도우 필(차분한 블루-그레이)을 적용합니다.
+- 시네마틱 S-곡선으로 대비를 강화합니다: 어두운 영역은 살짝 올리고, 하이라이트는 부드럽게 압축하며, 미디움 톤의 분리도를 확장합니다.
+- 자연스러운 라이트 랩(Light Wrap)과 미세한 림 라이트(Rim/Edge Light)를 추가하여 피사체를 배경과 분리합니다.
+- 장면 전체의 다이내믹 레인지를 깊게 표현합니다. 거친 그림자 경계면을 부드러운 그라데이션으로 완화합니다.
+- 일관된 조명 환경을 위해 배경 조명도 자연스럽게 변화해야 합니다.
+
+[우선순위 4 — 카메라 & 렌즈 시뮬레이션]
+Sony A1 카메라와 85mm f/1.4 GM 렌즈를 사용하여 f/1.6, ISO 100, 1/200초로 촬영한 듯한 퀄리티로 재현합니다:
+
+- 피사체의 눈과 얼굴에 칼날 같은 초점이 맞추어진 시네마틱하고 얕은 심도(Shallow Depth of Field)를 구현합니다.
+- 배경에는 자연스럽고 부드러우며 원형의 보케(Bokeh)가 흐려지도록 처리합니다.
+- 풀프레임 센서 렌더링: 미세한 대비, 깊이 분리 및 광학적 선명함을 표현합니다.
+
+[우선순위 5 — 디테일 & 텍스처]
+자연스러운 리얼리즘과 함께 미세한 그레인 디테일을 복원하고 강화합니다:
+
+- 피부: 모공, 미세한 주름, 피부 밑 산란(Subsurface Scattering)이 시각적으로 보이도록 합니다. 뭉개거나 플라스틱처럼 밀어버리는 스무딩, 에어브러시 작업 금지.
+- 머리카락: 한 올 한 올의 디테일, 잔머리, 자연스러운 광택과 볼륨감 유지.
+- 눈: 선명한 홍채 디테일, 자연스러운 캐치라이트 반사, 눈동자 미세 텍스처.
+- 의류/원단: 섬유 조직의 직조 텍스처, 솔기, 자연스러운 주름 패턴 유지.
+
+[우선순위 6 — 컬러 & 톤]
+
+- 시네마틱 대비 곡선이 적용된 뉴트럴한 프리미엄 컬러 그레이딩.
+- 자연스러운 채도 유지 — 풍부하지만 절대 과포화되지 않도록 처리.
+- 10비트 컬러 깊이 렌더링.
+
+[출력 사양]
+8K 해상도. 원본 구도와 일치하는 포트레이트 크롭. 프리미엄 풀프레임 소니 A1 수준의 시네마틱 에디토리얼 피니시. 완성된 이미지는 AI 생성물 느낌이 아닌 야외에서 촬영된 하이엔드 잡지 화보 포트레이트 느낌이 나야 합니다.
+
+[네거티브 제약 — 강력한 금지 규칙]
+
+- ❌ 얼굴 왜곡, 모핑, 변형 또는 해부학적 변경 절대 금지
+- ❌ 기형적인 손, 손가락 추가/누락 또는 신체 왜곡 절대 금지
+- ❌ 원본 카메라 앵글로부터의 시점/원근 왜곡 금지
+- ❌ 인위적인 글로우, 블룸 또는 몽환적인 헤이즈 효과 금지
+- ❌ 피사체를 평평하게 만드는 단순 패션 뷰티 조명 금지
+- ❌ 질감이 없이 인형처럼 매끄러운 스킨 텍스처 금지
+- ❌ 배경 오브젝트의 추가, 제거 또는 재배치 절대 금지`,
+    promptEn: `[PRIORITY 1 — IDENTITY LOCK: Violating this overrides all other instructions]
+Absolute fidelity to the subject's original facial anatomy, bone structure, proportions, and identity. Preserve exact expression, gaze direction, eye shape, nose bridge, jawline, and lip form with zero deviation. Do not morph, reshape, or drift any facial feature under any circumstance. Maintain the exact same pose, body position, and hand placement as the original image. This rule cannot be overridden by any lighting, color, or stylistic instruction below.
+
+[PRIORITY 2 — BACKGROUND STRUCTURE LOCK]
+Preserve all background objects, their positions, layout, spatial arrangement, and composition exactly as in the original. No objects may be added, removed, or repositioned. However, natural changes in background color temperature, brightness, shadow depth, and tonal shifts caused by the cinematic relighting of the scene ARE permitted and expected. The background should respond to the new lighting naturally — not remain artificially frozen while the subject changes.
+
+[PRIORITY 3 — CINEMATIC RELIGHTING]
+Upgrade the entire scene lighting to a cinematic, subject-focused style:
+
+- Soft directional key light on the subject with warm highlights (subtle golden tone) and cool shadow fill (muted blue-grey).
+- Enhance contrast with a cinematic S-curve: lift shadows slightly, compress highlights gently, expand midtone separation.
+- Add natural light wrap and subtle rim/edge light to separate the subject from the background.
+- Deepen dynamic range across the full scene. Soften any harsh shadow edges into smooth gradients.
+- The background lighting should shift naturally in response — darker areas may deepen, warm areas may gain subtle warmth — as long as it feels like one unified, physically coherent light environment.
+- Do NOT introduce any light source that contradicts the original scene's spatial logic.
+
+[PRIORITY 4 — CAMERA & LENS SIMULATION]
+Recreate as if captured on a Sony A1 with an 85mm f/1.4 GM lens at f/1.6, ISO 100, 1/200s:
+
+- Cinematic shallow depth of field with razor-sharp focus on the subject's eyes and face.
+- Natural bokeh fall-off in the background — smooth, circular, non-distracting.
+- Full-frame sensor rendering: premium micro-contrast, depth separation, and optical clarity.
+- If the original image has deep depth of field (e.g., smartphone photo), apply the shallow DOF effect to the background only — do not blur any part of the subject's face or body.
+
+[PRIORITY 5 — DETAIL & TEXTURE]
+Recover and enhance fine-grain detail with natural realism:
+
+- Skin: visible pores, fine lines, natural subsurface scattering. No smoothing, no plastic texture, no airbrushing.
+- Hair: individual strands, flyaways, natural shine and volume.
+- Eyes: sharp iris detail, natural catchlight reflections, visible micro-texture.
+- Clothing/fabric: weave texture, seams, material edges, natural wrinkle patterns.
+- Apply controlled high-frequency sharpening. Remove compression artifacts and digital noise while retaining authentic texture.
+
+[PRIORITY 6 — COLOR & TONE]
+
+- Neutral premium color grade with cinematic contrast curve.
+- Natural saturation — rich but never oversaturated.
+- Authentic skin tones preserved from original, with subtle warm-highlight enhancement.
+- Smooth tonal gradations across all luminance zones.
+- Subtle film grain (fine, organic, 35mm-style) for cinematic texture — not digital noise.
+- 10-bit color depth rendering.
+
+[OUTPUT SPECIFICATION]
+8K resolution. Portrait crop matching original framing. Cinematic editorial finish with premium full-frame Sony A1 quality. The final image should feel like a high-end magazine portrait shot on location — not a studio composite or AI render.
+
+[NEGATIVE CONSTRAINTS — HARD RULES]
+
+- ❌ No facial warping, morphing, drift, or anatomical changes of any kind
+- ❌ No altered hands, added/missing fingers, or body distortions
+- ❌ No perspective shift from original camera angle
+- ❌ No fake glow, bloom, or ethereal haze effects
+- ❌ No runway/fashion lighting that flattens the scene
+- ❌ No over-smoothed or plastic skin
+- ❌ No background object additions, removals, or repositioning
+- ❌ No text, watermarks, or graphic overlays
+- ❌ No hallucinated details not present in the original
+- ❌ No flat or muddy lighting — maintain dimensional depth at all times`,
     images: [],
     thumbnails: []
   },
@@ -834,10 +946,25 @@ Key requirements:
 - Matching color temperature and shadow direction
 - Realistic depth of field and perspective
 - Brand-appropriate mood and tone`,
+    promptKo: `콘텍스트에 맞게 자연스럽게 [제품/서비스]를 배치한 연출 합성 이미지를 생성합니다. 제품의 매력을 극대화할 수 있도록 조화로운 소품과 배경이 있는 현실적인 환경에 피사체를 배치해 주세요. 단순히 연출된 인위적인 느낌이 아닌, 자연스럽고 일상적인 라이프스타일 컷 느낌을 살려내야 합니다.
+
+핵심 요구사항:
+- 피사체와 배경 사이의 매끄러운 조명 유기적 결합
+- 일치하는 색온도와 그림자 방향성 설정
+- 사실적인 아웃포커싱(심도) 및 투시(원근감)
+- 브랜드 가치에 적절한 무드와 톤 조성`,
+    promptEn: `Create a natural composite image showing [PRODUCT/SERVICE] in context. Place the subject in a realistic environment with complementary props and background that enhance its appeal. The scene should feel organic and lifestyle-driven, not staged or artificial.
+
+Key requirements:
+- Seamless light integration between subject and background
+- Matching color temperature and shadow direction
+- Realistic depth of field and perspective
+- Brand-appropriate mood and tone`,
     images: [],
     thumbnails: []
   }
 ];
+
 
 let libCurrentCat = 'all';
 
@@ -950,7 +1077,8 @@ const libModalCopy = document.getElementById('lib-modal-copy');
 const libModalEdit = document.getElementById('lib-modal-edit');
 const libModalPromptWrap = document.getElementById('lib-modal-prompt-wrap');
 const libModalEditWrap = document.getElementById('lib-modal-edit-wrap');
-const libModalEditTextarea = document.getElementById('lib-modal-edit-textarea');
+const libModalEditTextareaKo = document.getElementById('lib-modal-edit-textarea-ko');
+const libModalEditTextareaEn = document.getElementById('lib-modal-edit-textarea-en');
 const libModalImages = document.getElementById('lib-modal-images');
 const libModalImageGrid = document.getElementById('lib-modal-image-grid');
 const libModalImgInput = document.getElementById('lib-modal-img-input');
@@ -958,15 +1086,23 @@ const libModalThumbBtn = document.getElementById('lib-modal-thumb-btn');
 const libModalSave = document.getElementById('lib-modal-save');
 const libModalCancel = document.getElementById('lib-modal-cancel');
 
+// Language tracking for the library modal
+let libActiveLang = 'ko';
+let libEditActiveLang = 'ko';
+
+
 function openLibModal(item) {
   libEditingItem = item;
   libEditMode = false;
+  libActiveLang = 'ko'; // Reset to Korean when opening
 
   document.getElementById('lib-modal-tags').innerHTML =
     item.tags.map((t, i) => `<span class="lib-tag${i === 0 ? ' lib-tag--primary' : ''}">${escHtml(t)}</span>`).join('');
   document.getElementById('lib-modal-title').textContent = item.title;
   document.getElementById('lib-modal-desc').textContent = item.desc;
-  document.getElementById('lib-modal-prompt').textContent = item.prompt;
+  
+  // Render prompt based on active language
+  updatePromptDisplay();
 
   // Show/hide admin edit button
   if (isAdmin) {
@@ -985,9 +1121,70 @@ function openLibModal(item) {
   libModal.classList.add('is-open');
   libModal.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
-
-  libModalCopy._currentPrompt = item.prompt;
 }
+
+function updatePromptDisplay() {
+  if (!libEditingItem) return;
+  const promptEl = document.getElementById('lib-modal-prompt');
+  const tabKo = document.getElementById('lib-prompt-tab-ko');
+  const tabEn = document.getElementById('lib-prompt-tab-en');
+
+  let activePrompt = '';
+  if (libActiveLang === 'ko') {
+    activePrompt = libEditingItem.promptKo || libEditingItem.prompt || '';
+    tabKo.style.background = '#f5f5f7';
+    tabKo.style.color = '#555';
+    tabKo.classList.add('is-active');
+    
+    tabEn.style.background = 'transparent';
+    tabEn.style.color = '#888';
+    tabEn.classList.remove('is-active');
+  } else {
+    activePrompt = libEditingItem.promptEn || libEditingItem.prompt || '';
+    tabEn.style.background = '#f5f5f7';
+    tabEn.style.color = '#555';
+    tabEn.classList.add('is-active');
+    
+    tabKo.style.background = 'transparent';
+    tabKo.style.color = '#888';
+    tabKo.classList.remove('is-active');
+  }
+
+  promptEl.textContent = activePrompt;
+  libModalCopy._currentPrompt = activePrompt;
+}
+
+// Add event listeners for detailed view tabs
+document.getElementById('lib-prompt-tab-ko').addEventListener('click', function() {
+  libActiveLang = 'ko';
+  updatePromptDisplay();
+});
+document.getElementById('lib-prompt-tab-en').addEventListener('click', function() {
+  libActiveLang = 'en';
+  updatePromptDisplay();
+});
+
+// Add event listeners for edit view tabs
+document.getElementById('lib-edit-tab-ko').addEventListener('click', function() {
+  libEditActiveLang = 'ko';
+  document.getElementById('lib-edit-tab-ko').style.background = '#FFF1BC';
+  document.getElementById('lib-edit-tab-ko').style.color = '#333';
+  document.getElementById('lib-edit-tab-en').style.background = 'transparent';
+  document.getElementById('lib-edit-tab-en').style.color = '#888';
+  
+  libModalEditTextareaKo.classList.remove('hidden');
+  libModalEditTextareaEn.classList.add('hidden');
+});
+document.getElementById('lib-edit-tab-en').addEventListener('click', function() {
+  libEditActiveLang = 'en';
+  document.getElementById('lib-edit-tab-en').style.background = '#FFF1BC';
+  document.getElementById('lib-edit-tab-en').style.color = '#333';
+  document.getElementById('lib-edit-tab-ko').style.background = 'transparent';
+  document.getElementById('lib-edit-tab-ko').style.color = '#888';
+  
+  libModalEditTextareaEn.classList.remove('hidden');
+  libModalEditTextareaKo.classList.add('hidden');
+});
 
 function renderLibImages(item) {
   const images = item.images || [];
@@ -1045,12 +1242,28 @@ function renderLibImages(item) {
 function enterEditMode() {
   if (!isAdmin || !libEditingItem) return;
   libEditMode = true;
+  libEditActiveLang = 'ko'; // Default edit tab is Korean
+
   libModalPromptWrap.classList.add('hidden');
   libModalEditWrap.classList.remove('hidden');
+  
   document.getElementById('lib-modal-edit-title').value = libEditingItem.title || '';
   document.getElementById('lib-modal-edit-desc').value = libEditingItem.desc || '';
   document.getElementById('lib-modal-edit-cat').value = libEditingItem.category || '업스케일';
-  libModalEditTextarea.value = libEditingItem.prompt;
+  
+  // Populate the bilingual textareas
+  libModalEditTextareaKo.value = libEditingItem.promptKo || libEditingItem.prompt || '';
+  libModalEditTextareaEn.value = libEditingItem.promptEn || libEditingItem.prompt || '';
+  
+  // Reset tab UI to Korean
+  document.getElementById('lib-edit-tab-ko').style.background = '#FFF1BC';
+  document.getElementById('lib-edit-tab-ko').style.color = '#333';
+  document.getElementById('lib-edit-tab-en').style.background = 'transparent';
+  document.getElementById('lib-edit-tab-en').style.color = '#888';
+  
+  libModalEditTextareaKo.classList.remove('hidden');
+  libModalEditTextareaEn.classList.add('hidden');
+  
   document.getElementById('lib-modal-edit-title').focus();
 }
 
@@ -1062,12 +1275,19 @@ function exitEditMode() {
 
 function saveEdit() {
   if (!libEditingItem) return;
-  const newPrompt = libModalEditTextarea.value;
+  
+  const newPromptKo = libModalEditTextareaKo.value;
+  const newPromptEn = libModalEditTextareaEn.value;
+  // Use English prompt or whichever is filled as the default 'prompt' fallback field
+  const newPrompt = newPromptEn || newPromptKo;
+  
   const newTitle = document.getElementById('lib-modal-edit-title').value.trim() || libEditingItem.title;
   const newDesc = document.getElementById('lib-modal-edit-desc').value.trim() || libEditingItem.desc;
   const newCat = document.getElementById('lib-modal-edit-cat').value;
   
   libEditingItem.prompt = newPrompt;
+  libEditingItem.promptKo = newPromptKo;
+  libEditingItem.promptEn = newPromptEn;
   libEditingItem.title = newTitle;
   libEditingItem.desc = newDesc;
   libEditingItem.category = newCat;
@@ -1075,6 +1295,8 @@ function saveEdit() {
   
   saveLibraryOverride(libEditingItem.id, { 
     prompt: newPrompt,
+    promptKo: newPromptKo,
+    promptEn: newPromptEn,
     title: newTitle,
     desc: newDesc,
     category: newCat,
@@ -1091,10 +1313,12 @@ function saveEdit() {
   // Update display
   document.getElementById('lib-modal-title').textContent = newTitle;
   document.getElementById('lib-modal-desc').textContent = newDesc;
-  document.getElementById('lib-modal-prompt').textContent = newPrompt;
+  
+  // Re-display active language prompt
+  updatePromptDisplay();
+  
   document.getElementById('lib-modal-tags').innerHTML =
     libEditingItem.tags.map((t, i) => `<span class="lib-tag${i === 0 ? ' lib-tag--primary' : ''}">${escHtml(t)}</span>`).join('');
-  libModalCopy._currentPrompt = newPrompt;
   
   // Delightful "Saved" animation on the save button
   const saveBtn = document.getElementById('lib-modal-save');
@@ -1104,6 +1328,7 @@ function saveEdit() {
   saveBtn.style.color = '#fff';
   saveBtn.style.borderColor = '#34c759';
   saveBtn.disabled = true;
+
 
   setTimeout(function() {
     // Restore button styles
