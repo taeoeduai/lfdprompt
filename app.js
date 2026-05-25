@@ -34,7 +34,7 @@ const filterOldest = document.getElementById('filter-oldest');
 
 // --- State ---
 let prompts = [];
-let currentView = 'float';
+let currentView = 'library';
 let sortOrder = 'newest';
 
 // ============================================
@@ -1009,22 +1009,56 @@ function renderLibrary() {
     return 0; // maintain original for default static
   });
 
-  // Dynamically update filter pill counts
-  document.querySelectorAll('.lib-filter-pill').forEach(pill => {
-    const cat = pill.dataset.cat;
-    const countEl = pill.querySelector('.lib-count');
-    if (countEl) {
-      const count = cat === 'all' 
-        ? sortedData.length 
-        : sortedData.filter(d => d.category === cat).length;
-      countEl.textContent = count;
+  // Dynamically update filter pills based on all unique tags/categories
+  const filterContainer = document.getElementById('lib-filters');
+  if (filterContainer) {
+    const addBtn = filterContainer.querySelector('#lib-add-btn');
+    
+    const uniqueTags = new Set();
+    sortedData.forEach(d => {
+      if (d.tags && d.tags.length > 0) {
+        d.tags.forEach(t => uniqueTags.add(t));
+      } else if (d.category) {
+        uniqueTags.add(d.category);
+      }
+    });
+    
+    const tagArray = Array.from(uniqueTags);
+    let html = `<button class="lib-filter-pill ${libCurrentCat === 'all' ? 'is-active' : ''}" data-cat="all">전체 <span class="lib-count">${sortedData.length}</span></button>`;
+    
+    tagArray.forEach(cat => {
+      const count = sortedData.filter(d => (d.tags && d.tags.includes(cat)) || d.category === cat).length;
+      html += `<button class="lib-filter-pill ${libCurrentCat === cat ? 'is-active' : ''}" data-cat="${escHtml(cat)}">${escHtml(cat)} <span class="lib-count">${count}</span></button>`;
+    });
+    
+    filterContainer.innerHTML = html;
+    if (addBtn) {
+      filterContainer.appendChild(addBtn);
+      // Ensure the add button has its event listener if it was overwritten
+      addBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (!isAdmin) return;
+        const newId = 'lib-custom-' + Date.now();
+        const newItem = {
+          id: newId,
+          category: '',
+          tags: [],
+          title: '',
+          desc: '',
+          prompt: '',
+          images: [],
+          thumbnails: []
+        };
+        openLibModal(newItem);
+        enterEditMode();
+      });
     }
-  });
+  }
 
   // 2. Filter by Category
   let filtered = libCurrentCat === 'all' 
     ? sortedData 
-    : sortedData.filter(d => d.category === libCurrentCat);
+    : sortedData.filter(d => (d.tags && d.tags.includes(libCurrentCat)) || d.category === libCurrentCat);
 
   // 3. Filter by Search Query (Title, description, tags, prompt)
   if (globalSearchQuery.trim() !== '') {
@@ -2060,4 +2094,4 @@ loadLibraryOverrides();
 startLibraryOverridesListener();
 restoreSession();
 startListener();
-renderFloat();
+setView('library');
