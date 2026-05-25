@@ -1900,11 +1900,11 @@ body {
   .lib-card__thumb {
     display: block !important;
     width: 100% !important;
-    height: auto !important;
     aspect-ratio: 4 / 3 !important;
-    overflow: hidden;
+    overflow: hidden !important;
     visibility: visible !important;
     opacity: 1 !important;
+    position: relative !important;
   }
   .lib-card__thumb img {
     display: block !important;
@@ -1913,6 +1913,23 @@ body {
     object-fit: cover !important;
     visibility: visible !important;
     opacity: 1 !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+  }
+  .slider-before-wrapper {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 2 !important;
+  }
+  .slider-handle {
+    position: absolute !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    z-index: 3 !important;
   }
   
   /* Guarantee grid structure is identically aligned on mobile */
