@@ -985,22 +985,73 @@ Key requirements:
 let libCurrentCat = 'all';
 
 // --- Render Library ---
+let libLayoutMode = 'gallery'; // 'gallery' or 'list'
+let globalSearchQuery = '';
+
+// --- Render Library ---
 function renderLibrary() {
   const libContent = document.getElementById('lib-content');
   if (!libContent) return;
+
+  // 1. Sort dynamically: newest updated/added item first
+  // Non-custom defaults (which start with static IDs) go after custom/newly created items
+  const sortedData = [...libraryData].sort((a, b) => {
+    const isCustomA = String(a.id).startsWith('lib-custom-');
+    const isCustomB = String(b.id).startsWith('lib-custom-');
+    if (isCustomA && !isCustomB) return -1;
+    if (!isCustomA && isCustomB) return 1;
+    if (isCustomA && isCustomB) {
+      // Sort newest custom first (custom-timestamp)
+      const tsA = parseInt(String(a.id).replace('lib-custom-', '')) || 0;
+      const tsB = parseInt(String(b.id).replace('lib-custom-', '')) || 0;
+      return tsB - tsA;
+    }
+    return 0; // maintain original for default static
+  });
 
   // Dynamically update filter pill counts
   document.querySelectorAll('.lib-filter-pill').forEach(pill => {
     const cat = pill.dataset.cat;
     const countEl = pill.querySelector('.lib-count');
     if (countEl) {
-      const count = cat === 'all' ? libraryData.length : libraryData.filter(d => d.category === cat).length;
+      const count = cat === 'all' 
+        ? sortedData.length 
+        : sortedData.filter(d => d.category === cat).length;
       countEl.textContent = count;
     }
   });
 
-  const filtered = libCurrentCat === 'all' ? libraryData : libraryData.filter(d => d.category === libCurrentCat);
+  // 2. Filter by Category
+  let filtered = libCurrentCat === 'all' 
+    ? sortedData 
+    : sortedData.filter(d => d.category === libCurrentCat);
+
+  // 3. Filter by Search Query (Title, description, tags, prompt)
+  if (globalSearchQuery.trim() !== '') {
+    const q = globalSearchQuery.toLowerCase();
+    filtered = filtered.filter(item => {
+      return (item.title || '').toLowerCase().includes(q) ||
+             (item.desc || '').toLowerCase().includes(q) ||
+             (item.tags || []).some(t => String(t).toLowerCase().includes(q)) ||
+             (item.prompt || '').toLowerCase().includes(q) ||
+             (item.promptKo || '').toLowerCase().includes(q) ||
+             (item.promptEn || '').toLowerCase().includes(q);
+    });
+  }
+
   libContent.innerHTML = '';
+
+  // Apply layout styling
+  if (libLayoutMode === 'list') {
+    libContent.style.display = 'flex';
+    libContent.style.flexDirection = 'column';
+    libContent.style.gap = '12px';
+  } else {
+    libContent.style.display = 'grid';
+    libContent.style.gridTemplateColumns = 'repeat(auto-fill, minmax(280px, 1fr))';
+    libContent.style.gap = 'var(--sp-md)';
+  }
+
   filtered.forEach(item => {
     const card = document.createElement('div');
     card.className = 'lib-card';
@@ -1024,28 +1075,58 @@ function renderLibrary() {
       thumbHtml = '<div class="lib-card__thumb"><img src="' + item.images[0] + '" alt="썸네일" /></div>';
     }
 
-    card.innerHTML =
-      '<div class="lib-card__tags">' +
-        item.tags.map((t, i) => `<span class="lib-tag${i === 0 ? ' lib-tag--primary' : ''}">${t}</span>`).join('') +
-      '</div>' +
-      `<h3 class="lib-card__title">${escHtml(item.title)}</h3>` +
-      thumbHtml +
-      `<p class="lib-card__desc">${escHtml(item.desc)}</p>` +
-      '<div class="lib-card__footer">' +
-        '<button class="lib-card__copy" data-id="' + item.id + '" aria-label="복사">' +
-          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>' +
-          ' 복사' +
-        '</button>' +
-        '<span class="lib-card__detail-hint">자세히 보기 →</span>' +
-      '</div>';
+    if (libLayoutMode === 'list') {
+      // Modern List View Layout
+      card.style.flexDirection = 'row';
+      card.style.alignItems = 'center';
+      card.style.gap = '16px';
+      card.style.padding = '12px var(--sp-md)';
+      
+      card.innerHTML = `
+        ${thumbHtml ? `<div style="width: 80px; height: 60px; flex-shrink: 0; border-radius: var(--r-sm); overflow: hidden; position: relative;">${thumbHtml.replace('lib-card__thumb', '').replace('aspect-ratio: 4 / 3', '')}</div>` : '<div style="width: 80px; height: 60px; background: rgba(0,0,0,0.04); border-radius: var(--r-sm); flex-shrink:0;"></div>'}
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+          <h3 class="lib-card__title" style="margin: 0; font-size: 15px;">${escHtml(item.title)}</h3>
+          <p class="lib-card__desc" style="margin: 0; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.65;">${escHtml(item.desc)}</p>
+        </div>
+        <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-right: 12px; max-width: 200px;" class="list-hide-mobile">
+          ${(item.tags || []).slice(0, 2).map(t => `<span class="lib-tag" style="font-size: 10px; padding: 2px 6px;">${escHtml(t)}</span>`).join('')}
+        </div>
+        <div style="display: flex; align-items: center; gap: var(--sp-sm); flex-shrink: 0;">
+          <button class="lib-card__copy" data-id="${item.id}" aria-label="복사" style="padding: 4px 10px; font-size: 11px;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> 복사
+          </button>
+        </div>
+      `;
+    } else {
+      // Modern Grid Gallery Layout
+      card.style.flexDirection = '';
+      card.style.alignItems = '';
+      card.style.gap = '';
+      card.style.padding = '';
+      
+      card.innerHTML =
+        '<div class="lib-card__tags">' +
+          item.tags.map((t, i) => `<span class="lib-tag${i === 0 ? ' lib-tag--primary' : ''}">${t}</span>`).join('') +
+        '</div>' +
+        `<h3 class="lib-card__title">${escHtml(item.title)}</h3>` +
+        thumbHtml +
+        `<p class="lib-card__desc">${escHtml(item.desc)}</p>` +
+        '<div class="lib-card__footer">' +
+          '<button class="lib-card__copy" data-id="' + item.id + '" aria-label="복사">' +
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>' +
+            ' 복사' +
+          '</button>' +
+          '<span class="lib-card__detail-hint">자세히 보기 →</span>' +
+        '</div>';
+    }
 
-    // Copy button (stop propagation so card click doesn't also fire)
+    // Copy button
     card.querySelector('.lib-card__copy').addEventListener('click', function(e) {
       e.stopPropagation();
       copyToClipboard(item.prompt, this);
     });
 
-    // Card click → open modal
+    // Card click
     card.addEventListener('click', function() {
       openLibModal(item);
     });
@@ -1905,6 +1986,56 @@ textarea.addEventListener('focus', function() {
     });
   }
 });
+
+// --- Setup Search input and Layout Mode togglers ---
+const globalSearchInput = document.getElementById('global-search-input');
+if (globalSearchInput) {
+  globalSearchInput.addEventListener('input', function() {
+    globalSearchQuery = this.value;
+    
+    // Automatically switch to library view when typing to see results in real-time
+    if (currentView !== 'library') {
+      setView('library');
+    } else {
+      renderLibrary();
+    }
+  });
+}
+
+const toggleGalleryBtn = document.getElementById('lib-toggle-gallery');
+const toggleListBtn = document.getElementById('lib-toggle-list');
+
+if (toggleGalleryBtn && toggleListBtn) {
+  toggleGalleryBtn.addEventListener('click', function() {
+    libLayoutMode = 'gallery';
+    toggleGalleryBtn.classList.add('is-active');
+    toggleGalleryBtn.style.background = '#fff';
+    toggleGalleryBtn.style.color = '#333';
+    toggleGalleryBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)';
+    
+    toggleListBtn.classList.remove('is-active');
+    toggleListBtn.style.background = 'transparent';
+    toggleListBtn.style.color = '#777';
+    toggleListBtn.style.boxShadow = 'none';
+    
+    renderLibrary();
+  });
+
+  toggleListBtn.addEventListener('click', function() {
+    libLayoutMode = 'list';
+    toggleListBtn.classList.add('is-active');
+    toggleListBtn.style.background = '#fff';
+    toggleListBtn.style.color = '#333';
+    toggleListBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)';
+    
+    toggleGalleryBtn.classList.remove('is-active');
+    toggleGalleryBtn.style.background = 'transparent';
+    toggleGalleryBtn.style.color = '#777';
+    toggleGalleryBtn.style.boxShadow = 'none';
+    
+    renderLibrary();
+  });
+}
 
 // --- 1-hour auto-refresh of floating positions ---
 setInterval(function () {
