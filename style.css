@@ -1546,12 +1546,18 @@ body {
 
 .lib-modal__image-item {
   position: relative;
-  width: 100px;
+  width: 140px;
   aspect-ratio: 4 / 3;
   border-radius: var(--r-sm);
   overflow: hidden;
   border: 1px solid rgba(0, 0, 0, 0.08);
   flex-shrink: 0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lib-modal__image-item:hover {
+  transform: scale(1.04);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .lib-modal__image-item img {

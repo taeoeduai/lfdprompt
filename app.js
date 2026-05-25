@@ -1257,9 +1257,17 @@ function renderLibImages(item) {
   thumbs.forEach((src, i) => {
     const div = document.createElement('div');
     div.className = 'lib-modal__image-item is-thumbnail';
-    div.innerHTML = '<img src="' + src + '" alt="썸네일 ' + (i + 1) + '" />' +
+    div.style.cursor = 'pointer';
+    div.innerHTML = '<img src="' + src + '" alt="썸네일 ' + (i + 1) + '" style="transition: transform 0.2s;" />' +
       '<span class="thumb-label">Thumb</span>' +
       (isAdmin ? '<button class="lib-modal__image-delete" data-type="thumb" data-index="' + i + '">&times;</button>' : '');
+    
+    // Lightbox setup
+    div.addEventListener('click', function(e) {
+      if (e.target.classList.contains('lib-modal__image-delete')) return;
+      openLightbox(src);
+    });
+    
     libModalImageGrid.appendChild(div);
   });
 
@@ -1267,8 +1275,16 @@ function renderLibImages(item) {
   images.forEach((src, i) => {
     const div = document.createElement('div');
     div.className = 'lib-modal__image-item';
-    div.innerHTML = '<img src="' + src + '" alt="이미지 ' + (i + 1) + '" />' +
+    div.style.cursor = 'pointer';
+    div.innerHTML = '<img src="' + src + '" alt="이미지 ' + (i + 1) + '" style="transition: transform 0.2s;" />' +
       (isAdmin ? '<button class="lib-modal__image-delete" data-type="image" data-index="' + i + '">&times;</button>' : '');
+    
+    // Lightbox setup
+    div.addEventListener('click', function(e) {
+      if (e.target.classList.contains('lib-modal__image-delete')) return;
+      openLightbox(src);
+    });
+
     libModalImageGrid.appendChild(div);
   });
 
@@ -1294,6 +1310,41 @@ function renderLibImages(item) {
   }
 }
 
+// Lightbox controller functions
+const lightboxEl = document.getElementById('lib-lightbox');
+const lightboxImg = document.getElementById('lib-lightbox-img');
+const lightboxClose = document.getElementById('lib-lightbox-close');
+
+function openLightbox(src) {
+  if (!lightboxEl || !lightboxImg) return;
+  lightboxImg.src = src;
+  lightboxEl.style.display = 'flex';
+  lightboxEl.offsetHeight; // trigger reflow
+  lightboxEl.style.opacity = '1';
+  lightboxEl.style.pointerEvents = 'auto';
+  lightboxImg.style.transform = 'scale(1)';
+}
+
+function closeLightbox() {
+  if (!lightboxEl || !lightboxImg) return;
+  lightboxEl.style.opacity = '0';
+  lightboxEl.style.pointerEvents = 'none';
+  lightboxImg.style.transform = 'scale(0.95)';
+  setTimeout(() => {
+    lightboxEl.style.display = 'none';
+    lightboxImg.src = '';
+  }, 300);
+}
+
+if (lightboxEl && lightboxClose) {
+  lightboxClose.addEventListener('click', closeLightbox);
+  lightboxEl.addEventListener('click', function(e) {
+    if (e.target === lightboxEl) {
+      closeLightbox();
+    }
+  });
+}
+
 function enterEditMode() {
   if (!isAdmin || !libEditingItem) return;
   libEditMode = true;
@@ -1305,7 +1356,6 @@ function enterEditMode() {
   
   document.getElementById('lib-modal-edit-title').value = libEditingItem.title || '';
   document.getElementById('lib-modal-edit-desc').value = libEditingItem.desc || '';
-  document.getElementById('lib-modal-edit-cat').value = libEditingItem.category || '업스케일';
   document.getElementById('lib-modal-edit-tags').value = libEditingItem.tags ? libEditingItem.tags.join(', ') : '';
   
   // Populate the bilingual textareas
@@ -1350,11 +1400,11 @@ function saveEdit() {
   
   const newPrompt = newPromptEn || newPromptKo;
   
-  const newTitle = document.getElementById('lib-modal-edit-title').value.trim() || libEditingItem.title;
-  const newDesc = document.getElementById('lib-modal-edit-desc').value.trim() || libEditingItem.desc;
-  const newCat = document.getElementById('lib-modal-edit-cat').value;
+  const newTitle = document.getElementById('lib-modal-edit-title').value.trim() || libEditingItem.title || '새 프롬프트';
+  const newDesc = document.getElementById('lib-modal-edit-desc').value.trim() || libEditingItem.desc || '';
   const newTagsVal = document.getElementById('lib-modal-edit-tags').value.trim();
-  const newTags = newTagsVal ? newTagsVal.split(',').map(t => t.trim()).filter(Boolean) : [newCat];
+  const newTags = newTagsVal ? newTagsVal.split(',').map(t => t.trim()).filter(Boolean) : [];
+  const newCat = newTags.length > 0 ? newTags[0] : '기타';
   
   libEditingItem.prompt = newPrompt;
   libEditingItem.promptKo = newPromptKo;
@@ -1362,7 +1412,7 @@ function saveEdit() {
   libEditingItem.title = newTitle;
   libEditingItem.desc = newDesc;
   libEditingItem.category = newCat;
-  libEditingItem.tags = newTags;
+  libEditingItem.tags = newTags.length > 0 ? newTags : [newCat];
   
   saveLibraryOverride(libEditingItem.id, { 
     prompt: newPrompt,
@@ -1370,8 +1420,8 @@ function saveEdit() {
     promptEn: newPromptEn,
     title: newTitle,
     desc: newDesc,
-    category: newCat,
-    tags: newTags,
+    category: libEditingItem.category,
+    tags: libEditingItem.tags,
     images: libEditingItem.images || [],
     thumbnails: libEditingItem.thumbnails || []
   });
@@ -1444,11 +1494,11 @@ if (libAddBtn) {
     const newId = 'lib-custom-' + Date.now();
     const newItem = {
       id: newId,
-      category: '업스케일',
-      tags: ['업스케일'],
-      title: '새 프롬프트 제목',
-      desc: '설명을 입력해주세요.',
-      prompt: '프롬프트를 입력해주세요.',
+      category: '',
+      tags: [],
+      title: '',
+      desc: '',
+      prompt: '',
       images: [],
       thumbnails: []
     };
@@ -1538,8 +1588,8 @@ function setupUploadSlot(slot, input, imageIndex) {
 async function handleSlotImageUpload(file, slot, imageIndex) {
   try {
     const dataUrl = await readFileAsDataUrl(file);
-    // Compress and ensure high performance
-    const compressed = await compressImage(dataUrl, 640, 0.7);
+    // Original-grade high quality: 1200px max width and 0.9 quality
+    const compressed = await compressImage(dataUrl, 1200, 0.9);
     
     if (!libEditingItem.images) libEditingItem.images = [];
     libEditingItem.images[imageIndex] = compressed;
@@ -1647,7 +1697,6 @@ function autoGenerateMetadata(promptText) {
   
   const editTitle = document.getElementById('lib-modal-edit-title');
   const editDesc = document.getElementById('lib-modal-edit-desc');
-  const editCat = document.getElementById('lib-modal-edit-cat');
   const editTags = document.getElementById('lib-modal-edit-tags');
   
   const currentTitle = editTitle.value.trim();
@@ -1700,14 +1749,11 @@ function autoGenerateMetadata(promptText) {
   else if (detectedCat === "사진보정") detectedTags = "사진보정, 색감, 필터";
   
   // Auto fill empty or placeholder inputs
-  if (!currentTitle || currentTitle === "새 프롬프트 제목") {
+  if (!currentTitle || currentTitle === "새 프롬프트 제목" || currentTitle === "새 프롬프트") {
     editTitle.value = detectedTitle;
   }
-  if (!currentDesc || currentDesc === "설명을 입력해주세요." || currentDesc === "설명을 입력하세요") {
+  if (!currentDesc || currentDesc === "설명을 입력해주세요." || currentDesc === "설명을 입력하세요" || !currentDesc) {
     editDesc.value = detectedDesc;
-  }
-  if (editCat.value === "업스케일" && detectedCat !== "업스케일") {
-    editCat.value = detectedCat;
   }
   if (!currentTags) {
     editTags.value = detectedTags;
