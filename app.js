@@ -270,39 +270,66 @@ function showToast(msg) {
 let libEditingItem = null;
 let libEditMode = false;
 
-// Load custom library data from localStorage
+// Load custom library data from local storage as initial cache
 function loadLibraryOverrides() {
   try {
     const overrides = JSON.parse(localStorage.getItem('pl_lib_overrides'));
     if (overrides) {
-      // Merge overrides into libraryData
       libraryData.forEach(item => {
         if (overrides[item.id]) {
-          if (overrides[item.id].prompt !== undefined) {
-            item.prompt = overrides[item.id].prompt;
-          }
-          if (overrides[item.id].images !== undefined) {
-            item.images = overrides[item.id].images;
-          }
-          if (overrides[item.id].thumbnails !== undefined) {
-            item.thumbnails = overrides[item.id].thumbnails;
-          }
+          if (overrides[item.id].title !== undefined) item.title = overrides[item.id].title;
+          if (overrides[item.id].prompt !== undefined) item.prompt = overrides[item.id].prompt;
+          if (overrides[item.id].images !== undefined) item.images = overrides[item.id].images;
+          if (overrides[item.id].thumbnails !== undefined) item.thumbnails = overrides[item.id].thumbnails;
         }
       });
     }
   } catch (e) {
-    console.warn('Failed to load library overrides:', e);
+    console.warn('Failed to load library overrides from cache:', e);
   }
 }
 
+// Real-time listen to library overrides from Firestore so they sync everywhere
+function startLibraryOverridesListener() {
+  db.collection('library_overrides').onSnapshot(function(snapshot) {
+    snapshot.forEach(function(doc) {
+      const itemId = doc.id;
+      const data = doc.data();
+      const item = libraryData.find(d => d.id === itemId);
+      if (item) {
+        if (data.title !== undefined) item.title = data.title;
+        if (data.prompt !== undefined) item.prompt = data.prompt;
+        if (data.images !== undefined) item.images = data.images;
+        if (data.thumbnails !== undefined) item.thumbnails = data.thumbnails;
+      }
+    });
+    // Re-render library if active
+    if (currentView === 'library') {
+      renderLibrary();
+    }
+  }, function(error) {
+    console.warn('Failed to listen to library overrides from Firestore:', error);
+  });
+}
+
 function saveLibraryOverride(itemId, data) {
+  // 1. Sync to Firestore
+  db.collection('library_overrides').doc(itemId).set(data, { merge: true })
+    .then(function() {
+      console.log('Saved library override to Firestore');
+    })
+    .catch(function(e) {
+      console.warn('Failed to save library override to Firestore:', e);
+    });
+
+  // 2. Cache locally
   try {
     const overrides = JSON.parse(localStorage.getItem('pl_lib_overrides')) || {};
     if (!overrides[itemId]) overrides[itemId] = {};
     Object.assign(overrides[itemId], data);
     localStorage.setItem('pl_lib_overrides', JSON.stringify(overrides));
   } catch (e) {
-    console.warn('Failed to save library override:', e);
+    console.warn('Failed to save library override to localStorage:', e);
   }
 }
 
@@ -802,11 +829,11 @@ function renderLibrary() {
     }
 
     card.innerHTML =
-      thumbHtml +
       '<div class="lib-card__tags">' +
         item.tags.map((t, i) => `<span class="lib-tag${i === 0 ? ' lib-tag--primary' : ''}">${t}</span>`).join('') +
       '</div>' +
       `<h3 class="lib-card__title">${escHtml(item.title)}</h3>` +
+      thumbHtml +
       `<p class="lib-card__desc">${escHtml(item.desc)}</p>` +
       '<div class="lib-card__footer">' +
         '<button class="lib-card__copy" data-id="' + item.id + '" aria-label="복사">' +
@@ -977,8 +1004,9 @@ function enterEditMode() {
   libEditMode = true;
   libModalPromptWrap.classList.add('hidden');
   libModalEditWrap.classList.remove('hidden');
+  document.getElementById('lib-modal-edit-title').value = libEditingItem.title || '';
   libModalEditTextarea.value = libEditingItem.prompt;
-  libModalEditTextarea.focus();
+  document.getElementById('lib-modal-edit-title').focus();
 }
 
 function exitEditMode() {
@@ -990,13 +1018,23 @@ function exitEditMode() {
 function saveEdit() {
   if (!libEditingItem) return;
   const newPrompt = libModalEditTextarea.value;
+  const newTitle = document.getElementById('lib-modal-edit-title').value.trim() || libEditingItem.title;
+  
   libEditingItem.prompt = newPrompt;
-  saveLibraryOverride(libEditingItem.id, { prompt: newPrompt });
+  libEditingItem.title = newTitle;
+  
+  saveLibraryOverride(libEditingItem.id, { 
+    prompt: newPrompt,
+    title: newTitle
+  });
 
   // Update display
+  document.getElementById('lib-modal-title').textContent = newTitle;
   document.getElementById('lib-modal-prompt').textContent = newPrompt;
   libModalCopy._currentPrompt = newPrompt;
+  
   exitEditMode();
+  renderLibrary();
   showToast('프롬프트가 저장되었습니다');
 }
 
@@ -1192,6 +1230,7 @@ setInterval(function () {
 
 // --- Init ---
 loadLibraryOverrides();
+startLibraryOverridesListener();
 restoreSession();
 startListener();
 renderFloat();
