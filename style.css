@@ -706,7 +706,7 @@ body {
   border: 1px solid var(--color-glass-border);
   border-radius: var(--r-pill);
   outline: none;
-  transition: border-color var(--t-fast);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color var(--t-fast), background-color var(--t-fast);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -717,10 +717,13 @@ body {
 }
 
 .input-bar__initials:focus::placeholder {
-  opacity: 0;
+  opacity: 0.35;
 }
 
 .input-bar__initials:focus {
+  width: 90px;
+  border-radius: var(--r-lg);
+  background-color: #fff;
   border-color: var(--color-primary);
 }
 

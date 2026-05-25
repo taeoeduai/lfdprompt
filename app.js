@@ -40,6 +40,16 @@ let sortOrder = 'newest';
 const saved = localStorage.getItem('mc_author') || '';
 if (saved) authorInput.value = saved;
 
+// Sync initials input with localStorage in real-time
+authorInput.addEventListener('input', function() {
+  const val = this.value.trim().toUpperCase().slice(0, 3);
+  if (val) {
+    localStorage.setItem('mc_author', val);
+  } else {
+    localStorage.removeItem('mc_author');
+  }
+});
+
 // Auto-select text on focus so user can immediately overwrite (with mobile iOS/Android support)
 authorInput.addEventListener('focus', function() {
   setTimeout(() => {
@@ -356,7 +366,11 @@ function submitPrompt() {
   var text = textarea.value.trim();
   if (!text) return;
   var author = authorInput.value.trim().toUpperCase().slice(0, 3) || '';
-  if (author) localStorage.setItem('mc_author', author);
+  if (author) {
+    localStorage.setItem('mc_author', author);
+  } else {
+    localStorage.removeItem('mc_author');
+  }
 
   db.collection('prompts').add({
     text: text,
