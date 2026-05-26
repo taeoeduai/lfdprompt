@@ -617,7 +617,7 @@ body {
   flex-direction: column;
   transition: transform var(--t-fast), background var(--t-fast);
   cursor: pointer;
-  overflow: hidden;
+  overflow: visible;
   min-height: min-content;
 }
 
@@ -1817,7 +1817,7 @@ body {
   position: fixed;
   inset: 0;
   background: transparent;
-  z-index: 1000;
+  z-index: 15;
   opacity: 0;
   transition: opacity var(--t-fast);
 }
