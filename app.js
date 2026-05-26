@@ -317,6 +317,16 @@ function startLibraryOverridesListener() {
     snapshot.forEach(function(doc) {
       const itemId = doc.id;
       const data = doc.data();
+      
+      // If marked as deleted, permanently filter it out from the local library array
+      if (data.isDeleted) {
+        const index = libraryData.findIndex(d => d.id === itemId);
+        if (index > -1) {
+          libraryData.splice(index, 1);
+        }
+        return;
+      }
+      
       let item = libraryData.find(d => d.id === itemId);
       if (!item) {
         // It's a new item added by the admin!
@@ -1859,13 +1869,13 @@ if (libModalDelete) {
   libModalDelete.addEventListener('click', function() {
     if (!isAdmin || !libEditingItem) return;
     if (confirm('정말로 이 프롬프트를 삭제하시겠습니까?')) {
-      // 1. Delete from Firestore
-      db.collection('library_overrides').doc(libEditingItem.id).delete()
+      // 1. Mark as deleted in Firestore so it permanently disappears for everyone
+      db.collection('library_overrides').doc(libEditingItem.id).set({ isDeleted: true })
         .then(function() {
-          console.log('Deleted override from Firestore');
+          console.log('Marked item as deleted in Firestore');
         })
         .catch(function(e) {
-          console.warn('Failed to delete override from Firestore:', e);
+          console.warn('Failed to mark item as deleted in Firestore:', e);
         });
       
       // 2. Remove from local storage
