@@ -618,12 +618,13 @@ body {
   transition: transform var(--t-fast), background var(--t-fast);
   cursor: pointer;
   overflow: hidden;
+  min-height: min-content;
 }
 
 .lib-card__thumb {
   display: block;
   width: 100%;
-  padding-top: 75%; /* 4:3 aspect ratio hack for older browsers */
+  aspect-ratio: 4 / 3;
   overflow: hidden;
   border-radius: var(--r-md);
   margin-bottom: var(--sp-md);
@@ -1194,7 +1195,7 @@ body {
 .login-modal__backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: transparent;
 }
 
 .login-modal__card {
@@ -1779,7 +1780,7 @@ body {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: transparent;
   z-index: 1000;
   opacity: 0;
   transition: opacity var(--t-fast);
@@ -1927,7 +1928,8 @@ body {
   .lib-card__thumb {
     display: block !important;
     width: 100% !important;
-    padding-top: 75% !important; /* 4:3 aspect ratio hack */
+    aspect-ratio: 4 / 3 !important;
+    padding-top: 0 !important;
     overflow: hidden !important;
     visibility: visible !important;
     opacity: 1 !important;
