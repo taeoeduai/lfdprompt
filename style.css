@@ -797,7 +797,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: var(--sp-xs);
-  margin-top: auto;
+  margin-top: 0; /* Rely on flex-grow: 1 of description to push footer to bottom without circular height conflicts */
 }
 
 .lib-card__copy {
