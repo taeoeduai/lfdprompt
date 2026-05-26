@@ -1120,7 +1120,7 @@ function renderLibrary() {
       card.style.padding = '12px var(--sp-md)';
       
       card.innerHTML = `
-        ${thumbHtml ? `<div class="${!isLoggedIn ? 'is-blurred' : ''}" style="width: 80px; height: 60px; flex-shrink: 0; border-radius: var(--r-sm); overflow: hidden; position: relative;">${thumbHtml.replace('lib-card__thumb', '').replace('aspect-ratio: 4 / 3', '')}</div>` : '<div style="width: 80px; height: 60px; background: rgba(0,0,0,0.04); border-radius: var(--r-sm); flex-shrink:0;"></div>'}
+        ${thumbHtml ? `<div class="${!isLoggedIn ? 'is-blurred' : ''}" style="width: 80px; flex-shrink: 0;">${thumbHtml.replace('class="lib-card__thumb', 'style="margin-bottom: 0;" class="lib-card__thumb')}</div>` : '<div style="width: 80px; height: 60px; background: rgba(0,0,0,0.04); border-radius: var(--r-sm); flex-shrink:0;"></div>'}
         <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
           <h3 class="lib-card__title" style="margin: 0; font-size: 15px;">${escHtml(item.title)}</h3>
           <p class="lib-card__desc" style="margin: 0; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.65;">${escHtml(item.desc)}</p>

@@ -623,7 +623,7 @@ body {
 .lib-card__thumb {
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  padding-top: 75%; /* 4:3 aspect ratio hack for older browsers */
   overflow: hidden;
   border-radius: var(--r-md);
   margin-bottom: var(--sp-md);
@@ -1551,7 +1551,7 @@ body {
 .lib-modal__image-item {
   position: relative;
   width: 140px;
-  aspect-ratio: 4 / 3;
+  height: 105px; /* 140 * 3/4 instead of aspect-ratio: 4/3 */
   border-radius: var(--r-sm);
   overflow: hidden;
   border: 1px solid rgba(0, 0, 0, 0.08);
@@ -1927,7 +1927,7 @@ body {
   .lib-card__thumb {
     display: block !important;
     width: 100% !important;
-    aspect-ratio: 4 / 3 !important;
+    padding-top: 75% !important; /* 4:3 aspect ratio hack */
     overflow: hidden !important;
     visibility: visible !important;
     opacity: 1 !important;
