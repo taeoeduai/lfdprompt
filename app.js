@@ -1216,6 +1216,7 @@ function renderLibrary() {
 // --- Slider Handle Move ---
 window.handleSliderMove = function(e, container) {
   if (e.type === 'touchmove') {
+    if (e.cancelable) e.preventDefault(); // Prevent page scroll during slider dragging
     e.stopPropagation(); // Prevent card click on mobile touch swipe
   }
   const rect = container.getBoundingClientRect();
@@ -1562,7 +1563,7 @@ function exitEditMode() {
   }
 }
 
-function saveEdit() {
+async function saveEdit() {
   if (!libEditingItem) return;
   
   let newPromptKo = libModalEditTextareaKo.value.trim();
@@ -1591,6 +1592,19 @@ function saveEdit() {
   libEditingItem.desc = newDesc;
   libEditingItem.category = newCat;
   libEditingItem.tags = newTags.length > 0 ? newTags : [newCat];
+
+  // Auto-generate 200px thumbnail from uploaded images
+  if (libEditingItem.images && libEditingItem.images.length > 0) {
+    const firstImg = libEditingItem.images[0] || libEditingItem.images[1];
+    if (firstImg) {
+      try {
+        const thumb = await generateThumbnail(firstImg);
+        libEditingItem.thumbnails = [thumb];
+      } catch (err) {
+        console.warn('Thumbnail generation failed:', err);
+      }
+    }
+  }
   
   saveLibraryOverride(libEditingItem.id, { 
     prompt: newPrompt,
@@ -1770,19 +1784,11 @@ async function handleSlotImageUpload(file, slot, imageIndex) {
     if (!libEditingItem.images) libEditingItem.images = [];
     if (!libEditingItem.originalImages) libEditingItem.originalImages = [];
 
-    let displayImage;
-
-    if (imageIndex === 0) {
-      // Before image: compress for display, keep original separately for download
-      displayImage = await compressImage(dataUrl, 1200, 0.85);
-      libEditingItem.images[0] = displayImage;
-      libEditingItem.originalImages[0] = dataUrl; // full quality original
-    } else {
-      // After image: always keep full original quality (no compression)
-      displayImage = dataUrl;
-      libEditingItem.images[1] = dataUrl;
-      libEditingItem.originalImages[1] = dataUrl;
-    }
+    // Compress both images to 800px width with 0.7 quality to guarantee they fit within Firestore 1MB limits
+    const displayImage = await compressImage(dataUrl, 800, 0.7);
+    
+    libEditingItem.images[imageIndex] = displayImage;
+    libEditingItem.originalImages[imageIndex] = displayImage; // Match compressed to prevent payload bloat
 
     // Render inside the slot
     const preview = slot.querySelector('.lib-upload-preview');

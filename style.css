@@ -777,20 +777,19 @@ body {
   text-overflow: ellipsis;
   flex-shrink: 0;
 }
-
 .lib-card__desc {
   font-size: 13px;
   color: var(--color-ink);
   opacity: 0.7;
   line-height: 1.5;
   margin-bottom: var(--sp-md);
-  height: 58.5px; /* Exactly 3 lines (13px * 1.5 * 3) */
+  min-height: 58.5px; /* Minimum space for exactly 3 lines of text */
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  flex-shrink: 0;
+  flex: 1; /* Automatically grow to align all card footers across the row */
 }
 
 .lib-card__footer {
