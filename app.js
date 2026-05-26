@@ -295,14 +295,47 @@ function loadLibraryOverrides() {
   try {
     const overrides = JSON.parse(localStorage.getItem('pl_lib_overrides'));
     if (overrides) {
-      libraryData.forEach(item => {
-        if (overrides[item.id]) {
-          if (overrides[item.id].title !== undefined) item.title = overrides[item.id].title;
-          if (overrides[item.id].prompt !== undefined) item.prompt = overrides[item.id].prompt;
-          if (overrides[item.id].promptKo !== undefined) item.promptKo = overrides[item.id].promptKo;
-          if (overrides[item.id].promptEn !== undefined) item.promptEn = overrides[item.id].promptEn;
-          if (overrides[item.id].images !== undefined) item.images = overrides[item.id].images;
-          if (overrides[item.id].thumbnails !== undefined) item.thumbnails = overrides[item.id].thumbnails;
+      Object.keys(overrides).forEach(itemId => {
+        const data = overrides[itemId];
+        if (data.isDeleted) {
+          const index = libraryData.findIndex(d => d.id === itemId);
+          if (index > -1) {
+            libraryData.splice(index, 1);
+          }
+          return;
+        }
+        
+        let item = libraryData.find(d => d.id === itemId);
+        if (!item) {
+          // Push custom item from local storage cache
+          item = {
+            id: itemId,
+            category: data.category || '업스케일',
+            tags: data.tags || [data.category || '업스케일'],
+            title: data.title || '',
+            desc: data.desc || '',
+            prompt: data.prompt || '',
+            promptKo: data.promptKo || '',
+            promptEn: data.promptEn || '',
+            images: data.images || [],
+            thumbnails: data.thumbnails || [],
+            originalImages: data.originalImages || []
+          };
+          libraryData.push(item);
+        } else {
+          // Override existing items
+          if (data.category !== undefined) {
+            item.category = data.category;
+            item.tags = data.tags || [data.category];
+          }
+          if (data.desc !== undefined) item.desc = data.desc;
+          if (data.title !== undefined) item.title = data.title;
+          if (data.prompt !== undefined) item.prompt = data.prompt;
+          if (data.promptKo !== undefined) item.promptKo = data.promptKo;
+          if (data.promptEn !== undefined) item.promptEn = data.promptEn;
+          if (data.images !== undefined) item.images = data.images;
+          if (data.thumbnails !== undefined) item.thumbnails = data.thumbnails;
+          if (data.originalImages !== undefined) item.originalImages = data.originalImages;
         }
       });
     }
