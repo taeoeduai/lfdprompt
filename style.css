@@ -618,7 +618,6 @@ body {
   transition: transform var(--t-fast), background var(--t-fast);
   cursor: pointer;
   overflow: hidden;
-  height: 100%;
 }
 
 .lib-card__thumb {
@@ -2004,11 +2003,10 @@ body {
     bottom: 0 !important;
     z-index: 3 !important;
   }
-  
-  /* Guarantee grid structure is identically aligned on mobile */
+  /* Guarantee clean grid structure aligned as 1-column on mobile */
   .library-view__content {
     display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+    grid-template-columns: 1fr !important;
     gap: var(--sp-md) !important;
   }
 }
