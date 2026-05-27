@@ -1605,9 +1605,11 @@ async function saveEdit() {
   // Automatic translation: if one language is missing, translate the other!
   if (!newPromptKo && newPromptEn) {
     newPromptKo = await translateText(newPromptEn, 'ko');
+    libModalEditTextareaKo.value = newPromptKo;
   }
   if (!newPromptEn && newPromptKo) {
     newPromptEn = await translateText(newPromptKo, 'en');
+    libModalEditTextareaEn.value = newPromptEn;
   }
   
   const newPrompt = newPromptEn || newPromptKo;
