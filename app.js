@@ -1582,18 +1582,32 @@ function exitEditMode() {
   }
 }
 
+async function translateText(text, targetLang) {
+  try {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data && data[0]) {
+      return data[0].map(x => x[0]).join('');
+    }
+  } catch (err) {
+    console.error("Translation error:", err);
+  }
+  return text;
+}
+
 async function saveEdit() {
   if (!libEditingItem) return;
   
   let newPromptKo = libModalEditTextareaKo.value.trim();
   let newPromptEn = libModalEditTextareaEn.value.trim();
   
-  // Automatic fallback: if one language is missing, mirror the other
+  // Automatic translation: if one language is missing, translate the other!
   if (!newPromptKo && newPromptEn) {
-    newPromptKo = newPromptEn;
+    newPromptKo = await translateText(newPromptEn, 'ko');
   }
   if (!newPromptEn && newPromptKo) {
-    newPromptEn = newPromptKo;
+    newPromptEn = await translateText(newPromptKo, 'en');
   }
   
   const newPrompt = newPromptEn || newPromptKo;
@@ -1960,21 +1974,12 @@ function autoGenerateMetadata(promptText) {
     detectedDesc = detectedDesc.substring(0, 57) + "...";
   }
   
-  let detectedTags = detectedCat;
-  if (detectedCat === "업스케일") detectedTags = "업스케일, 인물, 사진보정";
-  else if (detectedCat === "합성") detectedTags = "합성, 연출샷, 제품";
-  else if (detectedCat === "인물") detectedTags = "인물, 사진보정, 포트레이트";
-  else if (detectedCat === "사진보정") detectedTags = "사진보정, 색감, 필터";
-  
   // Auto fill empty or placeholder inputs
   if (!currentTitle || currentTitle === "새 프롬프트 제목" || currentTitle === "새 프롬프트") {
     editTitle.value = detectedTitle;
   }
   if (!currentDesc || currentDesc === "설명을 입력해주세요." || currentDesc === "설명을 입력하세요" || !currentDesc) {
     editDesc.value = detectedDesc;
-  }
-  if (!currentTags) {
-    editTags.value = detectedTags;
   }
 }
 
