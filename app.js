@@ -1599,17 +1599,29 @@ async function translateText(text, targetLang) {
 async function saveEdit() {
   if (!libEditingItem) return;
   
+  const oldPromptKo = (libEditingItem.promptKo || libEditingItem.prompt || '').trim();
+  const oldPromptEn = (libEditingItem.promptEn || libEditingItem.prompt || '').trim();
+  
   let newPromptKo = libModalEditTextareaKo.value.trim();
   let newPromptEn = libModalEditTextareaEn.value.trim();
   
-  // Automatic translation: if one language is missing, translate the other!
-  if (!newPromptKo && newPromptEn) {
-    newPromptKo = await translateText(newPromptEn, 'ko');
-    libModalEditTextareaKo.value = newPromptKo;
-  }
-  if (!newPromptEn && newPromptKo) {
-    newPromptEn = await translateText(newPromptKo, 'en');
-    libModalEditTextareaEn.value = newPromptEn;
+  // Intelligent translation: Detect which side was modified/created and translate the other
+  if (newPromptKo !== oldPromptKo && (newPromptEn === oldPromptEn || !newPromptEn)) {
+    if (newPromptKo) {
+      newPromptEn = await translateText(newPromptKo, 'en');
+      libModalEditTextareaEn.value = newPromptEn;
+    } else {
+      newPromptEn = '';
+      libModalEditTextareaEn.value = '';
+    }
+  } else if (newPromptEn !== oldPromptEn && (newPromptKo === oldPromptKo || !newPromptKo)) {
+    if (newPromptEn) {
+      newPromptKo = await translateText(newPromptEn, 'ko');
+      libModalEditTextareaKo.value = newPromptKo;
+    } else {
+      newPromptKo = '';
+      libModalEditTextareaKo.value = '';
+    }
   }
   
   const newPrompt = newPromptEn || newPromptKo;
