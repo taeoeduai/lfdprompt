@@ -320,7 +320,8 @@ function loadLibraryOverrides() {
             promptEn: data.promptEn || '',
             images: data.images || [],
             thumbnails: data.thumbnails || [],
-            originalImages: data.originalImages || []
+            originalImages: data.originalImages || [],
+            isReferenceType: data.isReferenceType !== undefined ? data.isReferenceType : (data.images && data.images.length === 3)
           };
           libraryData.push(item);
         } else {
@@ -337,6 +338,8 @@ function loadLibraryOverrides() {
           if (data.images !== undefined) item.images = data.images;
           if (data.thumbnails !== undefined) item.thumbnails = data.thumbnails;
           if (data.originalImages !== undefined) item.originalImages = data.originalImages;
+          if (data.isReferenceType !== undefined) item.isReferenceType = data.isReferenceType;
+          else if (data.images && data.images.length === 3) item.isReferenceType = true;
         }
       });
     }
@@ -375,7 +378,8 @@ function startLibraryOverridesListener() {
           promptEn: data.promptEn || '',
           images: data.images || [],
           thumbnails: data.thumbnails || [],
-          originalImages: data.originalImages || []
+          originalImages: data.originalImages || [],
+          isReferenceType: data.isReferenceType !== undefined ? data.isReferenceType : (data.images && data.images.length === 3)
         };
         libraryData.push(item);
       } else {
@@ -391,6 +395,8 @@ function startLibraryOverridesListener() {
         if (data.images !== undefined) item.images = data.images;
         if (data.thumbnails !== undefined) item.thumbnails = data.thumbnails;
         if (data.originalImages !== undefined) item.originalImages = data.originalImages;
+        if (data.isReferenceType !== undefined) item.isReferenceType = data.isReferenceType;
+        else if (data.images && data.images.length === 3) item.isReferenceType = true;
       }
     });
     // Re-render library if active
