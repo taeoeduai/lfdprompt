@@ -103,7 +103,7 @@ body {
 .global-nav__title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--color-on-dark);
+  color: #FFF1BC;
   letter-spacing: -0.12px;
   cursor: pointer;
   user-select: none;
