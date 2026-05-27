@@ -99,6 +99,7 @@ function updateAuthUI() {
     if (greetingEl) {
       greetingEl.innerHTML = `${currentUser.id.toUpperCase()}님<br>환영합니다.`;
     }
+    document.querySelectorAll('.is-blurred').forEach(el => el.classList.remove('is-blurred'));
   } else {
     navLoginBtn.classList.remove('hidden');
     navUserInfo.classList.add('hidden');
