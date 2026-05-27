@@ -1063,19 +1063,11 @@ function renderLibrary() {
       addBtn.addEventListener('click', function(e) {
         e.stopPropagation();
         if (!isAdmin) return;
-        const newId = 'lib-custom-' + Date.now();
-        const newItem = {
-          id: newId,
-          category: '',
-          tags: [],
-          title: '',
-          desc: '',
-          prompt: '',
-          images: [],
-          thumbnails: []
-        };
-        openLibModal(newItem);
-        enterEditMode();
+        const typeModal = document.getElementById('lib-type-modal');
+        if (typeModal) {
+          typeModal.classList.remove('hidden');
+          typeModal.setAttribute('aria-hidden', 'false');
+        }
       });
     }
   }
@@ -1433,25 +1425,8 @@ function renderLibImages(item) {
   libModalImages.classList.remove('hidden');
   libModalImageGrid.innerHTML = '';
 
-  // Show thumbnails first
-  thumbs.forEach((src, i) => {
-    const div = document.createElement('div');
-    div.className = 'lib-modal__image-item is-thumbnail';
-    div.style.cursor = 'pointer';
-    div.innerHTML = '<img src="' + src + '" alt="썸네일 ' + (i + 1) + '" style="transition: transform 0.2s;" />' +
-      '<span class="thumb-label">Thumb</span>' +
-      (isAdmin ? '<button class="lib-modal__image-delete" data-type="thumb" data-index="' + i + '">&times;</button>' : '');
-    
-    // Lightbox setup — thumbnails always use src as both display and download
-    div.addEventListener('click', function(e) {
-      if (e.target.classList.contains('lib-modal__image-delete')) return;
-      openLightbox(src);
-    });
-    
-    libModalImageGrid.appendChild(div);
-  });
-
   // Show images — use originalImages[i] for download if available
+  // 썸네일 이미지는 상세 모달 그리드에서 제외하여 중복 노출 방지 (요청사항 반영)
   images.forEach((src, i) => {
     const div = document.createElement('div');
     div.className = 'lib-modal__image-item';
@@ -1726,31 +1701,66 @@ libModalSave.addEventListener('click', saveEdit);
 
 // Add custom prompt creation
 const libAddBtn = document.getElementById('lib-add-btn');
+const typeModal = document.getElementById('lib-type-modal');
+const typeModalClose = document.getElementById('lib-type-modal-close');
+const btnTypeBeforeAfter = document.getElementById('btn-type-before-after');
+const btnTypeReference = document.getElementById('btn-type-reference');
+
 if (libAddBtn) {
   libAddBtn.addEventListener('click', function(e) {
     e.stopPropagation();
     if (!isAdmin) return;
-    const newId = 'lib-custom-' + Date.now();
-    const newItem = {
-      id: newId,
-      category: '',
-      tags: [],
-      title: '',
-      desc: '',
-      prompt: '',
-      images: [],
-      thumbnails: []
-    };
-    openLibModal(newItem);
-    enterEditMode();
+    
+    typeModal.classList.remove('hidden');
+    typeModal.setAttribute('aria-hidden', 'false');
+  });
+}
+
+if (typeModalClose) {
+  typeModalClose.addEventListener('click', function() {
+    typeModal.classList.add('hidden');
+    typeModal.setAttribute('aria-hidden', 'true');
+  });
+}
+
+function initNewPrompt(isReferenceType) {
+  typeModal.classList.add('hidden');
+  typeModal.setAttribute('aria-hidden', 'true');
+
+  const newId = 'lib-custom-' + Date.now();
+  const newItem = {
+    id: newId,
+    category: '',
+    tags: [],
+    title: '',
+    desc: '',
+    prompt: '',
+    images: [],
+    thumbnails: [],
+    isReferenceType: isReferenceType
+  };
+  openLibModal(newItem);
+  enterEditMode();
+}
+
+if (btnTypeBeforeAfter) {
+  btnTypeBeforeAfter.addEventListener('click', function() {
+    initNewPrompt(false);
+  });
+}
+if (btnTypeReference) {
+  btnTypeReference.addEventListener('click', function() {
+    initNewPrompt(true);
   });
 }
 
 // Setup Before/After image upload logic
 const beforeSlot = document.getElementById('lib-upload-slot-before');
 const afterSlot = document.getElementById('lib-upload-slot-after');
+const resultSlot = document.getElementById('lib-upload-slot-result');
 const beforeInput = document.getElementById('lib-before-input');
 const afterInput = document.getElementById('lib-after-input');
+const resultInput = document.getElementById('lib-result-input');
 
 function setupUploadSlot(slot, input, imageIndex) {
   if (!slot || !input) return;
@@ -1861,10 +1871,25 @@ async function handleSlotImageUpload(file, slot, imageIndex) {
 
 setupUploadSlot(beforeSlot, beforeInput, 0);
 setupUploadSlot(afterSlot, afterInput, 1);
+setupUploadSlot(resultSlot, resultInput, 2);
 
 // Helper function to update the Before/After upload slots inside modal edit mode
 function updateUploadSlotsUI(item) {
   const images = item.images || [];
+  const isRef = !!item.isReferenceType;
+
+  const labelBefore = document.getElementById('lib-upload-label-before');
+  const labelAfter = document.getElementById('lib-upload-label-after');
+
+  if (isRef) {
+    resultSlot.classList.remove('hidden');
+    if (labelBefore) labelBefore.textContent = '1번 이미지 (원본)';
+    if (labelAfter) labelAfter.textContent = '2번 이미지 (참조)';
+  } else {
+    resultSlot.classList.add('hidden');
+    if (labelBefore) labelBefore.textContent = 'Before';
+    if (labelAfter) labelAfter.textContent = 'After';
+  }
   
   // Before Slot (index 0)
   const beforePreview = beforeSlot.querySelector('.lib-upload-preview');
@@ -1898,6 +1923,23 @@ function updateUploadSlotsUI(item) {
     afterPreview.classList.add('hidden');
     afterDelete.classList.add('hidden');
     afterPlaceholder.classList.remove('hidden');
+  }
+
+  // Result Slot (index 2)
+  const resultPreview = resultSlot.querySelector('.lib-upload-preview');
+  const resultPlaceholder = resultSlot.querySelector('.lib-upload-placeholder');
+  const resultDelete = resultSlot.querySelector('.lib-upload-delete');
+  
+  if (images[2]) {
+    resultPreview.src = images[2];
+    resultPreview.classList.remove('hidden');
+    resultDelete.classList.remove('hidden');
+    resultPlaceholder.classList.add('hidden');
+  } else {
+    resultPreview.src = '';
+    resultPreview.classList.add('hidden');
+    resultDelete.classList.add('hidden');
+    resultPlaceholder.classList.remove('hidden');
   }
 }
 
