@@ -1995,11 +1995,20 @@ body {
     color: #fff; /* White icon for the dark header */
     z-index: 1002;
   }
+  .library-view {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
   /* Guarantee clean grid structure aligned as 1-column on mobile */
   .library-view__content {
     display: grid !important;
     grid-template-columns: 1fr !important;
     gap: var(--sp-md) !important;
+    overflow-y: visible !important;
+    height: auto !important;
+    flex: none !important;
+    padding: var(--sp-md) var(--sp-md) var(--sp-lg) var(--sp-md) !important; /* 16px instead of 24px left/right */
   }
 
   /* Mobile List View Optimizations (Global Nav List Tab) */
@@ -2023,10 +2032,6 @@ body {
     font-size: 14.5px !important; /* 14.5px instead of 16px for better legibility and space fitting */
   }
 
-  /* Mobile Library List Layout Optimizations */
-  .library-view__content {
-    padding: var(--sp-md) var(--sp-md) var(--sp-lg) var(--sp-md) !important; /* 16px instead of 24px left/right */
-  }
 
   .lib-card.is-list {
     padding: 10px var(--sp-sm) !important; /* 12px padding left/right instead of 16px */
