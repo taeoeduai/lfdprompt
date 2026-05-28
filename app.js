@@ -135,6 +135,13 @@ function updateAuthUI() {
     }
   }
 
+  // Toggle admin class on body for global admin styles (e.g. always show delete buttons)
+  if (isAdmin) {
+    document.body.classList.add('is-admin');
+  } else {
+    document.body.classList.remove('is-admin');
+  }
+
   // Show/Hide MY filter button based on user status (hidden for admin or guest)
   const filterMy = document.getElementById('filter-my');
   if (filterMy) {
