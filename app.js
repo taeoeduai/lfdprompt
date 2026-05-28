@@ -57,7 +57,8 @@ let unauthorizedClicksCount = 0;
 // AUTH SYSTEM
 // ============================================
 const AUTH_CREDENTIALS = {
-  admin: { password: '3913', role: 'admin' }
+  admin: { password: '3913', role: 'admin' },
+  guest: { password: '2026', role: 'guest' }
 };
 const DEFAULT_PASSWORD = '3377';
 
@@ -137,7 +138,7 @@ function updateAuthUI() {
   // Show/Hide MY filter button based on user status (hidden for admin or guest)
   const filterMy = document.getElementById('filter-my');
   if (filterMy) {
-    if (isLoggedIn && !isAdmin) {
+    if (isLoggedIn && !isAdmin && currentUser.role !== 'guest') {
       filterMy.style.display = 'inline-block';
     } else {
       filterMy.style.display = 'none';
@@ -154,17 +155,22 @@ function updateAuthUI() {
 function applyLoginState() {
   if (isLoggedIn && currentUser) {
     // Auto-fill initials (not for admin)
-    if (currentUser.role !== 'admin') {
-      authorInput.value = currentUser.id.toUpperCase();
-      authorInput.readOnly = true;
-      authorInput.style.opacity = '0.7';
-      localStorage.setItem('pl_author', currentUser.id.toUpperCase());
-    } else {
+    if (currentUser.role === 'admin') {
       // Admin uses "ADMIN" label
       authorInput.value = 'AD';
       authorInput.readOnly = true;
       authorInput.style.opacity = '0.7';
       localStorage.setItem('pl_author', 'AD');
+    } else if (currentUser.role === 'guest') {
+      authorInput.value = 'GST';
+      authorInput.readOnly = true;
+      authorInput.style.opacity = '0.7';
+      localStorage.setItem('pl_author', 'GST');
+    } else {
+      authorInput.value = currentUser.id.toUpperCase();
+      authorInput.readOnly = true;
+      authorInput.style.opacity = '0.7';
+      localStorage.setItem('pl_author', currentUser.id.toUpperCase());
     }
   } else {
     authorInput.readOnly = false;
@@ -186,6 +192,17 @@ function attemptLogin() {
   if (id.toLowerCase() === 'admin') {
     if (pw === AUTH_CREDENTIALS.admin.password) {
       loginSuccess({ id: 'admin', role: 'admin' });
+      return;
+    } else {
+      showLoginError('비밀번호가 올바르지 않습니다.');
+      return;
+    }
+  }
+
+  // Check guest
+  if (id.toLowerCase() === 'guest' || id.toLowerCase() === '게스트') {
+    if (pw === AUTH_CREDENTIALS.guest.password) {
+      loginSuccess({ id: 'guest', role: 'guest' });
       return;
     } else {
       showLoginError('비밀번호가 올바르지 않습니다.');
@@ -285,7 +302,23 @@ navLoginBtn.addEventListener('click', function() {
   openLoginModal();
 });
 
-navLogoutBtn.addEventListener('click', logout);
+navUserBadge.addEventListener('click', function(e) {
+  if (window.innerWidth > 768) {
+    e.stopPropagation();
+    navLogoutBtn.classList.toggle('show');
+  }
+});
+
+document.addEventListener('click', function(e) {
+  if (window.innerWidth > 768 && !navUserInfo.contains(e.target)) {
+    navLogoutBtn.classList.remove('show');
+  }
+});
+
+navLogoutBtn.addEventListener('click', function() {
+  navLogoutBtn.classList.remove('show');
+  logout();
+});
 
 loginModalBackdrop.addEventListener('click', closeLoginModal);
 loginModalClose.addEventListener('click', closeLoginModal);

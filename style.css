@@ -1232,6 +1232,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  position: relative;
 }
 
 .nav-user-badge {
@@ -1248,19 +1249,38 @@ body {
   background: #FFF1BC;
   border-radius: var(--r-pill);
   padding: 0 8px;
+  cursor: pointer;
 }
 
 .nav-logout-btn {
   font-family: inherit;
-  font-size: 11px;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.5);
-  background: none;
-  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ff3b30;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: var(--r-md);
+  padding: 8px 16px;
   cursor: pointer;
-  padding: 4px 0;
-  transition: color var(--t-fast);
-  -webkit-tap-highlight-color: transparent;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-5px);
+  transition: all 0.2s ease;
+  z-index: 100;
+}
+
+.nav-logout-btn.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.nav-logout-btn:hover {
+  background: #f9f9fb;
 }
 
 .nav-logout-btn:hover {
@@ -1954,7 +1974,7 @@ body {
     font-size: 15px;
     line-height: 1.45;
     font-weight: 700;
-    color: var(--color-ink);
+    color: #fff;
     margin-bottom: 12px;
     padding-left: 4px;
     letter-spacing: -0.3px;
@@ -1981,6 +2001,12 @@ body {
     color: #1d1d1f !important;
     border: 1px solid rgba(0,0,0,0.08) !important;
     margin-top: 8px;
+    /* Reset desktop dropdown styles */
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    box-shadow: none;
   }
 
   .nav-user-info:not(.hidden) {
