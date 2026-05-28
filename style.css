@@ -181,7 +181,7 @@ body {
 
 .bubble {
   position: relative;
-  padding: 16px;
+  padding: 16px 18px;
   border-radius: var(--r-xl);
   width: fit-content;
   max-width: 15em;
@@ -227,7 +227,8 @@ body {
   animation-play-state: paused;
 }
 
-.bubble-wrapper:hover .bubble {
+.bubble-wrapper:hover .bubble,
+.bubble-wrapper.is-selected .bubble {
   background: #FFF1BC;
   border-color: rgba(0, 0, 0, 0.05);
   color: #000;
@@ -320,9 +321,19 @@ body {
 @media (max-width: 768px) {
   .bubble__text {
     font-size: 12px;
-    user-select: none !important;
-    -webkit-user-select: none !important;
+    user-select: none;
+    -webkit-user-select: none;
     cursor: grab;
+  }
+  
+  .bubble__text[contenteditable="true"] {
+    outline: none;
+    cursor: text !important;
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    border-bottom: 1px dashed rgba(0,0,0,0.3);
+    min-width: 20px;
+    display: inline-block;
   }
 }
 
@@ -1145,7 +1156,17 @@ body {
 
   .bubble {
     max-width: 15em;
-    padding: 12px;
+    padding: 14px 16px;
+  }
+
+  .bubble-wrapper:not(.show-delete) .delete-btn {
+    opacity: 0 !important;
+    pointer-events: none;
+  }
+
+  .bubble-wrapper.show-delete .delete-btn {
+    opacity: 0.9 !important;
+    pointer-events: auto;
   }
 
   .bubble__text {

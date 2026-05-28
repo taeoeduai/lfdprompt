@@ -20,6 +20,21 @@ firebase.analytics();
 const db = firebase.firestore();
 
 const canvas = document.getElementById('canvas');
+
+// Deselect bubbles when clicking canvas background
+canvas.addEventListener('pointerdown', function(e) {
+  if (!e.target.closest('.bubble-wrapper')) {
+    document.querySelectorAll('.bubble-wrapper.is-selected').forEach(function(b) {
+      b.classList.remove('is-selected');
+      b.classList.remove('show-delete');
+      // If editing, blur it to auto-save
+      const textEl = b.querySelector('.bubble__text');
+      if (textEl && textEl.getAttribute('contenteditable') === 'true') {
+        textEl.blur();
+      }
+    });
+  }
+});
 const listView = document.getElementById('list-view');
 const libraryView = document.getElementById('library-view');
 const listContent = document.getElementById('list-content');
@@ -567,9 +582,29 @@ function mkBubble(p, x, y, enter) {
     '<button class="delete-btn" data-id="' + p.id + '" aria-label="삭제">&times;</button>';
   
   const innerBubble = el.querySelector('.bubble');
+  const textEl = el.querySelector('.bubble__text');
+
+  textEl.addEventListener('blur', function() {
+    if (textEl.getAttribute('contenteditable') === 'true') {
+      textEl.removeAttribute('contenteditable');
+      el.classList.remove('is-editable');
+      
+      const newText = textEl.textContent.trim();
+      if (newText && newText !== p.text) {
+        if (!p.id.startsWith('local-')) {
+          db.collection('prompts').doc(p.id).update({ text: newText }).catch(function(err) { console.warn(err); });
+        } else {
+          p.text = newText;
+        }
+      } else if (!newText) {
+        textEl.textContent = p.text; // revert if empty
+      }
+    }
+  });
   
   let isDragging = false;
   let startX, startY, initialLeft, initialTop;
+  let longPressTimer;
 
   el.querySelector('.delete-btn').addEventListener('click', function (e) {
     e.stopPropagation();
@@ -581,7 +616,39 @@ function mkBubble(p, x, y, enter) {
 
   el.addEventListener('pointerdown', function (e) {
     if (e.target.closest('.delete-btn')) return;
-    if (e.pointerType === 'mouse' && e.target.closest('.bubble__text')) return;
+    
+    // Prevent dragging if currently editing
+    const targetTextEl = e.target.closest('.bubble__text');
+    if (targetTextEl && targetTextEl.getAttribute('contenteditable') === 'true') {
+      return; 
+    }
+    if (e.pointerType === 'mouse' && targetTextEl) return;
+    
+    // Deselect others and select current
+    document.querySelectorAll('.bubble-wrapper.is-selected').forEach(function(b) {
+      if (b !== el) {
+        b.classList.remove('is-selected');
+        b.classList.remove('show-delete');
+      }
+    });
+    el.classList.add('is-selected');
+
+    // Long press for mobile edit & delete button
+    if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+      longPressTimer = setTimeout(function() {
+        el.classList.add('show-delete');
+        
+        const currentAuthor = localStorage.getItem('pl_author') || '';
+        if (p.author === currentAuthor && currentAuthor !== '') {
+          el.classList.add('is-editable');
+          textEl.setAttribute('contenteditable', 'true');
+          textEl.focus();
+        }
+
+        if (navigator.vibrate) navigator.vibrate(50);
+      }, 1000);
+    }
+
     // Prevent drag if clicking resize handle (bottom-right 24x24 px of bubble)
     if (e.target.closest('.bubble')) {
       const rect = innerBubble.getBoundingClientRect();
@@ -606,6 +673,9 @@ function mkBubble(p, x, y, enter) {
   });
 
   el.addEventListener('pointermove', function (e) {
+    if (longPressTimer && (Math.abs(e.clientX - startX) > 10 || Math.abs(e.clientY - startY) > 10)) {
+      clearTimeout(longPressTimer);
+    }
     if (!isDragging) return;
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
@@ -621,6 +691,7 @@ function mkBubble(p, x, y, enter) {
   });
 
   el.addEventListener('pointerup', function (e) {
+    clearTimeout(longPressTimer);
     if (!isDragging) return;
     isDragging = false;
     el.classList.remove('is-dragging');
@@ -637,6 +708,7 @@ function mkBubble(p, x, y, enter) {
   });
 
   el.addEventListener('pointercancel', function (e) {
+    clearTimeout(longPressTimer);
     if (!isDragging) return;
     isDragging = false;
     el.classList.remove('is-dragging');
@@ -693,7 +765,11 @@ function renderFloat() {
     let targetX, targetY;
     
     // Default to a much wider box to keep text within 1~8 lines and emphasize horizontal shape
-    let ew = p.width || Math.min(350 + p.text.length * 6, 800);
+    let ew = p.width;
+    if (!ew) {
+      if (r.width <= 768) ew = Math.min(220, 40 + p.text.length * 15);
+      else ew = Math.min(350 + p.text.length * 6, 800);
+    }
     
     // On mobile, the box cannot be wider than the screen.
     if (ew > r.width - 32) ew = r.width - 32;
