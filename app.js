@@ -646,7 +646,7 @@ function mkBubble(p, x, y, enter) {
         }
 
         if (navigator.vibrate) navigator.vibrate([50, 50, 50]); // Distinct haptic pattern
-      }, 1800); // 1.8 seconds
+      }, 1000); // 1.0 second
     }
 
     // Prevent drag if clicking resize handle (bottom-right 24x24 px of bubble)
@@ -2183,7 +2183,7 @@ function setView(v) {
 
   currentView = v;
   navFloat.classList.toggle('is-active', v === 'float');
-  navList.classList.toggle('is-active', v === 'list');
+  if (navList) navList.classList.toggle('is-active', v === 'list');
   navLibrary.classList.toggle('is-active', v === 'library');
 
   canvas.classList.add('hidden');
@@ -2258,8 +2258,19 @@ if (mobileMenuBtn && mobileMenuOverlay) {
 
 // --- Events ---
 navFloat.addEventListener('click', function () { setView('float'); closeMobileMenu(); });
-navList.addEventListener('click', function () { setView('list'); closeMobileMenu(); });
+if (navList) {
+  navList.addEventListener('click', function () { setView('list'); closeMobileMenu(); });
+}
 navLibrary.addEventListener('click', function () { setView('library'); closeMobileMenu(); });
+
+// Dashboard inner List View button
+const dashboardListBtn = document.getElementById('dashboard-list-btn');
+if (dashboardListBtn) {
+  dashboardListBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    setView('list');
+  });
+}
 
 
 filterNewest.addEventListener('click', function () {

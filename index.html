@@ -38,7 +38,6 @@
           <div class="global-nav__links">
             <button class="global-nav__link is-active" data-view="library" id="nav-library">라이브러리</button>
             <button class="global-nav__link" data-view="float" id="nav-float">대시보드</button>
-            <button class="global-nav__link" data-view="list" id="nav-list">리스트</button>
           </div>
           <div class="global-nav__auth">
             <div class="nav-auth-greeting" id="nav-auth-greeting">로그인을 해주세요!</div>
@@ -68,6 +67,13 @@
 
     <!-- Floating Canvas -->
     <main class="canvas" id="canvas">
+      <button class="dashboard-list-btn" id="dashboard-list-btn">
+        리스트 보기
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </button>
       <div class="canvas__bg" aria-hidden="true"></div>
     </main>
 
