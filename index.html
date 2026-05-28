@@ -74,6 +74,10 @@
           <polyline points="12 5 19 12 12 19"></polyline>
         </svg>
       </button>
+      <button class="admin-cleanup-btn hidden" id="admin-cleanup-btn-dash">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        1시간 내 글 청소
+      </button>
       <div class="canvas__bg" aria-hidden="true"></div>
     </main>
 
@@ -87,13 +91,19 @@
             <button class="filter-pill" data-sort="oldest" id="filter-oldest">오래된순</button>
             <button class="filter-pill" data-sort="my" id="filter-my" style="display: none;">MY</button>
           </div>
-          <button class="list-dashboard-btn" id="list-dashboard-btn">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(180deg);">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-            대시보드
-          </button>
+          <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
+            <button class="list-dashboard-btn" id="list-dashboard-btn">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(180deg);">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+              대시보드
+            </button>
+            <button class="admin-cleanup-btn hidden" id="admin-cleanup-btn-list" style="position: static;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              1시간 내 글 청소
+            </button>
+          </div>
         </div>
       </div>
       <div class="list-view__content" id="list-content"></div>

@@ -135,6 +135,18 @@ function updateAuthUI() {
     }
   }
 
+  // Show/Hide admin cleanup buttons
+  const cleanupDash = document.getElementById('admin-cleanup-btn-dash');
+  const cleanupList = document.getElementById('admin-cleanup-btn-list');
+  if (cleanupDash) {
+    if (isAdmin) cleanupDash.classList.remove('hidden');
+    else cleanupDash.classList.add('hidden');
+  }
+  if (cleanupList) {
+    if (isAdmin) cleanupList.classList.remove('hidden');
+    else cleanupList.classList.add('hidden');
+  }
+
   // Toggle admin class on body for global admin styles (e.g. always show delete buttons)
   if (isAdmin) {
     document.body.classList.add('is-admin');
@@ -2604,3 +2616,29 @@ document.addEventListener('pointerdown', function(e) {
     });
   }
 });
+
+// Delete recent prompts logic
+function deleteRecentPrompts() {
+  if (!isAdmin) return;
+  const oneHourAgo = Date.now() - (60 * 60 * 1000);
+  
+  if (!confirm('최근 1시간 내에 작성된 모든 프롬프트를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+  
+  let deletedCount = 0;
+  
+  // Find prompts created within last 1 hour
+  prompts.forEach(p => {
+    if (p.timestamp > oneHourAgo && !p.id.startsWith('local-')) {
+      db.collection('prompts').doc(p.id).delete().catch(err => console.warn('Failed to delete prompt:', err));
+      deletedCount++;
+    }
+  });
+  
+  showToast(`최근 1시간 내의 프롬프트 ${deletedCount}개가 삭제되었습니다.`);
+}
+
+const cleanupDashBtn = document.getElementById('admin-cleanup-btn-dash');
+const cleanupListBtn = document.getElementById('admin-cleanup-btn-list');
+
+if (cleanupDashBtn) cleanupDashBtn.addEventListener('click', deleteRecentPrompts);
+if (cleanupListBtn) cleanupListBtn.addEventListener('click', deleteRecentPrompts);
