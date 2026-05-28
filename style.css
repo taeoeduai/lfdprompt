@@ -87,7 +87,8 @@ body {
   flex-shrink: 0;
   height: var(--nav-h);
   background: var(--color-surface-black);
-  z-index: 20;
+  position: relative;
+  z-index: 200;
 }
 
 .global-nav__inner {
