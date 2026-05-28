@@ -2622,19 +2622,19 @@ function deleteRecentPrompts() {
   if (!isAdmin) return;
   const oneHourAgo = Date.now() - (60 * 60 * 1000);
   
-  if (!confirm('최근 1시간 내에 작성된 모든 프롬프트를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+  if (!confirm('최근 1시간 내에 일반 사용자(게스트 포함)가 작성한 모든 프롬프트를 삭제하시겠습니까? (관리자 작성 글 제외)')) return;
   
   let deletedCount = 0;
   
-  // Find prompts created within last 1 hour
+  // Find prompts created within last 1 hour that are not created by admin (author 'AD')
   prompts.forEach(p => {
-    if (p.timestamp > oneHourAgo && !p.id.startsWith('local-')) {
+    if (p.timestamp > oneHourAgo && !p.id.startsWith('local-') && p.author !== 'AD') {
       db.collection('prompts').doc(p.id).delete().catch(err => console.warn('Failed to delete prompt:', err));
       deletedCount++;
     }
   });
   
-  showToast(`최근 1시간 내의 프롬프트 ${deletedCount}개가 삭제되었습니다.`);
+  showToast(`최근 1시간 내의 사용자 프롬프트 ${deletedCount}개가 삭제되었습니다.`);
 }
 
 const cleanupDashBtn = document.getElementById('admin-cleanup-btn-dash');
