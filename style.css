@@ -1262,7 +1262,7 @@ body.is-admin .delete-btn--list {
   font-family: inherit;
   font-size: 12px;
   font-weight: 600;
-  color: #ff3b30;
+  color: #1d1d1f;
   background: #fff;
   border: 1px solid rgba(0,0,0,0.08);
   border-radius: var(--r-md);
@@ -1277,6 +1277,7 @@ body.is-admin .delete-btn--list {
   transform: translateY(-5px);
   transition: all 0.2s ease;
   z-index: 100;
+  white-space: nowrap !important;
 }
 
 .nav-logout-btn.show {
@@ -1287,10 +1288,7 @@ body.is-admin .delete-btn--list {
 
 .nav-logout-btn:hover {
   background: #f9f9fb;
-}
-
-.nav-logout-btn:hover {
-  color: #fff;
+  color: #1d1d1f;
 }
 
 /* ============================================
