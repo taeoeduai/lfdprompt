@@ -133,6 +133,22 @@ function updateAuthUI() {
       addBtn.classList.add('hidden');
     }
   }
+
+  // Show/Hide MY filter button based on user status (hidden for admin or guest)
+  const filterMy = document.getElementById('filter-my');
+  if (filterMy) {
+    if (isLoggedIn && !isAdmin) {
+      filterMy.style.display = 'inline-block';
+    } else {
+      filterMy.style.display = 'none';
+      if (sortOrder === 'my') {
+        sortOrder = 'newest';
+        const filterNewest = document.getElementById('filter-newest');
+        if (filterNewest) filterNewest.classList.add('is-active');
+        filterMy.classList.remove('is-active');
+      }
+    }
+  }
 }
 
 function applyLoginState() {
@@ -533,8 +549,12 @@ function fmtTime(ts) {
   const h = Math.floor(diff / 60);
   if (h < 24) return h + '시간 전';
   const d = new Date(ts);
-  return (d.getMonth() + 1) + '/' + d.getDate() + ' ' +
-    String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return `${yyyy}/${mm}/${dd} ${hh}:${min}`;
 }
 
 // --- Positioning ---
@@ -620,7 +640,7 @@ function mkBubble(p, x, y, enter) {
     if (textEl.getAttribute('contenteditable') === 'true') return;
 
     const currentAuthor = localStorage.getItem('pl_author') || '';
-    const canEdit = isAdmin || (p.author === currentAuthor && currentAuthor !== '');
+    const canEdit = isLoggedIn && (isAdmin || (p.author === currentAuthor && currentAuthor !== ''));
     if (canEdit) {
       el.classList.add('is-editable');
       textEl.setAttribute('contenteditable', 'true');
@@ -655,13 +675,18 @@ function mkBubble(p, x, y, enter) {
     });
     el.classList.add('is-selected');
 
+    // If not logged in, block dragging, resizing, and mobile long-press triggers.
+    if (!isLoggedIn) {
+      return;
+    }
+
     // Long press for mobile edit & delete button
     if (e.pointerType === 'touch' || e.pointerType === 'pen') {
       longPressTimer = setTimeout(function() {
         el.classList.add('show-delete');
         
         const currentAuthor = localStorage.getItem('pl_author') || '';
-        const canEdit = isAdmin || (p.author === currentAuthor && currentAuthor !== '');
+        const canEdit = isLoggedIn && (isAdmin || (p.author === currentAuthor && currentAuthor !== ''));
         if (canEdit) {
           el.classList.add('is-editable');
           textEl.setAttribute('contenteditable', 'true');
@@ -838,7 +863,14 @@ function renderList() {
     listContent.innerHTML = '<div class="empty-state" style="position:relative;min-height:200px"><p class="empty-state__text">아직 프롬프트가 없습니다.</p></div>';
     return;
   }
-  const sorted = [...prompts].sort((a, b) => sortOrder === 'newest' ? b.time - a.time : a.time - b.time);
+  
+  let sorted = [...prompts];
+  if (sortOrder === 'my') {
+    const currentAuthor = localStorage.getItem('pl_author') || '';
+    sorted = sorted.filter(p => p.author === currentAuthor && currentAuthor !== '');
+  }
+  
+  sorted.sort((a, b) => sortOrder === 'oldest' ? a.time - b.time : b.time - a.time);
   sorted.forEach((p, i) => {
     const item = document.createElement('div');
     item.className = 'list-item';
@@ -898,7 +930,7 @@ function renderList() {
 
       longPressTimer = setTimeout(function() {
         const currentAuthor = localStorage.getItem('pl_author') || '';
-        const canEdit = isAdmin || (p.author === currentAuthor && currentAuthor !== '');
+        const canEdit = isLoggedIn && (isAdmin || (p.author === currentAuthor && currentAuthor !== ''));
         if (canEdit) {
           if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
           
@@ -938,7 +970,7 @@ function renderList() {
       if (textEl.getAttribute('contenteditable') === 'true') return;
 
       const currentAuthor = localStorage.getItem('pl_author') || '';
-      const canEdit = isAdmin || (p.author === currentAuthor && currentAuthor !== '');
+      const canEdit = isLoggedIn && (isAdmin || (p.author === currentAuthor && currentAuthor !== ''));
       if (canEdit) {
         item.classList.add('is-editable');
         textEl.setAttribute('contenteditable', 'true');
@@ -2408,18 +2440,31 @@ if (listDashboardBtn) {
 }
 
 
+const filterMy = document.getElementById('filter-my');
+
 filterNewest.addEventListener('click', function () {
   sortOrder = 'newest';
   filterNewest.classList.add('is-active');
   filterOldest.classList.remove('is-active');
+  if (filterMy) filterMy.classList.remove('is-active');
   renderList();
 });
 filterOldest.addEventListener('click', function () {
   sortOrder = 'oldest';
   filterOldest.classList.add('is-active');
   filterNewest.classList.remove('is-active');
+  if (filterMy) filterMy.classList.remove('is-active');
   renderList();
 });
+if (filterMy) {
+  filterMy.addEventListener('click', function () {
+    sortOrder = 'my';
+    filterMy.classList.add('is-active');
+    filterNewest.classList.remove('is-active');
+    filterOldest.classList.remove('is-active');
+    renderList();
+  });
+}
 
 textarea.addEventListener('input', function () {
   textarea.style.height = 'auto';
