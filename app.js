@@ -2628,13 +2628,17 @@ function deleteRecentPrompts() {
   
   // Find prompts created within last 1 hour that are not created by admin (author 'AD')
   prompts.forEach(p => {
-    if (p.timestamp > oneHourAgo && !p.id.startsWith('local-') && p.author !== 'AD') {
+    if (p.time > oneHourAgo && !p.id.startsWith('local-') && p.author !== 'AD') {
       db.collection('prompts').doc(p.id).delete().catch(err => console.warn('Failed to delete prompt:', err));
       deletedCount++;
     }
   });
   
-  showToast(`최근 1시간 내의 사용자 프롬프트 ${deletedCount}개가 삭제되었습니다.`);
+  if (deletedCount > 0) {
+    showToast(`최근 1시간 내의 사용자 프롬프트 ${deletedCount}개가 삭제되었습니다.`);
+  } else {
+    showToast(`최근 1시간 내에 작성된 일반 사용자 프롬프트가 없습니다.`);
+  }
 }
 
 const cleanupDashBtn = document.getElementById('admin-cleanup-btn-dash');
