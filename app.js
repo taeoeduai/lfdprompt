@@ -620,7 +620,8 @@ function mkBubble(p, x, y, enter) {
     if (textEl.getAttribute('contenteditable') === 'true') return;
 
     const currentAuthor = localStorage.getItem('pl_author') || '';
-    if (p.author === currentAuthor && currentAuthor !== '') {
+    const canEdit = isAdmin || (p.author === currentAuthor && currentAuthor !== '');
+    if (canEdit) {
       el.classList.add('is-editable');
       textEl.setAttribute('contenteditable', 'true');
       textEl.focus();
@@ -660,7 +661,8 @@ function mkBubble(p, x, y, enter) {
         el.classList.add('show-delete');
         
         const currentAuthor = localStorage.getItem('pl_author') || '';
-        if (p.author === currentAuthor && currentAuthor !== '') {
+        const canEdit = isAdmin || (p.author === currentAuthor && currentAuthor !== '');
+        if (canEdit) {
           el.classList.add('is-editable');
           textEl.setAttribute('contenteditable', 'true');
           textEl.focus();
@@ -896,7 +898,8 @@ function renderList() {
 
       longPressTimer = setTimeout(function() {
         const currentAuthor = localStorage.getItem('pl_author') || '';
-        if (p.author === currentAuthor && currentAuthor !== '') {
+        const canEdit = isAdmin || (p.author === currentAuthor && currentAuthor !== '');
+        if (canEdit) {
           if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
           
           item.classList.add('is-editable');
@@ -935,7 +938,8 @@ function renderList() {
       if (textEl.getAttribute('contenteditable') === 'true') return;
 
       const currentAuthor = localStorage.getItem('pl_author') || '';
-      if (p.author === currentAuthor && currentAuthor !== '') {
+      const canEdit = isAdmin || (p.author === currentAuthor && currentAuthor !== '');
+      if (canEdit) {
         item.classList.add('is-editable');
         textEl.setAttribute('contenteditable', 'true');
         textEl.focus();
