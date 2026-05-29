@@ -2301,4 +2301,114 @@ body.is-admin .delete-btn--list {
     font-size: 12px;
     padding: 6px 12px;
   }
-}
+}
+
+/* ============================================
+   COMMENTS SECTION
+   ============================================ */
+.comments-section {
+  width: 100%;
+  min-width: 200px;
+  max-width: 300px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  font-family: inherit;
+  z-index: 10;
+}
+
+.comments-list {
+  max-height: 120px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 4px;
+}
+
+.comment-item {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--color-ink);
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  position: relative;
+  word-break: break-all;
+}
+
+.comment-author {
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--color-ink);
+  opacity: 0.6;
+  white-space: nowrap;
+  margin-top: 1px;
+}
+
+.comment-text {
+  flex: 1;
+}
+
+.comment-del-btn {
+  font-family: inherit;
+  font-size: 14px;
+  color: #ff3b30;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0 4px;
+  opacity: 0.6;
+  line-height: 1;
+}
+
+.comment-del-btn:hover {
+  opacity: 1;
+}
+
+.comments-input-wrap {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.comments-input {
+  flex: 1;
+  font-family: inherit;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: var(--r-md);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.5);
+  outline: none;
+  transition: all 0.2s var(--ease);
+}
+
+.comments-input:focus {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.comments-submit {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-ink);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.comments-submit:hover {
+  transform: scale(1.05);
+}
+
+.comments-submit:active {
+  transform: scale(0.95);
+}
+

@@ -657,6 +657,15 @@ function mkBubble(p, x, y, enter) {
       (a ? '<p class="bubble__author">' + a + '</p>' : '') +
       '<p class="bubble__text">' + escHtml(p.text) + '</p>' +
     '</div>' +
+    '<div class="comments-section hidden">' +
+      '<div class="comments-list"></div>' +
+      '<div class="comments-input-wrap">' +
+        '<input type="text" class="comments-input" placeholder="댓글 달기..." maxlength="200" />' +
+        '<button class="comments-submit" aria-label="댓글 작성">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>' +
+        '</button>' +
+      '</div>' +
+    '</div>' +
     '<button class="delete-btn" data-id="' + p.id + '" aria-label="삭제">&times;</button>';
   
   const innerBubble = el.querySelector('.bubble');
@@ -681,6 +690,7 @@ function mkBubble(p, x, y, enter) {
   });
   
   let isDragging = false;
+  let hasMoved = false;
   let startX, startY, initialLeft, initialTop;
   let longPressTimer;
 
@@ -716,6 +726,7 @@ function mkBubble(p, x, y, enter) {
 
   el.addEventListener('pointerdown', function (e) {
     if (e.target.closest('.delete-btn')) return;
+    if (e.target.closest('.comments-section')) return; // Ignore dragging on comment section
     
     // Prevent dragging if currently editing
     const targetTextEl = e.target.closest('.bubble__text');
@@ -770,6 +781,7 @@ function mkBubble(p, x, y, enter) {
       }
     }
     isDragging = true;
+    hasMoved = false;
     el.classList.add('is-dragging');
     startX = e.clientX;
     startY = e.clientY;
@@ -785,6 +797,11 @@ function mkBubble(p, x, y, enter) {
     if (!isDragging) return;
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
+    
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      hasMoved = true;
+    }
+    
     let newLeft = initialLeft + dx;
     let newTop = initialTop + dy;
     
@@ -798,6 +815,29 @@ function mkBubble(p, x, y, enter) {
 
   el.addEventListener('pointerup', function (e) {
     clearTimeout(longPressTimer);
+    
+    if (isDragging && !hasMoved) {
+      // It was a click, toggle comments (only if not editing)
+      if (textEl.getAttribute('contenteditable') !== 'true') {
+        const commentsSec = el.querySelector('.comments-section');
+        if (commentsSec) {
+          const wasHidden = commentsSec.classList.contains('hidden');
+          // Hide other open comments
+          document.querySelectorAll('.comments-section:not(.hidden)').forEach(sec => {
+            if (sec !== commentsSec) sec.classList.add('hidden');
+          });
+          commentsSec.classList.toggle('hidden');
+          if (!wasHidden) {
+            const input = commentsSec.querySelector('.comments-input');
+            if (input) input.blur();
+          } else {
+            const input = commentsSec.querySelector('.comments-input');
+            if (input && isLoggedIn) setTimeout(() => input.focus(), 50);
+          }
+        }
+      }
+    }
+
     if (!isDragging) return;
     isDragging = false;
     el.classList.remove('is-dragging');
@@ -822,7 +862,103 @@ function mkBubble(p, x, y, enter) {
   });
 
   if (enter) el.addEventListener('animationend', () => el.classList.remove('bubble-wrapper--enter'), { once: true });
+  
+  // Initialize comment rendering
+  renderComments(el, p.comments, p.id);
+  
+  // Set up comment submit event
+  const cSubmit = el.querySelector('.comments-submit');
+  const cInput = el.querySelector('.comments-input');
+  
+  const submitCommentHandler = () => {
+    requireLogin(() => {
+      const text = cInput.value.trim();
+      if (!text) return;
+      const currentAuthor = localStorage.getItem('pl_author') || '';
+      
+      const newComment = {
+        id: Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+        text: text,
+        author: currentAuthor,
+        createdAt: Date.now()
+      };
+      
+      if (!p.id.startsWith('local-')) {
+        db.collection('prompts').doc(p.id).update({
+          comments: firebase.firestore.FieldValue.arrayUnion(newComment)
+        }).catch(err => console.warn('Comment add failed', err));
+      } else {
+        if (!p.comments) p.comments = [];
+        p.comments.push(newComment);
+        renderComments(el, p.comments, p.id);
+      }
+      cInput.value = '';
+    });
+  };
+
+  if (cSubmit && cInput) {
+    cSubmit.addEventListener('click', (e) => {
+      e.stopPropagation();
+      submitCommentHandler();
+    });
+    cInput.addEventListener('keydown', (e) => {
+      e.stopPropagation();
+      if (e.key === 'Enter') submitCommentHandler();
+    });
+  }
+  
   return el;
+}
+
+// --- Render Comments Helper ---
+function renderComments(el, comments, promptId) {
+  const listEl = el.querySelector('.comments-list');
+  if (!listEl) return;
+  listEl.innerHTML = '';
+  const currentAuthor = localStorage.getItem('pl_author') || '';
+  
+  (comments || []).forEach(c => {
+    const cEl = document.createElement('div');
+    cEl.className = 'comment-item';
+    
+    const authorSpan = document.createElement('span');
+    authorSpan.className = 'comment-author';
+    authorSpan.textContent = c.author;
+    
+    const textSpan = document.createElement('span');
+    textSpan.className = 'comment-text';
+    textSpan.textContent = c.text;
+    
+    cEl.appendChild(authorSpan);
+    cEl.appendChild(textSpan);
+    
+    // Delete button logic
+    if (isLoggedIn && (isAdmin || (c.author === currentAuthor && currentAuthor !== ''))) {
+      const delBtn = document.createElement('button');
+      delBtn.className = 'comment-del-btn';
+      delBtn.innerHTML = '&times;';
+      delBtn.onclick = (e) => {
+        e.stopPropagation();
+        if (!promptId.startsWith('local-')) {
+          db.collection('prompts').doc(promptId).update({
+            comments: firebase.firestore.FieldValue.arrayRemove(c)
+          }).catch(err => console.warn('Comment delete failed', err));
+        } else {
+          // Local logic
+          if (el.__localPrompt) {
+            el.__localPrompt.comments = el.__localPrompt.comments.filter(cm => cm.id !== c.id);
+            renderComments(el, el.__localPrompt.comments, promptId);
+          }
+        }
+      };
+      cEl.appendChild(delBtn);
+    }
+    
+    listEl.appendChild(cEl);
+  });
+  
+  // Store local reference for local- deletion
+  el.__localPrompt = { id: promptId, comments: comments || [] };
 }
 
 // --- Render Floating ---
@@ -910,6 +1046,9 @@ function renderFloat() {
         existing.style.left = targetX + 'px';
         existing.style.top = targetY + 'px';
       }
+      
+      // Update comments
+      renderComments(existing, p.comments, p.id);
     }
   });
 }
@@ -1146,7 +1285,8 @@ function startListener() {
             posX: typeof d.posX === 'number' ? d.posX : null,
             posY: typeof d.posY === 'number' ? d.posY : null,
             width: typeof d.width === 'number' ? d.width : null,
-            height: typeof d.height === 'number' ? d.height : null
+            height: typeof d.height === 'number' ? d.height : null,
+            comments: Array.isArray(d.comments) ? d.comments : []
           };
         });
         prompts.sort(function(a, b) { return b.time - a.time; });
