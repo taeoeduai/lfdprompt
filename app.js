@@ -660,6 +660,12 @@ function mkBubble(p, x, y, enter) {
     '<div class="comments-section hidden">' +
       '<div class="comments-list"></div>' +
       '<div class="comments-input-wrap">' +
+        '<div class="emoji-picker-container">' +
+          '<button class="comments-emoji-btn" aria-label="이모티콘">😀</button>' +
+          '<div class="emoji-picker hidden">' +
+            '<span class="emoji-opt">👍</span><span class="emoji-opt">❤️</span><span class="emoji-opt">😂</span><span class="emoji-opt">🔥</span><span class="emoji-opt">✨</span>' +
+          '</div>' +
+        '</div>' +
         '<input type="text" class="comments-input" placeholder="댓글 달기..." maxlength="200" />' +
         '<button class="comments-submit" aria-label="댓글 작성">' +
           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>' +
@@ -883,9 +889,45 @@ function mkBubble(p, x, y, enter) {
   // Initialize comment rendering
   renderComments(el, p.comments, p.id);
   
+  // Sync comments width with bubble
+  const commentsSec = el.querySelector('.comments-section');
+  if (innerBubble && commentsSec) {
+    const ro = new ResizeObserver(entries => {
+      for (let e of entries) {
+        commentsSec.style.width = e.target.offsetWidth + 'px';
+      }
+    });
+    ro.observe(innerBubble);
+  }
+  
+  // Emoji picker logic
+  const emojiBtn = el.querySelector('.comments-emoji-btn');
+  const emojiPicker = el.querySelector('.emoji-picker');
+  const cInput = el.querySelector('.comments-input');
+  
+  if (emojiBtn && emojiPicker && cInput) {
+    emojiBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      emojiPicker.classList.toggle('hidden');
+    });
+    emojiPicker.querySelectorAll('.emoji-opt').forEach(opt => {
+      opt.addEventListener('click', (e) => {
+        e.stopPropagation();
+        cInput.value += e.target.textContent;
+        cInput.focus();
+        emojiPicker.classList.add('hidden');
+      });
+    });
+    // Hide picker when clicking outside
+    el.addEventListener('pointerdown', (e) => {
+      if (!e.target.closest('.emoji-picker-container')) {
+        emojiPicker.classList.add('hidden');
+      }
+    });
+  }
+
   // Set up comment submit event
   const cSubmit = el.querySelector('.comments-submit');
-  const cInput = el.querySelector('.comments-input');
   
   const submitCommentHandler = () => {
     requireLogin(() => {
@@ -1173,6 +1215,12 @@ function renderList() {
       '<div class="comments-section hidden" style="max-width:100%; margin-top:0;">' +
         '<div class="comments-list"></div>' +
         '<div class="comments-input-wrap">' +
+          '<div class="emoji-picker-container">' +
+            '<button class="comments-emoji-btn" aria-label="이모티콘">😀</button>' +
+            '<div class="emoji-picker hidden">' +
+              '<span class="emoji-opt">👍</span><span class="emoji-opt">❤️</span><span class="emoji-opt">😂</span><span class="emoji-opt">🔥</span><span class="emoji-opt">✨</span>' +
+            '</div>' +
+          '</div>' +
           '<input type="text" class="comments-input" placeholder="댓글 달기..." maxlength="200" />' +
           '<button class="comments-submit" aria-label="댓글 작성">' +
             '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>' +
@@ -1321,9 +1369,33 @@ function renderList() {
     // Initialize comment rendering
     renderComments(item, p.comments, p.id);
     
+    // Emoji picker logic
+    const emojiBtn = item.querySelector('.comments-emoji-btn');
+    const emojiPicker = item.querySelector('.emoji-picker');
+    const cInput = item.querySelector('.comments-input');
+    
+    if (emojiBtn && emojiPicker && cInput) {
+      emojiBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        emojiPicker.classList.toggle('hidden');
+      });
+      emojiPicker.querySelectorAll('.emoji-opt').forEach(opt => {
+        opt.addEventListener('click', (e) => {
+          e.stopPropagation();
+          cInput.value += e.target.textContent;
+          cInput.focus();
+          emojiPicker.classList.add('hidden');
+        });
+      });
+      item.addEventListener('pointerdown', (e) => {
+        if (!e.target.closest('.emoji-picker-container')) {
+          emojiPicker.classList.add('hidden');
+        }
+      });
+    }
+    
     // Set up comment submit event
     const cSubmit = item.querySelector('.comments-submit');
-    const cInput = item.querySelector('.comments-input');
     
     const submitCommentHandler = () => {
       requireLogin(() => {
