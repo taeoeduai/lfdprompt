@@ -52,6 +52,7 @@ let prompts = [];
 let currentView = '';
 let sortOrder = 'newest';
 let unauthorizedClicksCount = 0;
+let selectedAuthorFilter = null;
 
 // ============================================
 // AUTH SYSTEM
@@ -152,6 +153,11 @@ function updateAuthUI() {
     document.body.classList.add('is-admin');
   } else {
     document.body.classList.remove('is-admin');
+    selectedAuthorFilter = null;
+    const participantFiltersContainer = document.getElementById('admin-participant-filters');
+    if (participantFiltersContainer) {
+      participantFiltersContainer.classList.add('hidden');
+    }
   }
 
   // Show/Hide MY filter button based on user status (hidden for admin or guest)
@@ -910,6 +916,51 @@ function renderFloat() {
 
 // --- Render List ---
 function renderList() {
+  // Render participant filters for admin
+  const participantFiltersContainer = document.getElementById('admin-participant-filters');
+  if (participantFiltersContainer) {
+    if (isAdmin && prompts.length > 0) {
+      participantFiltersContainer.classList.remove('hidden');
+      
+      const authorCounts = {};
+      prompts.forEach(p => {
+        const auth = (p.author || '—').toUpperCase();
+        authorCounts[auth] = (authorCounts[auth] || 0) + 1;
+      });
+      
+      const uniqueAuthors = Object.keys(authorCounts).sort();
+      
+      let html = `<span style="font-size: 11px; font-weight: 600; color: var(--color-ink); opacity: 0.5; margin-right: 8px; align-self: center; text-transform: uppercase; letter-spacing: 0.5px;">참가자 필터:</span>`;
+      
+      // All pill
+      const isAllActive = !selectedAuthorFilter;
+      html += `<button class="filter-pill ${isAllActive ? 'is-active' : ''}" style="padding: 4px 12px; font-size: 11.5px; border-radius: var(--r-pill);" data-author="">전체 <span style="font-size: 9px; opacity: 0.6;">(${prompts.length})</span></button>`;
+      
+      uniqueAuthors.forEach(auth => {
+        const isActive = selectedAuthorFilter === auth;
+        html += `<button class="filter-pill ${isActive ? 'is-active' : ''}" style="padding: 4px 12px; font-size: 11.5px; border-radius: var(--r-pill);" data-author="${escHtml(auth)}">${escHtml(auth)} <span style="font-size: 9px; opacity: 0.6;">(${authorCounts[auth]})</span></button>`;
+      });
+      
+      participantFiltersContainer.innerHTML = html;
+      
+      // Add event listeners to the pills
+      participantFiltersContainer.querySelectorAll('.filter-pill').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const auth = this.dataset.author;
+          if (auth === '') {
+            selectedAuthorFilter = null;
+          } else {
+            selectedAuthorFilter = auth;
+          }
+          renderList();
+        });
+      });
+    } else {
+      participantFiltersContainer.classList.add('hidden');
+      selectedAuthorFilter = null;
+    }
+  }
+
   listContent.innerHTML = '';
   if (!prompts.length) {
     listContent.innerHTML = '<div class="empty-state" style="position:relative;min-height:200px"><p class="empty-state__text">아직 프롬프트가 없습니다.</p></div>';
@@ -920,6 +971,15 @@ function renderList() {
   if (sortOrder === 'my') {
     const currentAuthor = localStorage.getItem('pl_author') || '';
     sorted = sorted.filter(p => p.author === currentAuthor && currentAuthor !== '');
+  }
+  
+  if (isAdmin && selectedAuthorFilter) {
+    sorted = sorted.filter(p => (p.author || '—').toUpperCase() === selectedAuthorFilter);
+  }
+  
+  if (!sorted.length) {
+    listContent.innerHTML = '<div class="empty-state" style="position:relative;min-height:200px"><p class="empty-state__text">조건에 맞는 프롬프트가 없습니다.</p></div>';
+    return;
   }
   
   sorted.sort((a, b) => sortOrder === 'oldest' ? a.time - b.time : b.time - a.time);
@@ -2603,7 +2663,7 @@ loadLibraryOverrides();
 startLibraryOverridesListener();
 restoreSession();
 startListener();
-setView('library');
+setView('float');
 
 // Global event to auto-save and blur editable list items when clicking outside
 document.addEventListener('pointerdown', function(e) {
