@@ -756,7 +756,6 @@ function mkBubble(p, x, y, enter) {
     if (targetTextEl && targetTextEl.getAttribute('contenteditable') === 'true') {
       return; 
     }
-    if (e.pointerType === 'mouse' && targetTextEl) return;
     
     // Deselect others and select current
     document.querySelectorAll('.bubble-wrapper.is-selected').forEach(function(b) {
@@ -984,6 +983,13 @@ function mkBubble(p, x, y, enter) {
       e.stopPropagation();
       if (e.key === 'Enter') submitCommentHandler();
     });
+  }
+  
+  const commentsSec = el.querySelector('.comments-section');
+  if (commentsSec) {
+    commentsSec.addEventListener('pointerdown', (e) => e.stopPropagation());
+    commentsSec.addEventListener('pointerup', (e) => e.stopPropagation());
+    commentsSec.addEventListener('click', (e) => e.stopPropagation());
   }
   
   return el;
@@ -1458,6 +1464,13 @@ function renderList() {
       });
     }
 
+    const commentsSec = item.querySelector('.comments-section');
+    if (commentsSec) {
+      commentsSec.addEventListener('pointerdown', (e) => e.stopPropagation());
+      commentsSec.addEventListener('pointerup', (e) => e.stopPropagation());
+      commentsSec.addEventListener('click', (e) => e.stopPropagation());
+    }
+
     listContent.appendChild(item);
   });
 }
@@ -1768,6 +1781,10 @@ function renderLibrary() {
     if (isAdmin) {
       const count = libraryRequests.length;
       html += `<button class="lib-filter-pill ${libCurrentCat === 'pending_req' ? 'is-active' : ''}" data-cat="pending_req" style="background: rgba(255, 59, 48, 0.08); color: #ff3b30; border-color: rgba(255, 59, 48, 0.2); font-weight: ${libCurrentCat === 'pending_req' ? '600' : '400'};">승인 대기 <span class="lib-count" style="color: #ff3b30;">${count}</span></button>`;
+    } else if (isLoggedIn) {
+      const userInitials = currentUser ? currentUser.id.toUpperCase() : '';
+      const count = libraryRequests.filter(r => r.author === userInitials).length;
+      html += `<button class="lib-filter-pill ${libCurrentCat === 'my_req' ? 'is-active' : ''}" data-cat="my_req" style="background: rgba(255, 149, 0, 0.08); color: #ff9500; border-color: rgba(255, 149, 0, 0.2); font-weight: ${libCurrentCat === 'my_req' ? '600' : '400'};">요청 사항 <span class="lib-count" style="color: #ff9500;">${count}</span></button>`;
     }
 
     tagArray.forEach(cat => {
@@ -1798,6 +1815,9 @@ function renderLibrary() {
   let filtered = [];
   if (libCurrentCat === 'pending_req') {
     filtered = [...libraryRequests];
+  } else if (libCurrentCat === 'my_req') {
+    const userInitials = currentUser ? currentUser.id.toUpperCase() : '';
+    filtered = libraryRequests.filter(r => r.author === userInitials);
   } else {
     filtered = libCurrentCat === 'all' 
       ? sortedData 
@@ -1883,7 +1903,8 @@ function renderLibrary() {
       ? descStr 
       : '바로 복사해서 실전에 적용할 수 있는 고품질 AI 이미지 프롬프트입니다.';
 
-    const pendingBadge = item.isPendingRequest ? `<span style="font-size: 10px; font-weight: bold; background: #ff3b30; color: #fff; padding: 2px 6px; border-radius: var(--r-sm); margin-right: 6px; flex-shrink: 0; display: inline-block;">대기</span>` : '';
+    const badgeColor = isAdmin ? '#ff3b30' : '#ff9500';
+    const pendingBadge = item.isPendingRequest ? `<span style="font-size: 10px; font-weight: bold; background: ${badgeColor}; color: #fff; padding: 2px 6px; border-radius: var(--r-sm); margin-right: 6px; flex-shrink: 0; display: inline-block;">대기</span>` : '';
 
     if (libLayoutMode === 'list') {
       // Modern List View Layout
@@ -1893,15 +1914,22 @@ function renderLibrary() {
       card.style.padding = '12px var(--sp-md)';
       
       if (item.isPendingRequest) {
-        card.style.border = '1.5px dashed #ff3b30';
-        card.style.background = 'rgba(255, 59, 48, 0.03)';
+        if (isAdmin) {
+          card.style.border = '1.5px dashed #ff3b30';
+          card.style.background = 'rgba(255, 59, 48, 0.03)';
+        } else {
+          card.style.border = '1.5px dashed #ff9500';
+          card.style.background = 'rgba(255, 149, 0, 0.03)';
+        }
       } else {
         card.style.border = '';
         card.style.background = '';
       }
 
       const copyArea = item.isPendingRequest 
-        ? `<span style="font-size: 11.5px; color: #ff3b30; font-weight: 600;">요청자: ${item.author || 'GST'}</span>`
+        ? (isAdmin 
+            ? `<span style="font-size: 11.5px; color: #ff3b30; font-weight: 600;">요청자: ${item.author || 'GST'}</span>`
+            : `<span style="font-size: 11.5px; color: #ff9500; font-weight: 600;">검토 대기 중</span>`)
         : `<button class="lib-card__copy" data-id="${item.id}" aria-label="복사" style="padding: 4px 10px; font-size: 11px;">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> 복사
            </button>`;
@@ -1927,15 +1955,22 @@ function renderLibrary() {
       card.style.padding = '';
       
       if (item.isPendingRequest) {
-        card.style.border = '1.5px dashed #ff3b30';
-        card.style.background = 'rgba(255, 59, 48, 0.03)';
+        if (isAdmin) {
+          card.style.border = '1.5px dashed #ff3b30';
+          card.style.background = 'rgba(255, 59, 48, 0.03)';
+        } else {
+          card.style.border = '1.5px dashed #ff9500';
+          card.style.background = 'rgba(255, 149, 0, 0.03)';
+        }
       } else {
         card.style.border = '';
         card.style.background = '';
       }
 
       const copyArea = item.isPendingRequest 
-        ? `<span style="font-size: 11.5px; color: #ff3b30; font-weight: 600; text-align: left;">요청자: ${item.author || 'GST'}</span>`
+        ? (isAdmin 
+            ? `<span style="font-size: 11.5px; color: #ff3b30; font-weight: 600; text-align: left;">요청자: ${item.author || 'GST'}</span>`
+            : `<span style="font-size: 11.5px; color: #ff9500; font-weight: 600; text-align: left;">검토 대기 중</span>`)
         : `<button class="lib-card__copy" data-id="${item.id}" aria-label="복사">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> 복사
            </button>`;
@@ -2096,8 +2131,10 @@ function openLibModal(item) {
   // Render prompt based on active language
   updatePromptDisplay();
 
-  // Show/hide admin edit button
-  if (isAdmin && !item.isPendingRequest) {
+  // Show/hide edit button: admin can edit live items, author can edit their own pending requests
+  const isAuthor = item.author === (currentUser && currentUser.id ? currentUser.id.toUpperCase() : '');
+  const canEditPending = isLoggedIn && item.isPendingRequest && isAuthor;
+  if ((isAdmin && !item.isPendingRequest) || canEditPending) {
     libModalEdit.classList.remove('hidden');
   } else {
     libModalEdit.classList.add('hidden');
@@ -2112,8 +2149,20 @@ function openLibModal(item) {
     if (pendingBanner) {
       pendingBanner.classList.remove('hidden');
       const authorInfo = document.getElementById('lib-modal-pending-author-info');
+      
       if (authorInfo) {
-        authorInfo.innerHTML = `유저 <strong>${item.author || 'GST'}</strong> 님이 요청한 프롬프트입니다. 아래 버튼으로 게시하거나 거절해 주세요.`;
+        if (isAdmin) {
+          pendingBanner.style.background = 'rgba(255, 59, 48, 0.08)';
+          pendingBanner.style.borderColor = 'rgba(255, 59, 48, 0.2)';
+          pendingBanner.style.color = '#ff3b30';
+          authorInfo.innerHTML = `유저 <strong>${item.author || 'GST'}</strong> 님이 요청한 프롬프트입니다. 아래 버튼으로 게시하거나 거절해 주세요.`;
+        } else {
+          // Orange color for user
+          pendingBanner.style.background = 'rgba(255, 149, 0, 0.08)';
+          pendingBanner.style.borderColor = 'rgba(255, 149, 0, 0.2)';
+          pendingBanner.style.color = '#ff9500';
+          authorInfo.innerHTML = `회원님이 요청하여 <strong>관리자 검토 중</strong>인 프롬프트입니다. 상단 '편집' 버튼으로 내용을 수정할 수 있습니다.`;
+        }
       }
     }
     if (pendingActions && isAdmin) {
@@ -2305,7 +2354,9 @@ if (lightboxEl && lightboxClose) {
 function enterEditMode() {
   if (!libEditingItem) return;
   const isNewCustom = String(libEditingItem.id).startsWith('lib-custom-');
-  if (!isAdmin && !isNewCustom) return;
+  const isAuthor = libEditingItem.author === (currentUser && currentUser.id ? currentUser.id.toUpperCase() : '');
+  const allowed = isAdmin || (isLoggedIn && isNewCustom && (isAuthor || !libEditingItem.author));
+  if (!allowed) return;
   libEditMode = true;
   libEditActiveLang = 'ko'; // Default edit tab is Korean
 
@@ -2670,7 +2721,8 @@ function setupUploadSlot(slot, input, imageIndex) {
     
     if (!libEditingItem) return;
     const isNewCustom = String(libEditingItem.id).startsWith('lib-custom-');
-    const allowed = isAdmin || (isLoggedIn && isNewCustom);
+    const isAuthor = libEditingItem.author === (currentUser && currentUser.id ? currentUser.id.toUpperCase() : '');
+    const allowed = isAdmin || (isLoggedIn && isNewCustom && (isAuthor || !libEditingItem.author));
     if (!allowed) return;
 
     const files = Array.from(e.dataTransfer.files);
@@ -2682,7 +2734,8 @@ function setupUploadSlot(slot, input, imageIndex) {
   input.addEventListener('change', async function() {
     if (!libEditingItem) return;
     const isNewCustom = String(libEditingItem.id).startsWith('lib-custom-');
-    const allowed = isAdmin || (isLoggedIn && isNewCustom);
+    const isAuthor = libEditingItem.author === (currentUser && currentUser.id ? currentUser.id.toUpperCase() : '');
+    const allowed = isAdmin || (isLoggedIn && isNewCustom && (isAuthor || !libEditingItem.author));
     if (!allowed) return;
 
     const files = Array.from(this.files);
@@ -2698,7 +2751,8 @@ function setupUploadSlot(slot, input, imageIndex) {
       e.stopPropagation();
       if (!libEditingItem) return;
       const isNewCustom = String(libEditingItem.id).startsWith('lib-custom-');
-      const allowed = isAdmin || (isLoggedIn && isNewCustom);
+      const isAuthor = libEditingItem.author === (currentUser && currentUser.id ? currentUser.id.toUpperCase() : '');
+      const allowed = isAdmin || (isLoggedIn && isNewCustom && (isAuthor || !libEditingItem.author));
       if (!allowed) return;
 
       if (!libEditingItem.images) libEditingItem.images = [];
