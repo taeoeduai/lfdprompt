@@ -276,12 +276,15 @@ body {
   cursor: pointer;
   z-index: 10;
   transition: opacity var(--t-fast), transform var(--t-fast);
+  pointer-events: none;
   -webkit-tap-highlight-color: transparent;
 }
 
 .bubble-wrapper.is-editable .delete-btn,
+.bubble-wrapper.show-delete .delete-btn,
 .list-item.is-editable .delete-btn--list {
   opacity: 0.7;
+  pointer-events: auto !important;
 }
 
 body.is-admin .delete-btn,

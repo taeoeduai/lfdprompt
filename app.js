@@ -712,27 +712,6 @@ function mkBubble(p, x, y, enter) {
     });
   });
 
-  // Double click for desktop website version to edit
-  el.addEventListener('dblclick', function (e) {
-    if (e.target.closest('.delete-btn')) return;
-    if (textEl.getAttribute('contenteditable') === 'true') return;
-
-    const currentAuthor = localStorage.getItem('pl_author') || '';
-    const canEdit = isLoggedIn && (isAdmin || (p.author === currentAuthor && currentAuthor !== ''));
-    if (canEdit) {
-      el.classList.add('is-editable');
-      textEl.setAttribute('contenteditable', 'true');
-      textEl.focus();
-
-      // Move cursor to the very end of text
-      const range = document.createRange();
-      const sel = window.getSelection();
-      range.selectNodeContents(textEl);
-      range.collapse(false);
-      sel.removeAllRanges();
-      sel.addRange(range);
-    }
-  });
 
   el.addEventListener('pointerdown', function (e) {
     if (e.target.closest('.delete-btn')) return;
@@ -827,8 +806,30 @@ function mkBubble(p, x, y, enter) {
     clearTimeout(longPressTimer);
     
     if (isDragging && !hasMoved) {
-      // It was a click, toggle comments (only if not editing)
-      if (textEl.getAttribute('contenteditable') !== 'true') {
+      if (e.target.closest('.delete-btn')) return;
+      if (e.target.closest('.comments-section')) return;
+
+      if (e.pointerType === 'mouse') {
+        const currentAuthor = localStorage.getItem('pl_author') || '';
+        const canEdit = isLoggedIn && (isAdmin || (p.author === currentAuthor && currentAuthor !== ''));
+        
+        el.classList.add('show-delete');
+        
+        if (canEdit && textEl.getAttribute('contenteditable') !== 'true') {
+          el.classList.add('is-editable');
+          textEl.setAttribute('contenteditable', 'true');
+          textEl.focus();
+
+          // Move cursor to the very end of text
+          const range = document.createRange();
+          const sel = window.getSelection();
+          range.selectNodeContents(textEl);
+          range.collapse(false);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+
+        // Toggle comments section on single click for desktop
         const commentsSec = el.querySelector('.comments-section');
         if (commentsSec) {
           const wasHidden = commentsSec.classList.contains('hidden');
@@ -850,6 +851,33 @@ function mkBubble(p, x, y, enter) {
             localStorage.setItem('pl_read_comments', JSON.stringify(rMap));
             const badge = el.querySelector('.unread-badge');
             if (badge) badge.remove();
+          }
+        }
+      } else {
+        // Mobile single tap (touch/pen): toggle comments (only if not editing)
+        if (textEl.getAttribute('contenteditable') !== 'true') {
+          const commentsSec = el.querySelector('.comments-section');
+          if (commentsSec) {
+            const wasHidden = commentsSec.classList.contains('hidden');
+            // Hide other open comments
+            document.querySelectorAll('.comments-section:not(.hidden)').forEach(sec => {
+              if (sec !== commentsSec) sec.classList.add('hidden');
+            });
+            commentsSec.classList.toggle('hidden');
+            if (!wasHidden) {
+              const input = commentsSec.querySelector('.comments-input');
+              if (input) input.blur();
+            } else {
+              const input = commentsSec.querySelector('.comments-input');
+              if (input && isLoggedIn) setTimeout(() => input.focus(), 50);
+              
+              // Mark as read
+              const rMap = JSON.parse(localStorage.getItem('pl_read_comments') || '{}');
+              rMap[p.id] = p.comments ? p.comments.length : 0;
+              localStorage.setItem('pl_read_comments', JSON.stringify(rMap));
+              const badge = el.querySelector('.unread-badge');
+              if (badge) badge.remove();
+            }
           }
         }
       }
@@ -1287,9 +1315,11 @@ function renderList() {
       }
     });
 
-    item.addEventListener('pointerup', function() {
+    item.addEventListener('pointerup', function(e) {
+      if (e.target.closest('.comments-section')) return;
+      if (e.target.closest('.delete-btn')) return;
       clearTimeout(longPressTimer);
-      if (!hasMovedList && !textEl.getAttribute('contenteditable')) {
+      if (!hasMovedList && textEl.getAttribute('contenteditable') !== 'true') {
         const commentsSec = item.querySelector('.comments-section');
         if (commentsSec) {
           const wasHidden = commentsSec.classList.contains('hidden');
