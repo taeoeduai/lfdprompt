@@ -91,12 +91,12 @@ function restoreSession() {
       isLoggedIn = true;
       currentUser = session;
       isAdmin = session.role === 'admin';
-      updateAuthUI();
       applyLoginState();
     }
   } catch (e) {
     localStorage.removeItem('pl_session');
   }
+  updateAuthUI();
 }
 
 function saveSession() {
