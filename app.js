@@ -686,10 +686,20 @@ function mkBubble(p, x, y, enter) {
   
   let widthStyle = p.width ? `width: ${p.width}px; ` : '';
 
+  let pendingActions = '';
+  if (isAdmin && p.isPending) {
+    pendingActions = 
+      '<div class="pending-actions" style="display: flex; gap: 4px; margin-top: 8px;">' +
+        '<button class="pending-btn approve-btn" onclick="approvePendingPrompt(\'' + p.id + '\')" style="flex:1; padding:4px; font-size:11px; background:#34c759; color:#fff; border:none; border-radius:4px; cursor:pointer;">승인</button>' +
+        '<button class="pending-btn decline-btn" onclick="declinePendingPrompt(\'' + p.id + '\')" style="flex:1; padding:4px; font-size:11px; background:#ff3b30; color:#fff; border:none; border-radius:4px; cursor:pointer;">거절</button>' +
+      '</div>';
+  }
+
   el.innerHTML =
     `<div class="bubble" style="${widthStyle}">` +
-      (a ? '<p class="bubble__author">' + a + '</p>' : '') +
+      (a ? '<p class="bubble__author">' + a + (p.isPending ? ' <span style="color:#ff3b30; font-size:9px; border:1px solid #ff3b30; padding:1px 4px; border-radius:10px; margin-left:4px;">대기중</span>' : '') + '</p>' : '') +
       '<p class="bubble__text">' + escHtml(p.text) + '</p>' +
+      pendingActions +
     '</div>' +
     '<div class="comments-section hidden">' +
       '<div class="comments-list"></div>' +
@@ -750,6 +760,7 @@ function mkBubble(p, x, y, enter) {
   el.addEventListener('pointerdown', function (e) {
     if (e.target.closest('.delete-btn')) return;
     if (e.target.closest('.comments-section')) return; // Ignore dragging on comment section
+    if (e.target.closest('.pending-actions')) return; // Ignore dragging on pending buttons
     
     // Prevent dragging if currently editing
     const targetTextEl = e.target.closest('.bubble__text');
@@ -1064,7 +1075,7 @@ function renderFloat() {
   if (emptyState) emptyState.remove();
 
   const r = canvas.getBoundingClientRect();
-  const show = prompts.slice(0, 25);
+  const show = prompts.filter(p => isAdmin || !p.isPending).slice(0, 25);
   const showIds = new Set(show.map(p => p.id));
 
   // Remove old bubbles
@@ -1214,7 +1225,7 @@ function renderList() {
     return;
   }
   
-  let sorted = [...prompts];
+  let sorted = [...prompts].filter(p => isAdmin || !p.isPending);
   if (sortOrder === 'my') {
     const currentAuthor = localStorage.getItem('pl_author') || '';
     sorted = sorted.filter(p => p.author === currentAuthor && currentAuthor !== '');
@@ -1258,13 +1269,24 @@ function renderList() {
       badgeHtml = '<div class="unread-badge"></div>';
     }
 
+    let pendingBadge = p.isPending ? '<span style="color:#ff3b30; font-size:10px; font-weight:700; border:1px solid #ff3b30; padding:2px 6px; border-radius:10px; margin-right:6px; vertical-align:middle;">승인 대기</span>' : '';
+    let pendingActions = '';
+    if (isAdmin && p.isPending) {
+      pendingActions = 
+        '<div class="list-pending-actions" style="display: flex; gap: 8px; margin-top: 8px;">' +
+          '<button class="pending-btn list-approve-btn" onclick="approvePendingPrompt(\'' + p.id + '\')" style="padding:6px 12px; font-size:12px; font-weight:600; background:#34c759; color:#fff; border:none; border-radius:var(--r-md); cursor:pointer;">승인하기</button>' +
+          '<button class="pending-btn list-decline-btn" onclick="declinePendingPrompt(\'' + p.id + '\')" style="padding:6px 12px; font-size:12px; font-weight:600; background:rgba(255, 59, 48, 0.1); color:#ff3b30; border:1px solid rgba(255, 59, 48, 0.2); border-radius:var(--r-md); cursor:pointer;">거절하기</button>' +
+        '</div>';
+    }
+
     item.innerHTML =
       badgeHtml +
       '<div style="display:flex; width:100%; gap:var(--sp-md);">' +
         '<div class="list-item__author">' + a + '</div>' +
         '<div class="list-item__body">' +
-          '<p class="list-item__text">' + escHtml(p.text) + '</p>' +
+          '<p class="list-item__text">' + pendingBadge + escHtml(p.text) + '</p>' +
           '<p class="list-item__time">' + fmtTime(p.time) + '</p>' +
+          pendingActions +
         '</div>' +
         '<button class="delete-btn delete-btn--list" data-id="' + p.id + '" aria-label="삭제">&times;</button>' +
       '</div>' +
@@ -1513,7 +1535,8 @@ function startListener() {
             posY: typeof d.posY === 'number' ? d.posY : null,
             width: typeof d.width === 'number' ? d.width : null,
             height: typeof d.height === 'number' ? d.height : null,
-            comments: Array.isArray(d.comments) ? d.comments : []
+            comments: Array.isArray(d.comments) ? d.comments : [],
+            isPending: d.isPending || false
           };
         });
         prompts.sort(function(a, b) { return b.time - a.time; });
@@ -1527,34 +1550,62 @@ function startListener() {
   }
 }
 
-// --- Submit (with auth gate) ---
-function submitPrompt() {
-  requireLogin(function() {
-    var text = textarea.value.trim();
-    if (!text) return;
-    var author = authorInput.value.trim().toUpperCase().slice(0, 3) || '';
-    if (author) {
-      localStorage.setItem('pl_author', author);
-    } else {
-      localStorage.removeItem('pl_author');
-    }
-
-    db.collection('prompts').add({
-      text: text,
-      author: author,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    }).catch(function (e) {
-      console.warn('Write failed, adding locally:', e.message);
-      prompts.unshift({ id: 'local-' + Date.now(), text: text, author: author, time: Date.now() });
+// --- Admin Pending Request Actions ---
+function approvePendingPrompt(id) {
+  if (!isAdmin) return;
+  if (!id.startsWith('local-')) {
+    db.collection('prompts').doc(id).update({ isPending: false })
+      .then(() => showToast('승인되었습니다'))
+      .catch(err => console.warn('Approve failed:', err));
+  } else {
+    const p = prompts.find(pr => pr.id === id);
+    if (p) {
+      p.isPending = false;
+      showToast('승인되었습니다');
       if (currentView === 'float') renderFloat();
       if (currentView === 'list') renderList();
-    });
+    }
+  }
+}
 
-    textarea.value = '';
-    textarea.style.height = 'auto';
-    submitBtn.disabled = true;
-    textarea.focus();
+function declinePendingPrompt(id) {
+  if (!isAdmin) return;
+  deletePrompt(id, document.querySelector(`[data-id="${id}"]`) || document.createElement('div'));
+}
+
+// --- Submit (with auth gate) ---
+function submitPrompt() {
+  var text = textarea.value.trim();
+  if (!text) return;
+  var author = authorInput.value.trim().toUpperCase().slice(0, 3) || '';
+  if (author) {
+    localStorage.setItem('pl_author', author);
+  } else {
+    localStorage.removeItem('pl_author');
+  }
+
+  const isPending = !isLoggedIn; // If not logged in, it's pending
+
+  db.collection('prompts').add({
+    text: text,
+    author: author,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    isPending: isPending
+  }).catch(function (e) {
+    console.warn('Write failed, adding locally:', e.message);
+    prompts.unshift({ id: 'local-' + Date.now(), text: text, author: author, time: Date.now(), isPending: isPending });
+    if (currentView === 'float') renderFloat();
+    if (currentView === 'list') renderList();
   });
+
+  textarea.value = '';
+  textarea.style.height = 'auto';
+  submitBtn.disabled = true;
+  textarea.focus();
+  
+  if (isPending) {
+    showToast('승인 대기 상태로 전송되었습니다.');
+  }
 }
 
 // --- Library Data ---
