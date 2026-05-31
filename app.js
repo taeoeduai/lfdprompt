@@ -160,10 +160,10 @@ function updateAuthUI() {
     }
   }
 
-  // Show/Hide MY filter button based on user status (hidden for admin or guest)
+  // Show/Hide MY filter button based on user status (hidden for admin)
   const filterMy = document.getElementById('filter-my');
   if (filterMy) {
-    if (isLoggedIn && !isAdmin && currentUser.role !== 'guest') {
+    if (!isAdmin) {
       filterMy.style.display = 'inline-block';
     } else {
       filterMy.style.display = 'none';
@@ -733,13 +733,30 @@ function mkBubble(p, x, y, enter) {
       const newText = textEl.textContent.trim();
       if (newText && newText !== p.text) {
         if (!p.id.startsWith('local-')) {
-          db.collection('prompts').doc(p.id).update({ text: newText }).catch(function(err) { console.warn(err); });
+          db.collection('prompts').doc(p.id).update({ 
+            text: newText,
+            isPending: !isLoggedIn
+          }).then(() => {
+            if (!isLoggedIn) showToast('수정 요청이 전송되었습니다');
+          }).catch(function(err) { console.warn(err); });
         } else {
           p.text = newText;
+          if (!isLoggedIn) showToast('수정 요청이 전송되었습니다');
         }
       } else if (!newText) {
         textEl.textContent = p.text; // revert if empty
       }
+    }
+  });
+
+  textEl.addEventListener('click', function(e) {
+    const currentAuthor = localStorage.getItem('pl_author') || '';
+    if (p.author === currentAuthor && currentAuthor !== '' && textEl.getAttribute('contenteditable') !== 'true') {
+      e.stopPropagation();
+      el.classList.add('show-delete');
+      el.classList.add('is-editable');
+      textEl.setAttribute('contenteditable', 'true');
+      textEl.focus();
     }
   });
   
@@ -788,7 +805,7 @@ function mkBubble(p, x, y, enter) {
         el.classList.add('show-delete');
         
         const currentAuthor = localStorage.getItem('pl_author') || '';
-        const canEdit = isLoggedIn && (isAdmin || (p.author === currentAuthor && currentAuthor !== ''));
+        const canEdit = isAdmin || (p.author === currentAuthor && currentAuthor !== '');
         if (canEdit) {
           el.classList.add('is-editable');
           textEl.setAttribute('contenteditable', 'true');
@@ -1075,7 +1092,8 @@ function renderFloat() {
   if (emptyState) emptyState.remove();
 
   const r = canvas.getBoundingClientRect();
-  const show = prompts.filter(p => isAdmin || !p.isPending).slice(0, 25);
+  const currentAuthor = localStorage.getItem('pl_author') || '';
+  const show = prompts.filter(p => isAdmin || !p.isPending || (p.author === currentAuthor && currentAuthor !== '')).slice(0, 25);
   const showIds = new Set(show.map(p => p.id));
 
   // Remove old bubbles
@@ -1225,10 +1243,12 @@ function renderList() {
     return;
   }
   
-  let sorted = [...prompts].filter(p => isAdmin || !p.isPending);
+  let sorted = [...prompts];
+  const currentAuthor = localStorage.getItem('pl_author') || '';
   if (sortOrder === 'my') {
-    const currentAuthor = localStorage.getItem('pl_author') || '';
     sorted = sorted.filter(p => p.author === currentAuthor && currentAuthor !== '');
+  } else {
+    sorted = sorted.filter(p => isAdmin || !p.isPending || (p.author === currentAuthor && currentAuthor !== ''));
   }
   
   if (isAdmin && selectedAuthorFilter) {
@@ -1311,16 +1331,38 @@ function renderList() {
         const newText = textEl.textContent.trim();
         if (newText && newText !== p.text) {
           if (!p.id.startsWith('local-')) {
-            db.collection('prompts').doc(p.id).update({ text: newText })
-              .then(() => showToast('수정되었습니다'))
+            db.collection('prompts').doc(p.id).update({ 
+              text: newText,
+              isPending: !isLoggedIn
+            })
+              .then(() => {
+                showToast(isLoggedIn ? '수정되었습니다' : '수정 요청이 전송되었습니다');
+              })
               .catch(function(err) { console.warn(err); });
           } else {
             p.text = newText;
-            showToast('수정되었습니다');
+            showToast(isLoggedIn ? '수정되었습니다' : '수정 요청이 전송되었습니다');
           }
         } else if (!newText) {
           textEl.textContent = p.text; // revert if empty
         }
+      }
+    });
+
+    textEl.addEventListener('click', function(e) {
+      const currentAuthor = localStorage.getItem('pl_author') || '';
+      if (p.author === currentAuthor && currentAuthor !== '' && textEl.getAttribute('contenteditable') !== 'true') {
+        e.stopPropagation();
+        item.classList.add('is-editable');
+        textEl.setAttribute('contenteditable', 'true');
+        textEl.focus();
+        
+        const range = document.createRange();
+        const sel = window.getSelection();
+        range.selectNodeContents(textEl);
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
       }
     });
 
@@ -1348,7 +1390,7 @@ function renderList() {
 
       longPressTimer = setTimeout(function() {
         const currentAuthor = localStorage.getItem('pl_author') || '';
-        const canEdit = isLoggedIn && (isAdmin || (p.author === currentAuthor && currentAuthor !== ''));
+        const canEdit = isAdmin || (p.author === currentAuthor && currentAuthor !== '');
         if (canEdit) {
           if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
           
