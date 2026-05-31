@@ -768,9 +768,14 @@ function mkBubble(p, x, y, enter) {
   el.querySelector('.delete-btn').addEventListener('click', function (e) {
     e.stopPropagation();
     // Auth gate for delete
-    requireLogin(function() {
+    const currentAuthor = localStorage.getItem('pl_author') || '';
+    if (isAdmin || (p.author === currentAuthor && currentAuthor !== '')) {
       deletePrompt(p.id, el);
-    });
+    } else {
+      requireLogin(function() {
+        deletePrompt(p.id, el);
+      });
+    }
   });
 
 
@@ -1479,9 +1484,14 @@ function renderList() {
     item.querySelector('.delete-btn').addEventListener('click', function (e) {
       e.stopPropagation();
       // Auth gate for delete
-      requireLogin(function() {
+      const currentAuthor = localStorage.getItem('pl_author') || '';
+      if (isAdmin || (p.author === currentAuthor && currentAuthor !== '')) {
         deletePrompt(p.id, item);
-      });
+      } else {
+        requireLogin(function() {
+          deletePrompt(p.id, item);
+        });
+      }
     });
     
     // Initialize comment rendering
@@ -2215,8 +2225,9 @@ function openLibModal(item) {
   updatePromptDisplay();
 
   // Show/hide edit button: admin can edit live items, author can edit their own pending requests
-  const isAuthor = item.author === (currentUser && currentUser.id ? currentUser.id.toUpperCase() : '');
-  const canEditPending = isLoggedIn && item.isPendingRequest && isAuthor;
+  const currentAuthor = localStorage.getItem('pl_author') || '';
+  const isAuthor = item.author === currentAuthor && currentAuthor !== '';
+  const canEditPending = item.isPendingRequest && isAuthor;
   if ((isAdmin && !item.isPendingRequest) || canEditPending) {
     libModalEdit.classList.remove('hidden');
   } else {
@@ -2437,8 +2448,10 @@ if (lightboxEl && lightboxClose) {
 function enterEditMode() {
   if (!libEditingItem) return;
   const isNewCustom = String(libEditingItem.id).startsWith('lib-custom-');
-  const isAuthor = libEditingItem.author === (currentUser && currentUser.id ? currentUser.id.toUpperCase() : '');
-  const allowed = isAdmin || (isLoggedIn && isNewCustom && (isAuthor || !libEditingItem.author));
+  const currentAuthor = localStorage.getItem('pl_author') || '';
+  const isAuthor = libEditingItem.author === currentAuthor && currentAuthor !== '';
+  const canEditPending = libEditingItem.isPendingRequest && isAuthor;
+  const allowed = isAdmin || canEditPending || (isLoggedIn && isNewCustom && (isAuthor || !libEditingItem.author));
   if (!allowed) return;
   libEditMode = true;
   libEditActiveLang = 'ko'; // Default edit tab is Korean
