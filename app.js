@@ -446,9 +446,11 @@ dropdownLogoutBtn.addEventListener('click', () => {
   logout();
 });
 
-navLogoutBtn.addEventListener('click', function() {
-  logout();
-});
+if (navLogoutBtn) {
+  navLogoutBtn.addEventListener('click', function() {
+    logout();
+  });
+}
 
 loginModalBackdrop.addEventListener('click', closeLoginModal);
 loginModalClose.addEventListener('click', closeLoginModal);
