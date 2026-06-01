@@ -61,7 +61,7 @@ const AUTH_CREDENTIALS = {
   admin: { password: '3913', role: 'admin' },
   guest: { password: '2026', role: 'guest' }
 };
-const DEFAULT_PASSWORD = '3377';
+const DEFAULT_PASSWORD = '373737';
 
 let isLoggedIn = false;
 let currentUser = null; // { id, role }
