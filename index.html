@@ -42,9 +42,13 @@
           <div class="global-nav__auth">
             <div class="nav-auth-greeting" id="nav-auth-greeting">로그인을 해주세요!</div>
             <button class="nav-login-btn" id="nav-login-btn">로그인</button>
-            <div class="nav-user-info hidden" id="nav-user-info">
-              <span class="nav-user-badge" id="nav-user-badge"></span>
-              <button class="nav-logout-btn" id="nav-logout-btn">로그아웃</button>
+            <div class="nav-user-info hidden" id="nav-user-info" style="position: relative;">
+              <span class="nav-user-badge" id="nav-user-badge" style="cursor: pointer;"></span>
+              <div id="nav-user-dropdown" class="hidden" style="position: absolute; top: calc(100% + 8px); right: 0; background: #fff; border-radius: var(--r-md); box-shadow: 0 10px 24px rgba(0,0,0,0.12); padding: 6px; display: flex; flex-direction: column; gap: 2px; z-index: 100; min-width: 140px; border: 1px solid rgba(0,0,0,0.06); overflow: hidden; opacity: 0; transition: opacity 0.2s, transform 0.2s; transform: translateY(-4px);">
+                <button id="dropdown-mypage-btn" style="padding: 10px 14px; border: none; background: transparent; text-align: left; font-size: 13.5px; font-weight: 600; color: var(--color-ink); cursor: pointer; border-radius: var(--r-sm); transition: background 0.15s;">마이페이지</button>
+                <div style="height: 1px; background: rgba(0,0,0,0.05); margin: 2px 0;"></div>
+                <button id="dropdown-logout-btn" style="padding: 10px 14px; border: none; background: transparent; text-align: left; font-size: 13.5px; font-weight: 600; color: #ff3b30; cursor: pointer; border-radius: var(--r-sm); transition: background 0.15s;">로그아웃</button>
+              </div>
             </div>
           </div>
           <div class="mobile-menu-footer"
@@ -213,11 +217,22 @@
       </div>
       <h2 class="profile-modal__title" id="profile-modal-title" style="margin: 0 0 24px; font-size: 20px; font-weight: 700; color: var(--color-ink);">마이페이지</h2>
       
-      <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; gap: 12px; justify-content: space-around; margin-bottom: 24px; padding: 16px 0; background: #f9f9fb; border-radius: var(--r-lg);">
+        <div style="text-align: center; flex: 1;">
+          <div style="font-size: 24px; font-weight: 800; color: var(--color-ink);" id="mypage-stat-prompts">0</div>
+          <div style="font-size: 11.5px; font-weight: 600; color: #888; margin-top: 4px;">작성한 프롬프트</div>
+        </div>
+        <div style="width: 1px; background: rgba(0,0,0,0.08);"></div>
+        <div style="text-align: center; flex: 1;">
+          <div style="font-size: 24px; font-weight: 800; color: var(--color-ink);" id="mypage-stat-library">0</div>
+          <div style="font-size: 11.5px; font-weight: 600; color: #888; margin-top: 4px;">업로드한 라이브러리</div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px;">
         <input type="file" id="profile-image-input" accept="image/*" style="display: none;" />
         <button id="profile-btn-add" style="padding: 14px; background: #FFF1BC; border: none; border-radius: var(--r-md); font-size: 14px; font-weight: 600; color: #333; cursor: pointer; transition: all 0.2s;">프로필 이미지 설정/변경</button>
         <button id="profile-btn-delete" class="hidden" style="padding: 14px; background: #fff; border: 1px solid rgba(255, 59, 48, 0.3); border-radius: var(--r-md); font-size: 14px; font-weight: 600; color: #ff3b30; cursor: pointer; transition: all 0.2s;">프로필 이미지 삭제</button>
-        <button id="profile-btn-logout" style="padding: 14px; background: #f5f5f7; border: none; border-radius: var(--r-md); font-size: 14px; font-weight: 600; color: #555; cursor: pointer; transition: all 0.2s; margin-top: 8px;">로그아웃</button>
       </div>
     </div>
   </div>

@@ -338,16 +338,53 @@ navLoginBtn.addEventListener('click', function() {
   openLoginModal();
 });
 
+const navUserDropdown = document.getElementById('nav-user-dropdown');
+const dropdownMypageBtn = document.getElementById('dropdown-mypage-btn');
+const dropdownLogoutBtn = document.getElementById('dropdown-logout-btn');
+
 navUserBadge.addEventListener('click', function(e) {
   e.stopPropagation();
   if (typeof window.closeMobileMenu === 'function') window.closeMobileMenu();
-  openProfileModal();
+  
+  if (navUserDropdown.classList.contains('hidden')) {
+    navUserDropdown.classList.remove('hidden');
+    setTimeout(() => {
+      navUserDropdown.style.opacity = '1';
+      navUserDropdown.style.transform = 'translateY(0)';
+    }, 10);
+  } else {
+    navUserDropdown.style.opacity = '0';
+    navUserDropdown.style.transform = 'translateY(-4px)';
+    setTimeout(() => {
+      navUserDropdown.classList.add('hidden');
+    }, 200);
+  }
 });
 
 document.addEventListener('click', function(e) {
   if (window.innerWidth > 768 && !navUserInfo.contains(e.target)) {
-    // navLogoutBtn no longer used for toggle
+    if (navUserDropdown && !navUserDropdown.classList.contains('hidden')) {
+      navUserDropdown.style.opacity = '0';
+      navUserDropdown.style.transform = 'translateY(-4px)';
+      setTimeout(() => {
+        navUserDropdown.classList.add('hidden');
+      }, 200);
+    }
   }
+});
+
+dropdownMypageBtn.addEventListener('click', () => {
+  navUserDropdown.style.opacity = '0';
+  navUserDropdown.style.transform = 'translateY(-4px)';
+  setTimeout(() => navUserDropdown.classList.add('hidden'), 200);
+  openProfileModal();
+});
+
+dropdownLogoutBtn.addEventListener('click', () => {
+  navUserDropdown.style.opacity = '0';
+  navUserDropdown.style.transform = 'translateY(-4px)';
+  setTimeout(() => navUserDropdown.classList.add('hidden'), 200);
+  logout();
 });
 
 navLogoutBtn.addEventListener('click', function() {
@@ -367,7 +404,6 @@ loginIdInput.addEventListener('keydown', function(e) {
   if (e.key === 'Enter') loginPwInput.focus();
 });
 
-// --- Profile Modal & Sync ---
 const profileModal = document.getElementById('profile-modal');
 const profileModalBackdrop = document.getElementById('profile-modal-backdrop');
 const profileModalClose = document.getElementById('profile-modal-close');
@@ -375,7 +411,6 @@ const profileAvatar = document.getElementById('profile-modal-avatar');
 const profileInput = document.getElementById('profile-image-input');
 const profileBtnAdd = document.getElementById('profile-btn-add');
 const profileBtnDelete = document.getElementById('profile-btn-delete');
-const profileBtnLogout = document.getElementById('profile-btn-logout');
 
 function startUserProfileListener() {
   db.collection('users').onSnapshot(function(snapshot) {
@@ -417,6 +452,14 @@ function openProfileModal() {
     profileBtnDelete.classList.add('hidden');
     profileBtnAdd.textContent = '프로필 이미지 설정';
   }
+
+  // Calculate and set stats
+  const myPromptsCount = prompts.filter(p => p.author === uId).length;
+  // Calculate user's uploads (both pending requests and actual library entries if author is present)
+  let myLibraryCount = libraryRequests.filter(r => r.author === uId).length;
+  
+  document.getElementById('mypage-stat-prompts').textContent = myPromptsCount;
+  document.getElementById('mypage-stat-library').textContent = myLibraryCount;
   
   profileModal.style.display = 'flex';
   // Trigger reflow
@@ -435,11 +478,6 @@ function closeProfileModal() {
 
 profileModalBackdrop.addEventListener('click', closeProfileModal);
 profileModalClose.addEventListener('click', closeProfileModal);
-
-profileBtnLogout.addEventListener('click', () => {
-  closeProfileModal();
-  logout();
-});
 
 profileBtnAdd.addEventListener('click', () => {
   profileInput.click();
