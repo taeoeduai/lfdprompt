@@ -42,12 +42,12 @@
           <div class="global-nav__auth">
             <div class="nav-auth-greeting" id="nav-auth-greeting">로그인을 해주세요!</div>
             <button class="nav-login-btn" id="nav-login-btn">로그인</button>
-            <div class="nav-user-info hidden" id="nav-user-info" style="position: relative;">
-              <span class="nav-user-badge" id="nav-user-badge" style="cursor: pointer;"></span>
-              <div id="nav-user-dropdown" class="hidden" style="position: absolute; top: calc(100% + 8px); right: 0; background: #fff; border-radius: var(--r-md); box-shadow: 0 10px 24px rgba(0,0,0,0.12); padding: 6px; display: flex; flex-direction: column; gap: 2px; z-index: 100; min-width: 140px; border: 1px solid rgba(0,0,0,0.06); overflow: hidden; opacity: 0; transition: opacity 0.2s, transform 0.2s; transform: translateY(-4px);">
-                <button id="dropdown-mypage-btn" style="padding: 10px 14px; border: none; background: transparent; text-align: left; font-size: 13.5px; font-weight: 600; color: var(--color-ink); cursor: pointer; border-radius: var(--r-sm); transition: background 0.15s;">마이페이지</button>
-                <div style="height: 1px; background: rgba(0,0,0,0.05); margin: 2px 0;"></div>
-                <button id="dropdown-logout-btn" style="padding: 10px 14px; border: none; background: transparent; text-align: left; font-size: 13.5px; font-weight: 600; color: #ff3b30; cursor: pointer; border-radius: var(--r-sm); transition: background 0.15s;">로그아웃</button>
+            <div class="nav-user-info hidden" id="nav-user-info">
+              <span class="nav-user-badge" id="nav-user-badge"></span>
+              <div id="nav-user-dropdown" class="nav-user-dropdown hidden">
+                <button id="dropdown-mypage-btn" class="nav-dropdown-btn">마이페이지</button>
+                <div class="nav-dropdown-divider"></div>
+                <button id="dropdown-logout-btn" class="nav-dropdown-btn delete">로그아웃</button>
               </div>
             </div>
           </div>
