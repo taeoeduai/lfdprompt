@@ -2473,4 +2473,62 @@ body.is-admin .delete-btn--list {
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
+/* Profile Images */
+.profile-img-badge {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.profile-img-bubble {
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-right: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.profile-img-list {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+}
+
+.user-display-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-display-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 1.3;
+}
+
+.user-display-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.user-display-role {
+  font-size: 13px;
+  font-weight: 400;
+  color: #888;
+}
+
+.user-display-team {
+  font-size: 12px;
+  font-weight: 500;
+  color: #a0a0aa;
+  margin-top: 1px;
+}
+
 

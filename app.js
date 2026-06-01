@@ -55,6 +55,65 @@ let unauthorizedClicksCount = 0;
 let selectedAuthorFilter = null;
 let userProfiles = {};
 
+// Default profiles from foundfoundedmeet
+const FF_MEMBERS = {
+  "TY": { name: "김태영", role: "디자이너", team: "파운드/파운디드 ID", img: "avatar_taeyoung.png" },
+  "JW": { name: "곽진우", role: "디자이너", team: "파운드/파운디드 ID", img: "avatar_jinwoo.png" },
+  "DE": { name: "권다은", role: "디자이너", team: "파운드/파운디드 ID", img: "avatar_daeun.png" },
+  "KS": { name: "남경선", role: "디자이너", team: "파운드/파운디드 ID", img: "avatar_kyungsun.png" },
+  "YJ": { name: "신유진", role: "시니어 디자이너", team: "파운드/파운디드 ID", img: "avatar_yujin.png" },
+  "JB": { name: "신준범", role: "프리랜서 디자이너", team: "파운드/파운디드 ID", img: "avatar_junbeom.png" },
+  "HY": { name: "신현열", role: "시니어 디자이너", team: "파운드/파운디드 ID", img: "avatar_hyunyeol.png" },
+  "JS": { name: "윤정수", role: "인턴", team: "파운드/파운디드 ID", img: "avatar_jungsoo.png" },
+  "CG": { name: "김춘구", role: "디렉터", team: "파운드/파운디드 ID", img: "avatar_boa.png" }, 
+  "GH": { name: "송규호", role: "디렉터", team: "파운드/파운디드 ID", img: "avatar_gyuho.png" },
+  "DY": { name: "김도영", role: "인턴", team: "파운드/파운디드 VD", img: "avatar_doyoung.png" },
+  "HK": { name: "안혜경", role: "디자이너", team: "파운드/파운디드 VD", img: "avatar_hyekyung.png" },
+  "JM": { name: "여지민", role: "디자이너", team: "파운드/파운디드 VD", img: "avatar_jimin.png" },
+  "SH": { name: "안수현", role: "디자이너", team: "파운드/파운디드 VD", img: "avatar_suhyun.png" },
+  "OX": { name: "oxo", role: "디렉터", team: "파운드/파운디드 VD", img: "avatar_oxo.png" },
+};
+
+function getUserDisplay(initials) {
+  const u = initials ? initials.toUpperCase() : '';
+  const uploadedImg = userProfiles[u];
+  const ff = FF_MEMBERS[u];
+  
+  const imgSrc = uploadedImg ? uploadedImg : (ff ? ff.img : null);
+  
+  if (ff) {
+    return `
+      <div class="user-display-wrap">
+        ${imgSrc ? `<img src="${imgSrc}" class="profile-img-list" alt="${initials}" />` : `<div class="profile-img-list" style="background:#f0f0f5; display:flex; align-items:center; justify-content:center; color:#555; font-size:14px; font-weight:700;">${initials}</div>`}
+        <div class="user-display-info">
+          <div>
+            <span class="user-display-name">${ff.name}</span>
+            <span class="user-display-role">${ff.role}</span>
+          </div>
+          <div class="user-display-team">${ff.team}</div>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Fallback for unknown users
+  return `
+    <div class="user-display-wrap">
+      ${imgSrc ? `<img src="${imgSrc}" class="profile-img-list" alt="${initials}" />` : `<div class="profile-img-list" style="background:#f0f0f5; display:flex; align-items:center; justify-content:center; color:#555; font-size:14px; font-weight:700;">${initials}</div>`}
+      <div class="user-display-info">
+        <span class="user-display-name">${initials}</span>
+      </div>
+    </div>
+  `;
+}
+
+function getAvatarSrc(initials) {
+  const u = initials ? initials.toUpperCase() : '';
+  const uploadedImg = userProfiles[u];
+  const ff = FF_MEMBERS[u];
+  return uploadedImg ? uploadedImg : (ff ? ff.img : null);
+}
+
 // ============================================
 // AUTH SYSTEM
 // ============================================
@@ -443,8 +502,10 @@ startUserProfileListener();
 function openProfileModal() {
   if (!isLoggedIn) return;
   const uId = currentUser.id.toUpperCase();
-  if (userProfiles[uId]) {
-    profileAvatar.innerHTML = `<img src="${userProfiles[uId]}" style="width:100%; height:100%; object-fit:cover;" />`;
+  const imgSrc = getAvatarSrc(uId);
+  
+  if (imgSrc) {
+    profileAvatar.innerHTML = `<img src="${imgSrc}" style="width:100%; height:100%; object-fit:cover;" />`;
     profileBtnDelete.classList.remove('hidden');
     profileBtnAdd.textContent = '프로필 이미지 변경';
   } else {
@@ -883,8 +944,9 @@ function mkBubble(p, x, y, enter) {
 
   let authorHtml = '';
   if (a) {
-    let profileImg = (p.author && userProfiles[p.author.toUpperCase()]) ? `<img src="${userProfiles[p.author.toUpperCase()]}" class="profile-img-bubble" />` : '';
-    authorHtml = '<p class="bubble__author">' + profileImg + a + (p.isPending ? ' <span style="color:#ff3b30; font-size:9px; border:1px solid #ff3b30; padding:1px 4px; border-radius:10px; margin-left:4px;">대기중</span>' : '') + '</p>';
+    const imgSrc = getAvatarSrc(a);
+    let profileImg = imgSrc ? `<img src="${imgSrc}" class="profile-img-bubble" />` : '';
+    authorHtml = `<div class="bubble__author">${profileImg}${a}${p.isPending ? ' <span style="color:#ff3b30; font-size:9px; border:1px solid #ff3b30; padding:1px 4px; border-radius:10px; margin-left:4px;">대기중</span>' : ''}</div>`;
   }
 
   el.innerHTML =
@@ -1496,17 +1558,13 @@ function renderList() {
         '</div>';
     }
 
-    let authorDisplay = a;
-    let authorStyle = '';
-    if (p.author && userProfiles[p.author.toUpperCase()]) {
-      authorDisplay = `<img src="${userProfiles[p.author.toUpperCase()]}" class="profile-img-list" alt="${a}" />`;
-      authorStyle = 'padding:0; overflow:hidden; border:1px solid rgba(0,0,0,0.1);';
-    }
+    const isAuthorSelected = selectedAuthorFilter === a;
+    const authorHtml = a ? getUserDisplay(a) : '';
 
     item.innerHTML =
       badgeHtml +
       '<div style="display:flex; width:100%; gap:var(--sp-md);">' +
-        `<div class="list-item__author" style="${authorStyle}">` + authorDisplay + '</div>' +
+        `<div class="list-item__author ${isAuthorSelected ? 'is-active' : ''}" data-author="${a}" style="display:block; padding:8px 0; margin-bottom:8px;">${authorHtml}</div>` +
         '<div class="list-item__body">' +
           '<p class="list-item__text">' + pendingBadge + escHtml(p.text) + '</p>' +
           '<p class="list-item__time">' + fmtTime(p.time) + '</p>' +
@@ -2219,8 +2277,8 @@ function renderLibrary() {
       }
 
       let reqAuthorDisplay = `요청자: ${item.author || 'GST'}`;
-      if (item.author && userProfiles[item.author.toUpperCase()]) {
-        reqAuthorDisplay = `<img src="${userProfiles[item.author.toUpperCase()]}" class="profile-img-bubble" /> ${item.author}`;
+      if (item.author) {
+        reqAuthorDisplay = `<div style="transform: scale(0.85); transform-origin: left center;">${getUserDisplay(item.author)}</div>`;
       }
       const copyArea = item.isPendingRequest 
         ? (isAdmin 
@@ -2264,8 +2322,8 @@ function renderLibrary() {
       }
 
       let reqAuthorDisplayGrid = `요청자: ${item.author || 'GST'}`;
-      if (item.author && userProfiles[item.author.toUpperCase()]) {
-        reqAuthorDisplayGrid = `<img src="${userProfiles[item.author.toUpperCase()]}" class="profile-img-bubble" /> ${item.author}`;
+      if (item.author) {
+        reqAuthorDisplayGrid = `<div style="transform: scale(0.85); transform-origin: left center; margin-bottom: 4px;">${getUserDisplay(item.author)}</div>`;
       }
       const copyArea = item.isPendingRequest 
         ? (isAdmin 
