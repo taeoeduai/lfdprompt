@@ -1576,7 +1576,7 @@ function renderList() {
     item.innerHTML =
       badgeHtml +
       '<div style="display:flex; width:100%; gap:var(--sp-md);">' +
-        `<div class="list-item__author ${isAuthorSelected ? 'is-active' : ''}" data-author="${a}" style="display:block; padding:8px 0; margin-bottom:8px;">${authorHtml}</div>` +
+        `<div class="list-item__author ${isAuthorSelected ? 'is-active' : ''}" data-author="${a}">${authorHtml}</div>` +
         '<div class="list-item__body">' +
           '<p class="list-item__text">' + pendingBadge + escHtml(p.text) + '</p>' +
           '<p class="list-item__time">' + fmtTime(p.time) + '</p>' +
