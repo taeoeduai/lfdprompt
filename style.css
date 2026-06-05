@@ -1298,6 +1298,19 @@ body.is-admin .delete-btn--list {
   cursor: pointer;
 }
 
+.nav-user-badge.is-admin-badge {
+  padding: 6px 18px;
+  height: 32px;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 800;
+  color: #000 !important;
+  background: #FFF1BC !important;
+  border-radius: 20px !important;
+  letter-spacing: 0.5px;
+  box-sizing: border-box;
+}
+
 .nav-user-dropdown {
   position: absolute;
   top: calc(100% + 8px);

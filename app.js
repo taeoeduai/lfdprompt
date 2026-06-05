@@ -173,15 +173,24 @@ function updateAuthUI() {
     navLoginBtn.classList.add('hidden');
     navUserInfo.classList.remove('hidden');
     const uId = currentUser.id.toUpperCase();
-    if (userProfiles[uId]) {
+    if (isAdmin) {
+      navUserBadge.textContent = uId;
+      navUserBadge.classList.add('is-admin-badge');
+      navUserBadge.style.padding = '';
+      navUserBadge.style.border = '';
+      navUserBadge.style.overflow = '';
+    } else if (userProfiles[uId]) {
       navUserBadge.innerHTML = `<img src="${userProfiles[uId]}" class="profile-img-badge" alt="${uId}" />`;
       navUserBadge.style.padding = '0';
       navUserBadge.style.border = '1px solid rgba(0,0,0,0.1)';
       navUserBadge.style.overflow = 'hidden';
+      navUserBadge.classList.remove('is-admin-badge');
     } else {
       navUserBadge.textContent = uId;
       navUserBadge.style.padding = '';
       navUserBadge.style.border = '';
+      navUserBadge.style.overflow = '';
+      navUserBadge.classList.remove('is-admin-badge');
     }
     if (greetingEl) {
       greetingEl.innerHTML = `${uId}님<br>환영합니다.`;
@@ -191,6 +200,10 @@ function updateAuthUI() {
     navLoginBtn.classList.remove('hidden');
     navUserInfo.classList.add('hidden');
     navUserBadge.textContent = '';
+    navUserBadge.classList.remove('is-admin-badge');
+    navUserBadge.style.padding = '';
+    navUserBadge.style.border = '';
+    navUserBadge.style.overflow = '';
     if (greetingEl) {
       greetingEl.innerHTML = '로그인을 해주세요!';
     }
