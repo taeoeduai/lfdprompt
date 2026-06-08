@@ -306,6 +306,16 @@ function updateAuthUI() {
     else cleanupList.classList.add('hidden');
   }
 
+  // Show/Hide user management button based on admin status
+  const userMgmtBtn = document.getElementById('dropdown-usermgmt-btn');
+  if (userMgmtBtn) {
+    if (isLoggedIn && isAdmin) {
+      userMgmtBtn.classList.remove('hidden');
+    } else {
+      userMgmtBtn.classList.add('hidden');
+    }
+  }
+
   // Toggle admin class on body for global admin styles (e.g. always show delete buttons)
   if (isAdmin) {
     document.body.classList.add('is-admin');
@@ -406,7 +416,11 @@ function attemptLogin() {
       if (doc.exists) {
         const userData = doc.data();
         if (userData.password === pw) {
-          loginSuccess({ id: userData.id, role: 'registered_user' });
+          if (userData.isApproved === true) {
+            loginSuccess({ id: userData.id, role: 'registered_user' });
+          } else {
+            showLoginError('관리자의 승인을 대기 중입니다.');
+          }
         } else {
           showLoginError('비밀번호가 올바르지 않습니다.');
         }
@@ -447,10 +461,11 @@ function attemptSignUp() {
         db.collection('registered_users').doc(upperId).set({
           id: id,
           password: pw,
-          role: 'registered_user'
+          role: 'registered_user',
+          isApproved: false
         })
         .then(() => {
-          showToast('회원가입이 완료되었습니다! 로그인해주세요.');
+          showToast('회원가입이 완료되었습니다! 승인 대기 후 이용해 주세요.');
           setModalSignUpMode(false);
           loginIdInput.value = id;
           loginPwInput.value = '';
@@ -512,16 +527,19 @@ function setModalSignUpMode(isSignUp) {
   isSignUpMode = isSignUp;
   const modalTitle = document.querySelector('.login-modal__title');
   const modalSubtitle = document.querySelector('.login-modal__subtitle');
+  const idLabel = document.querySelector('label[for="login-id"]');
   
   if (isSignUp) {
     if (modalTitle) modalTitle.textContent = '회원가입';
     if (modalSubtitle) modalSubtitle.textContent = '가입할 아이디와 비밀번호를 입력해주세요';
+    if (idLabel) idLabel.textContent = '아이디';
     loginSubmitBtn.textContent = '회원가입 완료';
     if (loginModalToggleText) loginModalToggleText.textContent = '이미 계정이 있으신가요?';
     if (loginModalToggleBtn) loginModalToggleBtn.textContent = '로그인하기';
   } else {
     if (modalTitle) modalTitle.textContent = '로그인';
     if (modalSubtitle) modalSubtitle.textContent = '아이디와 비밀번호를 입력해주세요';
+    if (idLabel) idLabel.textContent = '아이디 (이름)';
     loginSubmitBtn.textContent = '로그인';
     if (loginModalToggleText) loginModalToggleText.textContent = '계정이 없으신가요?';
     if (loginModalToggleBtn) loginModalToggleBtn.textContent = '회원가입하기';
@@ -801,6 +819,107 @@ profileInput.addEventListener('change', function(e) {
   };
   reader.readAsDataURL(file);
 });
+
+const userMgmtModal = document.getElementById('user-mgmt-modal');
+const userMgmtModalBackdrop = document.getElementById('user-mgmt-modal-backdrop');
+const userMgmtModalClose = document.getElementById('user-mgmt-modal-close');
+const userMgmtListContainer = document.getElementById('user-mgmt-list-container');
+const dropdownUsermgmtBtn = document.getElementById('dropdown-usermgmt-btn');
+
+function openUserMgmtModal() {
+  if (!isLoggedIn || !isAdmin) return;
+  
+  userMgmtListContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">로딩 중...</div>';
+  
+  userMgmtModal.style.display = 'flex';
+  userMgmtModal.offsetHeight; // force reflow
+  userMgmtModal.classList.add('is-open');
+  userMgmtModal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  
+  // Fetch users real-time
+  db.collection('registered_users').onSnapshot((snapshot) => {
+    userMgmtListContainer.innerHTML = '';
+    const users = [];
+    snapshot.forEach((doc) => {
+      users.push({ id: doc.id, ...doc.data() });
+    });
+    
+    if (users.length === 0) {
+      userMgmtListContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">가입된 사용자가 없습니다.</div>';
+      return;
+    }
+    
+    users.forEach((u) => {
+      const div = document.createElement('div');
+      div.style.display = 'flex';
+      div.style.alignItems = 'center';
+      div.style.justifyContent = 'space-between';
+      div.style.padding = '10px 12px';
+      div.style.background = '#f9f9fb';
+      div.style.borderRadius = 'var(--r-md)';
+      div.style.border = '1px solid rgba(0,0,0,0.04)';
+      
+      const statusText = u.isApproved ? '<span style="color:#34c759; font-size:11.5px; font-weight:700; margin-left:6px;">승인됨</span>' : '<span style="color:#ff9500; font-size:11.5px; font-weight:700; margin-left:6px;">대기중</span>';
+      
+      div.innerHTML = `
+        <div>
+          <strong style="font-size:14px; color:var(--color-ink);">${u.id}</strong>
+          ${statusText}
+        </div>
+        <div style="display:flex; gap:6px;">
+          ${!u.isApproved ? `<button class="approve-user-btn" style="padding:6px 12px; font-size:12px; font-weight:600; background:#34c759; color:#fff; border:none; border-radius:var(--r-sm); cursor:pointer;">승인</button>` : ''}
+          <button class="delete-user-btn" style="padding:6px 12px; font-size:12px; font-weight:600; background:rgba(255,59,48,0.1); color:#ff3b30; border:1px solid rgba(255,59,48,0.15); border-radius:var(--r-sm); cursor:pointer;">삭제</button>
+        </div>
+      `;
+      
+      const approveBtn = div.querySelector('.approve-user-btn');
+      if (approveBtn) {
+        approveBtn.addEventListener('click', () => {
+          db.collection('registered_users').doc(u.id).update({ isApproved: true })
+            .then(() => showToast(`${u.id} 계정이 승인되었습니다.`))
+            .catch(err => console.error(err));
+        });
+      }
+      
+      const deleteBtn = div.querySelector('.delete-user-btn');
+      if (deleteBtn) {
+        deleteBtn.addEventListener('click', () => {
+          if (confirm(`${u.id} 사용자를 삭제하시겠습니까?`)) {
+            db.collection('registered_users').doc(u.id).delete()
+              .then(() => showToast(`${u.id} 계정이 삭제되었습니다.`))
+              .catch(err => console.error(err));
+          }
+        });
+      }
+      
+      userMgmtListContainer.appendChild(div);
+    });
+  }, (err) => {
+    console.error(err);
+    userMgmtListContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#ff3b30;">데이터 로드 오류</div>';
+  });
+}
+
+function closeUserMgmtModal() {
+  userMgmtModal.classList.remove('is-open');
+  userMgmtModal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  setTimeout(() => { userMgmtModal.style.display = 'none'; }, 200);
+}
+
+if (dropdownUsermgmtBtn) {
+  dropdownUsermgmtBtn.addEventListener('click', () => {
+    if (typeof window.closeMobileMenu === 'function') window.closeMobileMenu();
+    navUserDropdown.style.opacity = '0';
+    navUserDropdown.style.transform = 'translateY(-4px)';
+    setTimeout(() => navUserDropdown.classList.add('hidden'), 200);
+    openUserMgmtModal();
+  });
+}
+
+if (userMgmtModalBackdrop) userMgmtModalBackdrop.addEventListener('click', closeUserMgmtModal);
+if (userMgmtModalClose) userMgmtModalClose.addEventListener('click', closeUserMgmtModal);
 
 
 // --- Toast ---
