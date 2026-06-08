@@ -141,6 +141,9 @@ const FF_MEMBERS = {
 };
 
 function getUserDisplay(initials) {
+  if (isLoggedIn && currentUser && currentUser.role === 'registered_user') {
+    return '';
+  }
   const u = initials ? initials.toUpperCase() : '';
   const uploadedImg = userProfiles[u];
   const ff = FF_MEMBERS[u];
@@ -205,6 +208,9 @@ const loginIdInput = document.getElementById('login-id');
 const loginPwInput = document.getElementById('login-pw');
 const loginError = document.getElementById('login-error');
 const loginSubmitBtn = document.getElementById('login-submit');
+const loginModalToggleText = document.getElementById('login-modal-toggle-text');
+const loginModalToggleBtn = document.getElementById('login-modal-toggle-btn');
+let isSignUpMode = false;
 
 // Pending action after login (callback)
 let pendingAuthAction = null;
@@ -393,7 +399,73 @@ function attemptLogin() {
     return;
   }
 
-  showLoginError('아이디 또는 비밀번호가 올바르지 않습니다.');
+  // Check registered users in Firestore
+  const upperId = id.toUpperCase();
+  db.collection('registered_users').doc(upperId).get()
+    .then((doc) => {
+      if (doc.exists) {
+        const userData = doc.data();
+        if (userData.password === pw) {
+          loginSuccess({ id: userData.id, role: 'registered_user' });
+        } else {
+          showLoginError('비밀번호가 올바르지 않습니다.');
+        }
+      } else {
+        showLoginError('아이디 또는 비밀번호가 올바르지 않습니다.');
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      showLoginError('로그인 중 오류가 발생했습니다.');
+    });
+}
+
+function attemptSignUp() {
+  const id = loginIdInput.value.trim();
+  const pw = loginPwInput.value.trim();
+
+  if (!id || !pw) {
+    showLoginError('아이디와 비밀번호를 입력해주세요.');
+    return;
+  }
+
+  const upperId = id.toUpperCase();
+
+  // Prevent signing up as admin or guest
+  if (upperId === 'ADMIN' || upperId === 'GUEST' || upperId === '게스트') {
+    showLoginError('사용할 수 없는 아이디입니다.');
+    return;
+  }
+
+  // Check if user already exists
+  db.collection('registered_users').doc(upperId).get()
+    .then((doc) => {
+      if (doc.exists) {
+        showLoginError('이미 존재하는 아이디입니다.');
+      } else {
+        // Create user doc
+        db.collection('registered_users').doc(upperId).set({
+          id: id,
+          password: pw,
+          role: 'registered_user'
+        })
+        .then(() => {
+          showToast('회원가입이 완료되었습니다! 로그인해주세요.');
+          setModalSignUpMode(false);
+          loginIdInput.value = id;
+          loginPwInput.value = '';
+          loginPwInput.focus();
+        })
+        .catch((err) => {
+          console.error(err);
+          showLoginError('회원가입 중 오류가 발생했습니다.');
+        });
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      showLoginError('서버 통신 오류가 발생했습니다.');
+    });
 }
 
 function loginSuccess(user) {
@@ -436,11 +508,33 @@ function logout() {
   showToast('로그아웃되었습니다');
 }
 
+function setModalSignUpMode(isSignUp) {
+  isSignUpMode = isSignUp;
+  const modalTitle = document.querySelector('.login-modal__title');
+  const modalSubtitle = document.querySelector('.login-modal__subtitle');
+  
+  if (isSignUp) {
+    if (modalTitle) modalTitle.textContent = '회원가입';
+    if (modalSubtitle) modalSubtitle.textContent = '가입할 아이디와 비밀번호를 입력해주세요';
+    loginSubmitBtn.textContent = '회원가입 완료';
+    if (loginModalToggleText) loginModalToggleText.textContent = '이미 계정이 있으신가요?';
+    if (loginModalToggleBtn) loginModalToggleBtn.textContent = '로그인하기';
+  } else {
+    if (modalTitle) modalTitle.textContent = '로그인';
+    if (modalSubtitle) modalSubtitle.textContent = '아이디와 비밀번호를 입력해주세요';
+    loginSubmitBtn.textContent = '로그인';
+    if (loginModalToggleText) loginModalToggleText.textContent = '계정이 없으신가요?';
+    if (loginModalToggleBtn) loginModalToggleBtn.textContent = '회원가입하기';
+  }
+  loginError.classList.add('hidden');
+}
+
 // --- Login Modal ---
 function openLoginModal(afterLoginAction) {
   pendingAuthAction = afterLoginAction || null;
   loginIdInput.value = '';
   loginPwInput.value = '';
+  setModalSignUpMode(false);
   loginError.classList.add('hidden');
   loginModal.classList.add('is-open');
   loginModal.setAttribute('aria-hidden', 'false');
@@ -539,15 +633,33 @@ if (navLogoutBtn) {
 loginModalBackdrop.addEventListener('click', closeLoginModal);
 loginModalClose.addEventListener('click', closeLoginModal);
 
-loginSubmitBtn.addEventListener('click', attemptLogin);
+loginSubmitBtn.addEventListener('click', () => {
+  if (isSignUpMode) {
+    attemptSignUp();
+  } else {
+    attemptLogin();
+  }
+});
 
 loginPwInput.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') attemptLogin();
+  if (e.key === 'Enter') {
+    if (isSignUpMode) {
+      attemptSignUp();
+    } else {
+      attemptLogin();
+    }
+  }
 });
 
 loginIdInput.addEventListener('keydown', function(e) {
   if (e.key === 'Enter') loginPwInput.focus();
 });
+
+if (loginModalToggleBtn) {
+  loginModalToggleBtn.addEventListener('click', () => {
+    setModalSignUpMode(!isSignUpMode);
+  });
+}
 
 const profileModal = document.getElementById('profile-modal');
 const profileModalBackdrop = document.getElementById('profile-modal-backdrop');
@@ -1029,7 +1141,7 @@ function mkBubble(p, x, y, enter) {
   }
 
   let authorHtml = '';
-  if (a) {
+  if (a && !(isLoggedIn && currentUser && currentUser.role === 'registered_user')) {
     const imgSrc = getAvatarSrc(a);
     let profileImg = imgSrc ? `<img src="${imgSrc}" class="profile-img-bubble" />` : '';
     authorHtml = `<div class="bubble__author">${profileImg}${a}${p.isPending ? ' <span style="color:#ff3b30; font-size:9px; border:1px solid #ff3b30; padding:1px 4px; border-radius:10px; margin-left:4px;">대기중</span>' : ''}</div>`;
@@ -1381,7 +1493,11 @@ function renderComments(el, comments, promptId) {
     
     const authorSpan = document.createElement('span');
     authorSpan.className = 'comment-author';
-    authorSpan.textContent = c.author;
+    if (isLoggedIn && currentUser && currentUser.role === 'registered_user') {
+      authorSpan.textContent = '익명';
+    } else {
+      authorSpan.textContent = c.author;
+    }
     
     const textSpan = document.createElement('span');
     textSpan.className = 'comment-text';
@@ -1655,10 +1771,12 @@ function renderList() {
       }
     }
 
+    const isAnon = isLoggedIn && currentUser && currentUser.role === 'registered_user';
+
     item.innerHTML =
       badgeHtml +
       '<div style="display:flex; width:100%; gap:var(--sp-md);">' +
-        `<div class="list-item__author ${isAuthorSelected ? 'is-active' : ''}" data-author="${a}">${authorHtml}</div>` +
+        `<div class="list-item__author ${isAuthorSelected ? 'is-active' : ''}" data-author="${a}" style="${isAnon ? 'display: none;' : ''}">${authorHtml}</div>` +
         '<div class="list-item__body">' +
           '<p class="list-item__text">' + pendingBadge + escHtml(p.text) + '</p>' +
           '<p class="list-item__time">' + fmtTime(p.time) + '</p>' +
