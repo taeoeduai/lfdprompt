@@ -2639,4 +2639,19 @@ body.is-admin .delete-btn--list {
   margin-top: 1px;
 }
 
+/* User Management View Page styling */
+.usermgmt-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  align-items: start;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .usermgmt-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 

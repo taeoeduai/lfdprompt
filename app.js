@@ -37,6 +37,7 @@ canvas.addEventListener('pointerdown', function(e) {
 });
 const listView = document.getElementById('list-view');
 const libraryView = document.getElementById('library-view');
+const usermgmtView = document.getElementById('usermgmt-view');
 const listContent = document.getElementById('list-content');
 const textarea = document.getElementById('prompt-input');
 const authorInput = document.getElementById('author-input');
@@ -833,30 +834,30 @@ profileInput.addEventListener('change', function(e) {
   reader.readAsDataURL(file);
 });
 
-const userMgmtModal = document.getElementById('user-mgmt-modal');
-const userMgmtModalBackdrop = document.getElementById('user-mgmt-modal-backdrop');
-const userMgmtModalClose = document.getElementById('user-mgmt-modal-close');
-const userMgmtListContainer = document.getElementById('user-mgmt-list-container');
+const usermgmtRegisteredList = document.getElementById('usermgmt-registered-list');
+const usermgmtStaffList = document.getElementById('usermgmt-staff-list');
+const usermgmtBackBtn = document.getElementById('usermgmt-back-btn');
 const dropdownUsermgmtBtn = document.getElementById('dropdown-usermgmt-btn');
 
-function openUserMgmtModal() {
+let userMgmtListenerUnsubscribe = null;
+
+function renderUserMgmtPage() {
   if (!isLoggedIn || !isAdmin) return;
   
-  userMgmtListContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">로딩 중...</div>';
+  usermgmtRegisteredList.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">로딩 중...</div>';
+  usermgmtStaffList.innerHTML = '';
   
-  userMgmtModal.style.display = 'flex';
-  userMgmtModal.offsetHeight; // force reflow
-  userMgmtModal.classList.add('is-open');
-  userMgmtModal.setAttribute('aria-hidden', 'false');
-  document.body.style.overflow = 'hidden';
+  // 1. Render Registered Users list in real-time
+  if (userMgmtListenerUnsubscribe) {
+    userMgmtListenerUnsubscribe();
+  }
   
-  // Fetch users real-time from single document
-  db.collection('prompts').doc('registered_users_list').onSnapshot((doc) => {
-    userMgmtListContainer.innerHTML = '';
+  userMgmtListenerUnsubscribe = db.collection('prompts').doc('registered_users_list').onSnapshot((doc) => {
+    usermgmtRegisteredList.innerHTML = '';
     const users = (doc.exists && doc.data().list) ? doc.data().list : [];
     
     if (users.length === 0) {
-      userMgmtListContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">가입된 사용자가 없습니다.</div>';
+      usermgmtRegisteredList.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">가입된 사용자가 없습니다.</div>';
       return;
     }
     
@@ -865,21 +866,27 @@ function openUserMgmtModal() {
       div.style.display = 'flex';
       div.style.alignItems = 'center';
       div.style.justifyContent = 'space-between';
-      div.style.padding = '10px 12px';
+      div.style.padding = '12px 16px';
       div.style.background = '#f9f9fb';
       div.style.borderRadius = 'var(--r-md)';
       div.style.border = '1px solid rgba(0,0,0,0.04)';
       
-      const statusText = u.isApproved ? '<span style="color:#34c759; font-size:11.5px; font-weight:700; margin-left:6px;">승인됨</span>' : '<span style="color:#ff9500; font-size:11.5px; font-weight:700; margin-left:6px;">대기중</span>';
+      const statusText = u.isApproved ? '<span style="color:#34c759; font-size:12px; font-weight:700; margin-left:8px;">승인됨</span>' : '<span style="color:#ff9500; font-size:12px; font-weight:700; margin-left:8px;">대기중</span>';
       
       div.innerHTML = `
-        <div>
-          <strong style="font-size:14px; color:var(--color-ink);">${u.id}</strong>
-          ${statusText}
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:36px; height:36px; border-radius:50%; background:#e0e0e6; display:flex; align-items:center; justify-content:center; font-weight:700; color:#666; font-size:14px;">${u.id.slice(0, 2).toUpperCase()}</div>
+          <div>
+            <div style="font-weight:700; font-size:14px; color:var(--color-ink); display:flex; align-items:center;">
+              ${u.id}
+              ${statusText}
+            </div>
+            <div style="font-size:12px; color:#888; margin-top:2px;">일반 가입 계정</div>
+          </div>
         </div>
         <div style="display:flex; gap:6px;">
-          ${!u.isApproved ? `<button class="approve-user-btn" style="padding:6px 12px; font-size:12px; font-weight:600; background:#34c759; color:#fff; border:none; border-radius:var(--r-sm); cursor:pointer;">승인</button>` : ''}
-          <button class="delete-user-btn" style="padding:6px 12px; font-size:12px; font-weight:600; background:rgba(255,59,48,0.1); color:#ff3b30; border:1px solid rgba(255,59,48,0.15); border-radius:var(--r-sm); cursor:pointer;">삭제</button>
+          ${!u.isApproved ? `<button class="approve-user-btn" style="padding:6px 12px; font-size:12px; font-weight:600; background:#34c759; color:#fff; border:none; border-radius:var(--r-sm); cursor:pointer; transition: opacity 0.2s;">승인</button>` : ''}
+          <button class="delete-user-btn" style="padding:6px 12px; font-size:12px; font-weight:600; background:rgba(255,59,48,0.1); color:#ff3b30; border:1px solid rgba(255,59,48,0.15); border-radius:var(--r-sm); cursor:pointer; transition: all 0.2s;">삭제</button>
         </div>
       `;
       
@@ -905,19 +912,67 @@ function openUserMgmtModal() {
         });
       }
       
-      userMgmtListContainer.appendChild(div);
+      usermgmtRegisteredList.appendChild(div);
     });
   }, (err) => {
     console.error(err);
-    userMgmtListContainer.innerHTML = '<div style="text-align:center; padding:20px; color:#ff3b30;">데이터 로드 오류</div>';
+    usermgmtRegisteredList.innerHTML = '<div style="text-align:center; padding:20px; color:#ff3b30;">데이터 로드 오류</div>';
   });
-}
 
-function closeUserMgmtModal() {
-  userMgmtModal.classList.remove('is-open');
-  userMgmtModal.setAttribute('aria-hidden', 'true');
-  document.body.style.overflow = '';
-  setTimeout(() => { userMgmtModal.style.display = 'none'; }, 200);
+  // 2. Render unique FF_MEMBERS staff list
+  const uniqueStaff = [];
+  const seenNames = new Set();
+  for (const key in FF_MEMBERS) {
+    const staff = FF_MEMBERS[key];
+    if (!seenNames.has(staff.name)) {
+      seenNames.add(staff.name);
+      // Find representative initials key
+      const initials = Object.keys(FF_MEMBERS).find(k => FF_MEMBERS[k].name === staff.name && k === k.toUpperCase() && k.length <= 3) || key;
+      uniqueStaff.push({
+        id: initials,
+        name: staff.name,
+        role: staff.role,
+        team: staff.team,
+        img: staff.img
+      });
+    }
+  }
+
+  // Sort uniqueStaff alphabetically by name
+  uniqueStaff.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+
+  uniqueStaff.forEach(s => {
+    const div = document.createElement('div');
+    div.style.display = 'flex';
+    div.style.alignItems = 'center';
+    div.style.justifyContent = 'space-between';
+    div.style.padding = '12px 16px';
+    div.style.background = '#f9f9fb';
+    div.style.borderRadius = 'var(--r-md)';
+    div.style.border = '1px solid rgba(0,0,0,0.03)';
+    
+    const avatarSrc = s.img ? s.img : '';
+    const avatarHtml = avatarSrc 
+      ? `<img src="${avatarSrc}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />`
+      : `<div style="width:36px; height:36px; border-radius:50%; background:#eaeaea; display:flex; align-items:center; justify-content:center; font-weight:700; color:#888; font-size:13px;">${s.id}</div>`;
+
+    div.innerHTML = `
+      <div style="display:flex; align-items:center; gap:12px;">
+        ${avatarHtml}
+        <div>
+          <div style="font-weight:700; font-size:14px; color:var(--color-ink); display:flex; align-items:center; gap:6px;">
+            ${s.name} <span style="font-size:11px; font-weight:500; color:#888;">(${s.id})</span>
+            <span style="color:#34c759; font-size:11px; font-weight:700; padding:1px 6px; background:rgba(52,199,89,0.1); border-radius:10px;">기본 직원</span>
+          </div>
+          <div style="font-size:12px; color:#888; margin-top:2px;">${s.team} · ${s.role}</div>
+        </div>
+      </div>
+      <div style="font-size:12px; font-weight:600; color:#888; padding-right:8px;">
+        비밀번호: 373737
+      </div>
+    `;
+    usermgmtStaffList.appendChild(div);
+  });
 }
 
 if (dropdownUsermgmtBtn) {
@@ -926,12 +981,15 @@ if (dropdownUsermgmtBtn) {
     navUserDropdown.style.opacity = '0';
     navUserDropdown.style.transform = 'translateY(-4px)';
     setTimeout(() => navUserDropdown.classList.add('hidden'), 200);
-    openUserMgmtModal();
+    setView('usermgmt');
   });
 }
 
-if (userMgmtModalBackdrop) userMgmtModalBackdrop.addEventListener('click', closeUserMgmtModal);
-if (userMgmtModalClose) userMgmtModalClose.addEventListener('click', closeUserMgmtModal);
+if (usermgmtBackBtn) {
+  usermgmtBackBtn.addEventListener('click', () => {
+    setView('float');
+  });
+}
 
 
 // --- Toast ---
@@ -3743,6 +3801,7 @@ function setView(v) {
   canvas.classList.add('hidden');
   listView.classList.add('hidden');
   libraryView.classList.add('hidden');
+  if (usermgmtView) usermgmtView.classList.add('hidden');
 
   // Show/Hide search bar: only show in library view
   const searchContainer = document.querySelector('.global-nav__search-container');
@@ -3757,8 +3816,8 @@ function setView(v) {
     }
   }
 
-  // Hide input bar in library view
-  if (v === 'library') {
+  // Hide input bar in library view or user management view
+  if (v === 'library' || v === 'usermgmt') {
     inputBar.classList.add('hidden');
   } else {
     inputBar.classList.remove('hidden');
@@ -3773,6 +3832,11 @@ function setView(v) {
   } else if (v === 'library') {
     libraryView.classList.remove('hidden');
     renderLibrary();
+  } else if (v === 'usermgmt') {
+    if (usermgmtView) {
+      usermgmtView.classList.remove('hidden');
+      renderUserMgmtPage();
+    }
   }
 }
 
