@@ -414,18 +414,22 @@ function attemptLogin() {
 
   // Check registered users in Firestore
   const upperId = id.toUpperCase();
-  db.collection('registered_users').doc(upperId).get()
+  db.collection('users').doc(upperId).get()
     .then((doc) => {
       if (doc.exists) {
         const userData = doc.data();
-        if (userData.password === pw) {
-          if (userData.isApproved === true) {
-            loginSuccess({ id: userData.id, role: 'registered_user' });
+        if (userData.role === 'registered_user') {
+          if (userData.password === pw) {
+            if (userData.isApproved === true) {
+              loginSuccess({ id: userData.id, role: 'registered_user' });
+            } else {
+              showLoginError('관리자의 승인을 대기 중입니다.');
+            }
           } else {
-            showLoginError('관리자의 승인을 대기 중입니다.');
+            showLoginError('비밀번호가 올바르지 않습니다.');
           }
         } else {
-          showLoginError('비밀번호가 올바르지 않습니다.');
+          showLoginError('아이디 또는 비밀번호가 올바르지 않습니다.');
         }
       } else {
         showLoginError('아이디 또는 비밀번호가 올바르지 않습니다.');
@@ -455,18 +459,18 @@ function attemptSignUp() {
   }
 
   // Check if user already exists
-  db.collection('registered_users').doc(upperId).get()
+  db.collection('users').doc(upperId).get()
     .then((doc) => {
-      if (doc.exists) {
+      if (doc.exists && doc.data().role === 'registered_user') {
         showLoginError('이미 존재하는 아이디입니다.');
       } else {
         // Create user doc
-        db.collection('registered_users').doc(upperId).set({
+        db.collection('users').doc(upperId).set({
           id: id,
           password: pw,
           role: 'registered_user',
           isApproved: false
-        })
+        }, { merge: true })
         .then(() => {
           showToast('회원가입이 완료되었습니다! 승인 대기 후 이용해 주세요.');
           setModalSignUpMode(false);
@@ -693,7 +697,10 @@ const profileBtnDelete = document.getElementById('profile-btn-delete');
 function startUserProfileListener() {
   db.collection('users').onSnapshot(function(snapshot) {
     snapshot.forEach(function(doc) {
-      userProfiles[doc.id] = doc.data().profileImage;
+      const data = doc.data();
+      if (data && data.profileImage) {
+        userProfiles[doc.id] = data.profileImage;
+      }
     });
     updateAuthUI();
     if (currentView === 'library') renderLibrary();
@@ -841,7 +848,7 @@ function openUserMgmtModal() {
   document.body.style.overflow = 'hidden';
   
   // Fetch users real-time
-  db.collection('registered_users').onSnapshot((snapshot) => {
+  db.collection('users').where('role', '==', 'registered_user').onSnapshot((snapshot) => {
     userMgmtListContainer.innerHTML = '';
     const users = [];
     snapshot.forEach((doc) => {
@@ -879,7 +886,7 @@ function openUserMgmtModal() {
       const approveBtn = div.querySelector('.approve-user-btn');
       if (approveBtn) {
         approveBtn.addEventListener('click', () => {
-          db.collection('registered_users').doc(u.id).update({ isApproved: true })
+          db.collection('users').doc(u.id).update({ isApproved: true })
             .then(() => showToast(`${u.id} 계정이 승인되었습니다.`))
             .catch(err => console.error(err));
         });
@@ -889,7 +896,8 @@ function openUserMgmtModal() {
       if (deleteBtn) {
         deleteBtn.addEventListener('click', () => {
           if (confirm(`${u.id} 사용자를 삭제하시겠습니까?`)) {
-            db.collection('registered_users').doc(u.id).delete()
+            // Delete document or remove role/password so they are reset
+            db.collection('users').doc(u.id).delete()
               .then(() => showToast(`${u.id} 계정이 삭제되었습니다.`))
               .catch(err => console.error(err));
           }
