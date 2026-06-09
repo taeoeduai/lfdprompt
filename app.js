@@ -412,9 +412,9 @@ function attemptLogin() {
     return;
   }
 
-  // Check registered users in __registered_users_list__ document in prompts collection
+  // Check registered users in registered_users_list document in prompts collection
   const upperId = id.toUpperCase();
-  db.collection('prompts').doc('__registered_users_list__').get()
+  db.collection('prompts').doc('registered_users_list').get()
     .then((doc) => {
       const list = (doc.exists && doc.data().list) ? doc.data().list : [];
       const userObj = list.find(u => u.id.toUpperCase() === upperId);
@@ -456,8 +456,8 @@ function attemptSignUp() {
     return;
   }
 
-  // Check if user already exists in __registered_users_list__
-  db.collection('prompts').doc('__registered_users_list__').get()
+  // Check if user already exists in registered_users_list
+  db.collection('prompts').doc('registered_users_list').get()
     .then((doc) => {
       const list = (doc.exists && doc.data().list) ? doc.data().list : [];
       const userExists = list.some(u => u.id.toUpperCase() === upperId);
@@ -473,7 +473,7 @@ function attemptSignUp() {
         };
         list.push(newUser);
         
-        db.collection('prompts').doc('__registered_users_list__').set({ list: list })
+        db.collection('prompts').doc('registered_users_list').set({ list: list })
           .then(() => {
             showToast('회원가입이 완료되었습니다! 승인 대기 후 이용해 주세요.');
             setModalSignUpMode(false);
@@ -851,7 +851,7 @@ function openUserMgmtModal() {
   document.body.style.overflow = 'hidden';
   
   // Fetch users real-time from single document
-  db.collection('prompts').doc('__registered_users_list__').onSnapshot((doc) => {
+  db.collection('prompts').doc('registered_users_list').onSnapshot((doc) => {
     userMgmtListContainer.innerHTML = '';
     const users = (doc.exists && doc.data().list) ? doc.data().list : [];
     
@@ -887,7 +887,7 @@ function openUserMgmtModal() {
       if (approveBtn) {
         approveBtn.addEventListener('click', () => {
           u.isApproved = true;
-          db.collection('prompts').doc('__registered_users_list__').set({ list: users })
+          db.collection('prompts').doc('registered_users_list').set({ list: users })
             .then(() => showToast(`${u.id} 계정이 승인되었습니다.`))
             .catch(err => console.error(err));
         });
@@ -898,7 +898,7 @@ function openUserMgmtModal() {
         deleteBtn.addEventListener('click', () => {
           if (confirm(`${u.id} 사용자를 삭제하시겠습니까?`)) {
             const updatedUsers = users.filter(usr => usr.id.toUpperCase() !== u.id.toUpperCase());
-            db.collection('prompts').doc('__registered_users_list__').set({ list: updatedUsers })
+            db.collection('prompts').doc('registered_users_list').set({ list: updatedUsers })
               .then(() => showToast(`${u.id} 계정이 삭제되었습니다.`))
               .catch(err => console.error(err));
           }
