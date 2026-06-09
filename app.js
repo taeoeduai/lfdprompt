@@ -141,10 +141,11 @@ const FF_MEMBERS = {
 };
 
 function getUserDisplay(initials) {
-  if (isLoggedIn && currentUser && currentUser.role === 'registered_user') {
+  const u = initials ? initials.toUpperCase() : '';
+  const currentAuthor = (localStorage.getItem('pl_author') || '').toUpperCase();
+  if (isLoggedIn && currentUser && currentUser.role === 'registered_user' && u !== currentAuthor) {
     return '';
   }
-  const u = initials ? initials.toUpperCase() : '';
   const uploadedImg = userProfiles[u];
   const ff = FF_MEMBERS[u];
   
@@ -331,10 +332,12 @@ function updateAuthUI() {
   // Show/Hide MY filter button based on user status (hidden for admin)
   const filterMy = document.getElementById('filter-my');
   if (filterMy) {
-    if (!isAdmin) {
+    if (isLoggedIn && !isAdmin && currentUser) {
       filterMy.style.display = 'inline-block';
+      filterMy.textContent = currentUser.id;
     } else {
       filterMy.style.display = 'none';
+      filterMy.textContent = '내 요청 사항';
       if (sortOrder === 'my') {
         sortOrder = 'newest';
         const filterNewest = document.getElementById('filter-newest');
@@ -1260,7 +1263,9 @@ function mkBubble(p, x, y, enter) {
   }
 
   let authorHtml = '';
-  if (a && !(isLoggedIn && currentUser && currentUser.role === 'registered_user')) {
+  const currentAuthor = (localStorage.getItem('pl_author') || '').toUpperCase();
+  const hideAuthor = isLoggedIn && currentUser && currentUser.role === 'registered_user' && a.toUpperCase() !== currentAuthor;
+  if (a && !hideAuthor) {
     const imgSrc = getAvatarSrc(a);
     let profileImg = imgSrc ? `<img src="${imgSrc}" class="profile-img-bubble" />` : '';
     authorHtml = `<div class="bubble__author">${profileImg}${a}${p.isPending ? ' <span style="color:#ff3b30; font-size:9px; border:1px solid #ff3b30; padding:1px 4px; border-radius:10px; margin-left:4px;">대기중</span>' : ''}</div>`;
@@ -1612,7 +1617,9 @@ function renderComments(el, comments, promptId) {
     
     const authorSpan = document.createElement('span');
     authorSpan.className = 'comment-author';
-    if (isLoggedIn && currentUser && currentUser.role === 'registered_user') {
+    const cAuthorUpper = (c.author || '').toUpperCase();
+    const currentAuthorUpper = (currentAuthor || '').toUpperCase();
+    if (isLoggedIn && currentUser && currentUser.role === 'registered_user' && cAuthorUpper !== currentAuthorUpper) {
       authorSpan.textContent = '익명';
     } else {
       authorSpan.textContent = c.author;
@@ -1890,7 +1897,7 @@ function renderList() {
       }
     }
 
-    const isAnon = isLoggedIn && currentUser && currentUser.role === 'registered_user';
+    const isAnon = isLoggedIn && currentUser && currentUser.role === 'registered_user' && a.toUpperCase() !== currentAuthor.toUpperCase();
 
     item.innerHTML =
       badgeHtml +
