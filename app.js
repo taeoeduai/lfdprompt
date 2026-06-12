@@ -100,9 +100,9 @@ const FF_MEMBERS = {
   "정수": { name: "윤정수", role: "인턴", team: "파운드/파운디드 ID", img: "avatar_jungsoo.png" },
 
   // 송규호 (GH)
-  "GH": { name: "송규호", role: "대표", team: "파운드/파운디드 ID", img: "avatar_gyuho.png" },
-  "송규호": { name: "송규호", role: "대표", team: "파운드/파운디드 ID", img: "avatar_gyuho.png" },
-  "규호": { name: "송규호", role: "대표", team: "파운드/파운디드 ID", img: "avatar_gyuho.png" },
+  "GH": { name: "송규호", role: "디렉터", team: "파운드/파운디드 ID", img: "avatar_gyuho.png" },
+  "송규호": { name: "송규호", role: "디렉터", team: "파운드/파운디드 ID", img: "avatar_gyuho.png" },
+  "규호": { name: "송규호", role: "디렉터", team: "파운드/파운디드 ID", img: "avatar_gyuho.png" },
 
   // 김도영 (DY)
   "DY": { name: "김도영", role: "인턴", team: "파운드/파운디드 VD", img: "avatar_doyoung.png" },
@@ -125,16 +125,16 @@ const FF_MEMBERS = {
   "수현": { name: "안수현", role: "디자이너", team: "파운드/파운디드 VD", img: "avatar_suhyun.png" },
 
   // oxo (OX)
-  "OX": { name: "oxo", role: "대표", team: "파운드/파운디드 VD", img: "avatar_oxo.png" },
-  "oxo": { name: "oxo", role: "대표", team: "파운드/파운디드 VD", img: "avatar_oxo.png" },
-  "OXO": { name: "oxo", role: "대표", team: "파운드/파운디드 VD", img: "avatar_oxo.png" },
+  "OX": { name: "oxo", role: "디렉터", team: "파운드/파운디드 VD", img: "avatar_oxo.png" },
+  "oxo": { name: "oxo", role: "디렉터", team: "파운드/파운디드 VD", img: "avatar_oxo.png" },
+  "OXO": { name: "oxo", role: "디렉터", team: "파운드/파운디드 VD", img: "avatar_oxo.png" },
 
   // 김준구 (avatar_jungoo.png)
-  "JG": { name: "김준구", role: "디자이너", team: "파운드/파운디드 VD", img: "avatar_jungoo.png" },
-  "김준구": { name: "김준구", role: "디자이너", team: "파운드/파운디드 VD", img: "avatar_jungoo.png" },
-  "준구": { name: "김준구", role: "디자이너", team: "파운드/파운디드 VD", img: "avatar_jungoo.png" },
-  "JUNGOO": { name: "김준구", role: "디자이너", team: "파운드/파운디드 VD", img: "avatar_jungoo.png" },
-  "jungoo": { name: "김준구", role: "디자이너", team: "파운드/파운디드 VD", img: "avatar_jungoo.png" }
+  "JG": { name: "김준구", role: "디렉터", team: "파운드/파운디드 VD", img: "avatar_jungoo.png" },
+  "김준구": { name: "김준구", role: "디렉터", team: "파운드/파운디드 VD", img: "avatar_jungoo.png" },
+  "준구": { name: "김준구", role: "디렉터", team: "파운드/파운디드 VD", img: "avatar_jungoo.png" },
+  "JUNGOO": { name: "김준구", role: "디렉터", team: "파운드/파운디드 VD", img: "avatar_jungoo.png" },
+  "jungoo": { name: "김준구", role: "디렉터", team: "파운드/파운디드 VD", img: "avatar_jungoo.png" }
 };
 
 function getUserDisplay(initials) {
@@ -947,7 +947,7 @@ function renderUserMgmtPage() {
   }
 
   // Sort uniqueStaff by Role, then Team, then Name
-  const roleOrder = { "대표": 1, "시니어 디자이너": 2, "디자이너": 3, "프리랜서 디자이너": 4, "인턴": 5 };
+  const roleOrder = { "디렉터": 1, "시니어 디자이너": 2, "디자이너": 3, "프리랜서 디자이너": 4, "인턴": 5 };
   const teamOrder = { "파운드/파운디드 ID": 1, "파운드/파운디드 VD": 2 };
   
   uniqueStaff.sort((a, b) => {
@@ -983,7 +983,7 @@ function renderUserMgmtPage() {
         <div>
           <div style="font-weight:700; font-size:14px; color:var(--color-ink); display:flex; align-items:center; gap:6px;">
             ${s.name} <span style="font-size:11px; font-weight:500; color:#888;">(${s.id})</span>
-            <span style="color:#34c759; font-size:11px; font-weight:700; padding:1px 6px; background:rgba(52,199,89,0.1); border-radius:10px;">직원</span>
+            <span style="color:#34c759; font-size:11px; font-weight:700; padding:1px 6px; background:rgba(52,199,89,0.1); border-radius:10px;">${s.role === '디렉터' ? '대표' : '직원'}</span>
           </div>
           <div style="font-size:12px; color:#888; margin-top:2px;">${s.team} · ${s.role}</div>
         </div>
