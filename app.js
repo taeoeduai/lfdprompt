@@ -2338,6 +2338,7 @@ const libraryData = [
     id: 'lib-upscale-01',
     category: '업스케일',
     tags: ['업스케일', '인물', '사진보정'],
+    author: '김태영 디자이너',
     title: '시네마틱 인물사진 업스케일',
     desc: '인물 사진을 Sony A1 + 85mm f/1.4 GM 기준의 고화질 시네마틱 스타일로 업스케일. 얼굴 구조와 피부 질감을 자연스럽게 유지하면서 조명·색감·심도를 영화적 수준으로 끌어올립니다.',
     prompt: `[PRIORITY 1 — IDENTITY LOCK: Violating this overrides all other instructions]
@@ -2699,9 +2700,9 @@ function renderLibrary() {
         ? (isAdmin 
             ? `<span style="font-size: 11.5px; color: #ff3b30; font-weight: 600;">${reqAuthorDisplay}</span>`
             : `<span style="font-size: 11.5px; color: #ff9500; font-weight: 600;">검토 대기 중</span>`)
-        : `<button class="lib-card__copy" data-id="${item.id}" aria-label="복사" style="padding: 4px 10px; font-size: 11px;">
+        : `<div style="display: flex; align-items: center; gap: 8px;"><button class="lib-card__copy" data-id="${item.id}" aria-label="복사" style="padding: 4px 10px; font-size: 11px;">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> 복사
-           </button>`;
+           </button><span style="font-size: 11px; color: #999;">${escHtml(item.author || '김태영 디자이너')}</span></div>`;
 
       card.innerHTML = `
         ${thumbHtml ? `<div class="${!isLoggedIn ? 'is-blurred' : ''}" style="width: 80px; flex-shrink: 0;">${thumbHtml.replace('class="lib-card__thumb', 'style="margin-bottom: 0;" class="lib-card__thumb')}</div>` : '<div style="width: 80px; height: 60px; background: rgba(0,0,0,0.04); border-radius: var(--r-sm); flex-shrink:0;"></div>'}
@@ -2744,9 +2745,9 @@ function renderLibrary() {
         ? (isAdmin 
             ? `<span style="font-size: 11.5px; color: #ff3b30; font-weight: 600; text-align: left;">${reqAuthorDisplayGrid}</span>`
             : `<span style="font-size: 11.5px; color: #ff9500; font-weight: 600; text-align: left;">검토 대기 중</span>`)
-        : `<button class="lib-card__copy" data-id="${item.id}" aria-label="복사">
+        : `<div style="display: flex; align-items: center; gap: 8px;"><button class="lib-card__copy" data-id="${item.id}" aria-label="복사">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> 복사
-           </button>`;
+           </button><span style="font-size: 11px; color: #999;">${escHtml(item.author || '김태영 디자이너')}</span></div>`;
 
       card.innerHTML =
         '<div class="lib-card__tags">' +
@@ -4065,3 +4066,16 @@ const cleanupListBtn = document.getElementById('admin-cleanup-btn-list');
 
 if (cleanupDashBtn) cleanupDashBtn.addEventListener('click', deleteRecentPrompts);
 if (cleanupListBtn) cleanupListBtn.addEventListener('click', deleteRecentPrompts);
+
+// One-time script to update author for existing library items
+setTimeout(() => {
+  if (typeof db !== 'undefined') {
+    db.collection('library_overrides').get().then(snap => {
+      snap.forEach(doc => {
+        if (doc.data().author !== '김태영 디자이너') {
+          doc.ref.update({ author: '김태영 디자이너' }).catch(console.error);
+        }
+      });
+    }).catch(console.error);
+  }
+}, 3000);
