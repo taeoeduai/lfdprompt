@@ -145,7 +145,10 @@ const FF_MEMBERS = {
 function getUserDisplay(initials) {
   const u = initials ? initials.toUpperCase() : '';
   const currentAuthor = (localStorage.getItem('pl_author') || '').toUpperCase();
-  if (isLoggedIn && currentUser && currentUser.role === 'registered_user' && u !== currentAuthor) {
+  const viewerIsFF = isLoggedIn && ((currentUser && currentUser.id && !!FF_MEMBERS[currentUser.id.toUpperCase()]) || !!FF_MEMBERS[currentAuthor]);
+  const viewerIsAdmin = isAdmin;
+  
+  if (!viewerIsAdmin && !viewerIsFF && u !== currentAuthor) {
     return '';
   }
   const uploadedImg = userProfiles[u];
