@@ -359,7 +359,7 @@ function updateAuthUI() {
       filterMy.textContent = currentUser.id;
     } else {
       filterMy.style.display = 'none';
-      filterMy.textContent = '내 요청 사항';
+      filterMy.textContent = '내 요청 대기';
       if (sortOrder === 'my') {
         sortOrder = 'newest';
         const filterNewest = document.getElementById('filter-newest');
@@ -2655,7 +2655,7 @@ function renderLibrary() {
     } else if (isLoggedIn) {
       const userInitials = currentUser ? currentUser.id.toUpperCase() : '';
       const count = libraryRequests.filter(r => r.author === userInitials).length;
-      html += `<button class="lib-filter-pill ${libCurrentCat === 'my_req' ? 'is-active' : ''}" data-cat="my_req" style="background: rgba(255, 149, 0, 0.08); color: #ff9500; border-color: rgba(255, 149, 0, 0.2); font-weight: ${libCurrentCat === 'my_req' ? '600' : '400'};">요청 사항 <span class="lib-count" style="color: #ff9500;">${count}</span></button>`;
+      html += `<button class="lib-filter-pill ${libCurrentCat === 'my_req' ? 'is-active' : ''}" data-cat="my_req" style="background: rgba(255, 149, 0, 0.08); color: #ff9500; border-color: rgba(255, 149, 0, 0.2); font-weight: ${libCurrentCat === 'my_req' ? '600' : '400'};">요청 대기 <span class="lib-count" style="color: #ff9500;">${count}</span></button>`;
     }
 
     tagArray.forEach(cat => {
@@ -3595,6 +3595,22 @@ async function saveEdit() {
       renderLibrary();
       showToast('프롬프트가 저장되었습니다');
     } else {
+      // 즉시 libraryRequests에 임시 추가 (Firestore onSnapshot 응답 전에 화면에 보이도록)
+      const tempEntry = {
+        ...overrideData,
+        id: libEditingItem.id,
+        author: (currentUser && currentUser.id) ? currentUser.id.toUpperCase() : 'GST',
+        isPendingRequest: true
+      };
+      // 중복 방지: 이미 있으면 교체, 없으면 추가
+      const existIdx = libraryRequests.findIndex(r => r.id === tempEntry.id);
+      if (existIdx > -1) {
+        libraryRequests[existIdx] = tempEntry;
+      } else {
+        libraryRequests.push(tempEntry);
+      }
+      // 요청 대기 탭으로 전환 후 모달 닫기
+      libCurrentCat = 'my_req';
       closeLibModal();
       renderLibrary();
       showToast('프롬프트 추가 요청이 전송되었습니다. 관리자 승인 후 게시됩니다.');
@@ -4190,62 +4206,46 @@ if (libModalDelete) {
   });
 }
 
-// Automatically generate Title, Description, Category, and Tags based on prompt text
+// Automatically generate Title, Description based on prompt text
+// Uses the actual prompt text as source - title from first line/sentence, desc from prompt beginning
 function autoGenerateMetadata(promptText) {
   if (!promptText || promptText.trim().length < 10) return;
   
   const editTitle = document.getElementById('lib-modal-edit-title');
   const editDesc = document.getElementById('lib-modal-edit-desc');
-  const editTags = document.getElementById('lib-modal-edit-tags');
   
   const currentTitle = editTitle.value.trim();
   const currentDesc = editDesc.value.trim();
-  const currentTags = editTags.value.trim();
-  
-  let detectedTitle = "";
-  let detectedDesc = "";
-  let detectedCat = "업스케일";
-  
-  const textLower = promptText.toLowerCase();
-  
-  if (textLower.includes("upscale") || textLower.includes("업스케일") || textLower.includes("sony") || textLower.includes("a1")) {
-    detectedTitle = "시네마틱 이미지 업스케일";
-    detectedDesc = "Sony A1 고화질 카메라 스타일로 인물/사물 질감을 자연스럽고 사실적으로 업스케일합니다.";
-    detectedCat = "업스케일";
-  } else if (textLower.includes("composite") || textLower.includes("합성") || textLower.includes("background") || textLower.includes("배경")) {
-    detectedTitle = "자연스러운 배경 합성";
-    detectedDesc = "조명과 색온도를 유기적으로 맞추어 피사체를 배경에 완벽하게 자연스럽게 합성합니다.";
-    detectedCat = "합성";
-  } else if (textLower.includes("portrait") || textLower.includes("인물") || textLower.includes("얼굴") || textLower.includes("face")) {
-    detectedTitle = "고품질 인물 포트레이트";
-    detectedDesc = "인물의 얼굴 대칭, 이목구비 비율과 원본 디테일을 극대화하는 인물 전용 프롬프트입니다.";
-    detectedCat = "인물";
-  } else if (textLower.includes("edit") || textLower.includes("보정") || textLower.includes("color") || textLower.includes("색감") || textLower.includes("tone")) {
-    detectedTitle = "프리미엄 사진 색감 보정";
-    detectedDesc = "사진의 미세한 노이즈를 제어하고 풍부한 10비트 컬러 그레이딩으로 색감을 보정합니다.";
-    detectedCat = "사진보정";
-  } else {
-    // Fallback parsing
-    const lines = promptText.split('\n').map(l => l.trim()).filter(Boolean);
-    if (lines.length > 0) {
-      detectedTitle = lines[0].replace(/[\[\]]/g, '').substring(0, 20);
-      if (detectedTitle.length >= 20) detectedTitle += "...";
-    } else {
-      detectedTitle = "새 프롬프트";
+
+  // --- Extract title from first meaningful line/sentence of the prompt ---
+  const lines = promptText.split('\n').map(l => l.trim()).filter(Boolean);
+  let detectedTitle = '';
+  if (lines.length > 0) {
+    // Use first line, strip brackets, limit to 25 chars
+    let firstLine = lines[0].replace(/[\[\]【】]/g, '').trim();
+    // Try to shorten to first sentence boundary
+    const sentenceSplit = firstLine.split(/[,.。，、]/);
+    if (sentenceSplit[0] && sentenceSplit[0].length >= 4) {
+      firstLine = sentenceSplit[0].trim();
     }
-    detectedDesc = promptText.replace(/\s+/g, ' ').substring(0, 50) + "...";
+    detectedTitle = firstLine.substring(0, 25);
+    if (firstLine.length > 25) detectedTitle += '...';
   }
-  
-  // Enforce under 60 characters for description
-  if (detectedDesc.length > 60) {
-    detectedDesc = detectedDesc.substring(0, 57) + "...";
-  }
-  
-  // Auto fill empty or placeholder inputs
-  if (!currentTitle || currentTitle === "새 프롬프트 제목" || currentTitle === "새 프롬프트") {
+  if (!detectedTitle) detectedTitle = '새 프롬프트';
+
+  // --- Extract description from first ~80 chars of the prompt ---
+  const cleanText = promptText.replace(/\s+/g, ' ').trim();
+  let detectedDesc = cleanText.substring(0, 80);
+  if (cleanText.length > 80) detectedDesc += '...';
+
+  // --- Only fill if fields are empty or still have default placeholder values ---
+  const TITLE_PLACEHOLDERS = ['새 프롬프트 제목', '새 프롬프트', ''];
+  const DESC_PLACEHOLDERS = ['설명을 입력해주세요.', '설명을 입력하세요', ''];
+
+  if (TITLE_PLACEHOLDERS.includes(currentTitle)) {
     editTitle.value = detectedTitle;
   }
-  if (!currentDesc || currentDesc === "설명을 입력해주세요." || currentDesc === "설명을 입력하세요" || !currentDesc) {
+  if (DESC_PLACEHOLDERS.includes(currentDesc)) {
     editDesc.value = detectedDesc;
   }
 }
