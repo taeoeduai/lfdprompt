@@ -184,6 +184,19 @@ function getAvatarSrc(initials) {
   return (ff && ff.img) ? ff.img : (uploadedImg ? uploadedImg : null);
 }
 
+function isAuthorMatch(itemAuthor, currentAuthor) {
+  if (!itemAuthor || !currentAuthor) return false;
+  const itemAuthorUpper = itemAuthor.toUpperCase();
+  const currentAuthorUpper = currentAuthor.toUpperCase();
+  if (itemAuthorUpper === currentAuthorUpper) return true;
+  const member1 = FF_MEMBERS[itemAuthorUpper];
+  const member2 = FF_MEMBERS[currentAuthorUpper];
+  if (member1 && member2 && member1.name === member2.name) {
+    return true;
+  }
+  return false;
+}
+
 // ============================================
 // AUTH SYSTEM
 // ============================================
@@ -3093,7 +3106,7 @@ function openLibModal(item) {
 
   // Show/hide edit button: admin can edit live items, author can edit their own items (both pending and approved/posted)
   const currentAuthor = localStorage.getItem('pl_author') || '';
-  const isAuthor = item.author === currentAuthor && currentAuthor !== '';
+  const isAuthor = isAuthorMatch(item.author, currentAuthor);
   if (isAdmin || isAuthor) {
     libModalEdit.classList.remove('hidden');
   } else {
@@ -3356,7 +3369,7 @@ function enterEditMode() {
   if (!libEditingItem) return;
   const isNewCustom = String(libEditingItem.id).startsWith('lib-custom-');
   const currentAuthor = localStorage.getItem('pl_author') || '';
-  const isAuthor = libEditingItem.author === currentAuthor && currentAuthor !== '';
+  const isAuthor = isAuthorMatch(libEditingItem.author, currentAuthor);
   const allowed = isAdmin || isAuthor || (isLoggedIn && isNewCustom && !libEditingItem.author);
   if (!allowed) return;
   libEditMode = true;
@@ -3498,6 +3511,7 @@ async function saveEdit() {
     }
   }
   
+  const originalAuthor = libEditingItem.author;
   const authorToSave = libEditingItem.author || (currentUser && currentUser.id ? currentUser.id.toUpperCase() : 'AD');
   libEditingItem.author = authorToSave;
   
@@ -3517,10 +3531,13 @@ async function saveEdit() {
     program: newProgram
   };
 
+  const isLiveItem = libraryData.some(d => d.id === libEditingItem.id);
   const currentAuthor = localStorage.getItem('pl_author') || '';
-  const isAuthor = libEditingItem.author === currentAuthor && currentAuthor !== '';
+  const isOriginalAuthor = isAuthorMatch(originalAuthor, currentAuthor);
 
-  if (isAdmin || (isAuthor && !libEditingItem.isPendingRequest)) {
+  const isDirectSaveAllowed = isAdmin || (isLiveItem && isOriginalAuthor);
+
+  if (isDirectSaveAllowed) {
     saveLibraryOverride(libEditingItem.id, overrideData);
 
     const existing = libraryData.find(d => d.id === libEditingItem.id);
@@ -3568,7 +3585,7 @@ async function saveEdit() {
   // Delightful "Saved" animation on the save button
   const saveBtn = document.getElementById('lib-modal-save');
   const originalHtml = saveBtn.innerHTML;
-  saveBtn.innerHTML = (isAdmin || (isAuthor && !libEditingItem.isPendingRequest))
+  saveBtn.innerHTML = isDirectSaveAllowed
     ? '<span style="display:inline-flex; align-items:center; gap:4px; animation: popIn 0.3s ease;">✓ 저장됨</span>'
     : '<span style="display:inline-flex; align-items:center; gap:4px; animation: popIn 0.3s ease;">✓ 요청됨</span>';
   saveBtn.style.background = '#34c759'; // Premium success green
@@ -3584,7 +3601,7 @@ async function saveEdit() {
     saveBtn.style.borderColor = '';
     saveBtn.disabled = false;
     
-    if (isAdmin || (isAuthor && !libEditingItem.isPendingRequest)) {
+    if (isDirectSaveAllowed) {
       exitEditMode();
       renderLibrary();
       showToast('프롬프트가 저장되었습니다');
@@ -3813,7 +3830,7 @@ function setupUploadSlot(slot, input, imageIndex) {
     if (!libEditingItem) return;
     const isNewCustom = String(libEditingItem.id).startsWith('lib-custom-');
     const currentAuthor = localStorage.getItem('pl_author') || '';
-    const isAuthor = libEditingItem.author === currentAuthor && currentAuthor !== '';
+    const isAuthor = isAuthorMatch(libEditingItem.author, currentAuthor);
     const allowed = isAdmin || (isLoggedIn && (isAuthor || (isNewCustom && !libEditingItem.author)));
     if (!allowed) return;
 
@@ -3827,7 +3844,7 @@ function setupUploadSlot(slot, input, imageIndex) {
     if (!libEditingItem) return;
     const isNewCustom = String(libEditingItem.id).startsWith('lib-custom-');
     const currentAuthor = localStorage.getItem('pl_author') || '';
-    const isAuthor = libEditingItem.author === currentAuthor && currentAuthor !== '';
+    const isAuthor = isAuthorMatch(libEditingItem.author, currentAuthor);
     const allowed = isAdmin || (isLoggedIn && (isAuthor || (isNewCustom && !libEditingItem.author)));
     if (!allowed) return;
 
@@ -3845,7 +3862,7 @@ function setupUploadSlot(slot, input, imageIndex) {
       if (!libEditingItem) return;
       const isNewCustom = String(libEditingItem.id).startsWith('lib-custom-');
       const currentAuthor = localStorage.getItem('pl_author') || '';
-      const isAuthor = libEditingItem.author === currentAuthor && currentAuthor !== '';
+      const isAuthor = isAuthorMatch(libEditingItem.author, currentAuthor);
       const allowed = isAdmin || (isLoggedIn && (isAuthor || (isNewCustom && !libEditingItem.author)));
       if (!allowed) return;
 
@@ -3880,8 +3897,8 @@ async function handleSlotImageUpload(file, slot, imageIndex) {
     const isVideo = file.type.startsWith('video/');
     const isGif = file.type === 'image/gif';
 
-    if ((isVideo || isGif) && file.size > 950 * 1024) {
-      showToast('파일 용량이 너무 큽니다. 950KB 이하의 파일만 업로드할 수 있습니다.');
+    if ((isVideo || isGif) && file.size > 900 * 1024) {
+      showToast('스토리지를 사용하지 않는 무료 버전에서는 900KB 이하의 영상/GIF 파일만 업로드할 수 있습니다.');
       return;
     }
 
@@ -4092,35 +4109,60 @@ function updateUploadSlotsUI(item) {
 // Handle Delete library item
 if (libModalDelete) {
   libModalDelete.addEventListener('click', function() {
-    if (!isAdmin || !libEditingItem) return;
+    if (!libEditingItem) return;
+    
+    const isLiveItem = libraryData.some(d => d.id === libEditingItem.id);
+    const currentAuthor = localStorage.getItem('pl_author') || '';
+    const isOriginalAuthor = isAuthorMatch(libEditingItem.author, currentAuthor);
+    const allowed = isAdmin || isOriginalAuthor;
+
+    if (!allowed) {
+      showToast('삭제 권한이 없습니다.');
+      return;
+    }
+
     if (confirm('정말로 이 프롬프트를 삭제하시겠습니까?')) {
-      // 1. Mark as deleted in Firestore so it permanently disappears for everyone
-      db.collection('library_overrides').doc(libEditingItem.id).set({ isDeleted: true })
-        .then(function() {
-          console.log('Marked item as deleted in Firestore');
-        })
-        .catch(function(e) {
-          console.warn('Failed to mark item as deleted in Firestore:', e);
-        });
-      
-      // 2. Remove from local storage
-      try {
-        const overrides = JSON.parse(localStorage.getItem('pl_lib_overrides')) || {};
-        delete overrides[libEditingItem.id];
-        localStorage.setItem('pl_lib_overrides', JSON.stringify(overrides));
-      } catch (e) {
-        console.warn('Failed to delete from localStorage:', e);
+      if (isAdmin || (isLiveItem && isOriginalAuthor)) {
+        // 1. Mark as deleted in Firestore library_overrides so it permanently disappears for everyone
+        db.collection('library_overrides').doc(libEditingItem.id).set({ isDeleted: true })
+          .then(function() {
+            console.log('Marked item as deleted in Firestore');
+          })
+          .catch(function(e) {
+            console.warn('Failed to mark item as deleted in Firestore:', e);
+          });
+        
+        // 2. Remove from local storage
+        try {
+          const overrides = JSON.parse(localStorage.getItem('pl_lib_overrides')) || {};
+          delete overrides[libEditingItem.id];
+          localStorage.setItem('pl_lib_overrides', JSON.stringify(overrides));
+        } catch (e) {
+          console.warn('Failed to delete from localStorage:', e);
+        }
+        
+        // 3. Remove from local libraryData array
+        const index = libraryData.findIndex(item => item.id === libEditingItem.id);
+        if (index > -1) {
+          libraryData.splice(index, 1);
+        }
+        
+        closeLibModal();
+        renderLibrary();
+        showToast('프롬프트가 삭제되었습니다');
+      } else {
+        // 대기 중인(승인 전) 요청 삭제
+        db.collection('library_requests').doc(libEditingItem.id).delete()
+          .then(() => {
+            closeLibModal();
+            renderLibrary();
+            showToast('프롬프트 추가 요청이 삭제되었습니다');
+          })
+          .catch(err => {
+            console.warn('Failed to delete request:', err);
+            showToast('삭제에 실패했습니다');
+          });
       }
-      
-      // 3. Remove from local libraryData array
-      const index = libraryData.findIndex(item => item.id === libEditingItem.id);
-      if (index > -1) {
-        libraryData.splice(index, 1);
-      }
-      
-      closeLibModal();
-      renderLibrary();
-      showToast('프롬프트가 삭제되었습니다');
     }
   });
 }
