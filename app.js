@@ -1132,7 +1132,8 @@ function startLibraryOverridesListener() {
           thumbnails: data.thumbnails || [],
           originalImages: data.originalImages || [],
           isReferenceType: data.isReferenceType !== undefined ? data.isReferenceType : (data.images && data.images.length === 3),
-          author: data.author || '김태영'
+          author: data.author || '김태영',
+          order: data.order !== undefined ? data.order : 99999
         };
         libraryData.push(item);
       } else {
@@ -1156,6 +1157,9 @@ function startLibraryOverridesListener() {
         else if (data.images && data.images.length === 3) item.isReferenceType = true;
         if (data.author !== undefined) {
           item.author = data.author;
+        }
+        if (data.order !== undefined) {
+          item.order = data.order;
         }
       }
     });
@@ -2534,12 +2538,55 @@ let libCurrentCat = 'all';
 let libLayoutMode = 'gallery'; // 'gallery' or 'list'
 let globalSearchQuery = '';
 
+let isDraggingCard = false;
+let draggedCardId = null;
+
+// --- Handle Card Drop & Re-order ---
+function handleCardDrop(draggedId, targetId) {
+  let sortedData = [...libraryData].sort((a, b) => {
+    const orderA = a.order !== undefined ? a.order : 99999;
+    const orderB = b.order !== undefined ? b.order : 99999;
+    if (orderA !== orderB) return orderA - orderB;
+    
+    const isCustomA = String(a.id).startsWith('lib-custom-');
+    const isCustomB = String(b.id).startsWith('lib-custom-');
+    if (isCustomA && !isCustomB) return -1;
+    if (!isCustomA && isCustomB) return 1;
+    if (isCustomA && isCustomB) {
+      const tsA = parseInt(String(a.id).replace('lib-custom-', '')) || 0;
+      const tsB = parseInt(String(b.id).replace('lib-custom-', '')) || 0;
+      return tsB - tsA;
+    }
+    return 0;
+  });
+
+  const fromIdx = sortedData.findIndex(item => item.id === draggedId);
+  const toIdx = sortedData.findIndex(item => item.id === targetId);
+
+  if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return;
+
+  const draggedItem = sortedData[fromIdx];
+  sortedData.splice(fromIdx, 1);
+  sortedData.splice(toIdx, 0, draggedItem);
+
+  sortedData.forEach((item, index) => {
+    item.order = index;
+    saveLibraryOverride(item.id, { order: index });
+  });
+
+  renderLibrary();
+}
+
 // --- Render Library ---
 function renderLibrary() {
   const libContent = document.getElementById('lib-content');
   if (!libContent) return;
 
   let sortedData = [...libraryData].sort((a, b) => {
+    const orderA = a.order !== undefined ? a.order : 99999;
+    const orderB = b.order !== undefined ? b.order : 99999;
+    if (orderA !== orderB) return orderA - orderB;
+
     const isCustomA = String(a.id).startsWith('lib-custom-');
     const isCustomB = String(b.id).startsWith('lib-custom-');
     if (isCustomA && !isCustomB) return -1;
@@ -2649,6 +2696,58 @@ function renderLibrary() {
     const card = document.createElement('div');
     card.className = 'lib-card' + (libLayoutMode === 'list' ? ' is-list' : '');
     card.dataset.id = item.id;
+
+    // Drag and Drop for Admin reordering
+    if (isLoggedIn && isAdmin) {
+      card.setAttribute('draggable', 'true');
+      
+      card.addEventListener('dragstart', function(e) {
+        isDraggingCard = true;
+        draggedCardId = item.id;
+        card.classList.add('is-dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', item.id);
+      });
+
+      card.addEventListener('dragover', function(e) {
+        if (e.preventDefault) {
+          e.preventDefault();
+        }
+        e.dataTransfer.dropEffect = 'move';
+        return false;
+      });
+
+      card.addEventListener('dragenter', function(e) {
+        if (item.id !== draggedCardId) {
+          card.classList.add('drag-over');
+        }
+      });
+
+      card.addEventListener('dragleave', function(e) {
+        card.classList.remove('drag-over');
+      });
+
+      card.addEventListener('drop', function(e) {
+        e.stopPropagation();
+        card.classList.remove('drag-over');
+        
+        if (draggedCardId && draggedCardId !== item.id) {
+          handleCardDrop(draggedCardId, item.id);
+        }
+        return false;
+      });
+
+      card.addEventListener('dragend', function(e) {
+        document.querySelectorAll('.lib-card').forEach(c => {
+          c.classList.remove('is-dragging');
+          c.classList.remove('drag-over');
+        });
+        draggedCardId = null;
+        setTimeout(() => {
+          isDraggingCard = false;
+        }, 50);
+      });
+    }
 
     let thumbHtml = '';
     // If it has at least 2 images, use them for Before/After slider regardless of type
@@ -2808,6 +2907,7 @@ function renderLibrary() {
 
     // Card click
     card.addEventListener('click', function(e) {
+      if (isDraggingCard) return;
       if (!isLoggedIn) {
         unauthorizedClicksCount++;
         if (unauthorizedClicksCount >= 2) {

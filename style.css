@@ -686,6 +686,23 @@ body.is-admin .delete-btn--list {
   overflow: hidden;
   min-height: max-content;
 }
+/* Drag and Drop styling for Admin editing */
+body.is-admin .lib-card {
+  cursor: grab;
+  user-select: none;
+}
+.lib-card.is-dragging {
+  cursor: grabbing;
+  opacity: 0.4;
+  transform: scale(0.98);
+  border: 1.5px dashed var(--color-primary);
+}
+.lib-card.drag-over {
+  border: 2px dashed #0071e3 !important;
+  background: rgba(0, 113, 227, 0.05) !important;
+  transform: scale(1.02);
+}
+
 .lib-card__thumb {
   display: block;
   width: 100%;
