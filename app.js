@@ -4381,7 +4381,12 @@ navFloat.addEventListener('click', function () { setView('float'); closeMobileMe
 if (navList) {
   navList.addEventListener('click', function () { setView('list'); closeMobileMenu(); });
 }
-navLibrary.addEventListener('click', function () { setView('library'); closeMobileMenu(); });
+navLibrary.addEventListener('click', function () { 
+  requireLogin(function() {
+    setView('library'); 
+    closeMobileMenu(); 
+  });
+});
 if (navUsermgmt) {
   navUsermgmt.addEventListener('click', function () { setView('usermgmt'); closeMobileMenu(); });
 }
@@ -4508,7 +4513,11 @@ startLibraryOverridesListener();
 startLibraryRequestsListener();
 restoreSession();
 startListener();
-setView(localStorage.getItem('pl_current_view') || 'float');
+let initialView = localStorage.getItem('pl_current_view') || 'float';
+if (!isLoggedIn && (initialView === 'library' || initialView === 'usermgmt')) {
+  initialView = 'float';
+}
+setView(initialView);
 
 // Global event to auto-save and blur editable list items when clicking outside
 document.addEventListener('pointerdown', function(e) {
