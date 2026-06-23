@@ -59,82 +59,105 @@ let userProfiles = {};
 
 // Default profiles from foundfoundedmeet
 const FF_MEMBERS = {
+  // 김병수 (BS)
+  "BS": { name: "김병수", role: "VM", team: "ISFJ", img: "profile_image.png" },
+  "김병수": { name: "김병수", role: "VM", team: "ISFJ", img: "profile_image.png" },
+  "병수": { name: "김병수", role: "VM", team: "ISFJ", img: "profile_image.png" },
+
+  // 김연수 (YS)
+  "YS": { name: "김연수", role: "PM", team: "ISTJ", img: "profile_image.png" },
+  "김연수": { name: "김연수", role: "PM", team: "ISTJ", img: "profile_image.png" },
+  "연수": { name: "김연수", role: "PM", team: "ISTJ", img: "profile_image.png" },
+
+  // 김준우 (JW)
+  "JW": { name: "김준우", role: "HDO", team: "ENTP", img: "profile_image.png" },
+  "김준우": { name: "김준우", role: "HDO", team: "ENTP", img: "profile_image.png" },
+  "준우": { name: "김준우", role: "HDO", team: "ENTP", img: "profile_image.png" },
+
   // 김태영 (TY)
-  "TY": { name: "김태영", role: "디자이너", team: "파운드/파운디드 ID", img: "avatar_taeyoung.png" },
-  "김태영": { name: "김태영", role: "디자이너", team: "파운드/파운디드 ID", img: "avatar_taeyoung.png" },
-  "태영": { name: "김태영", role: "디자이너", team: "파운드/파운디드 ID", img: "avatar_taeyoung.png" },
+  "TY": { name: "김태영", role: "COO", team: "INFJ", img: "profile_image.png" },
+  "김태영": { name: "김태영", role: "COO", team: "INFJ", img: "profile_image.png" },
+  "태영": { name: "김태영", role: "COO", team: "INFJ", img: "profile_image.png" },
 
-  // 곽진우 (JW)
-  "JW": { name: "곽진우", role: "디자이너", team: "파운드/파운디드 ID", img: "avatar_jinwoo.png" },
-  "곽진우": { name: "곽진우", role: "디자이너", team: "파운드/파운디드 ID", img: "avatar_jinwoo.png" },
-  "진우": { name: "곽진우", role: "디자이너", team: "파운드/파운디드 ID", img: "avatar_jinwoo.png" },
+  // 문예은 (YE)
+  "YE": { name: "문예은", role: "OP", team: "MBTI", img: "profile_image.png" },
+  "문예은": { name: "문예은", role: "OP", team: "MBTI", img: "profile_image.png" },
+  "예은": { name: "문예은", role: "OP", team: "MBTI", img: "profile_image.png" },
 
-  // 권다은 (DE)
-  "DE": { name: "권다은", role: "디자이너", team: "파운드/파운디드 ID", img: "avatar_daeun.png" },
-  "권다은": { name: "권다은", role: "디자이너", team: "파운드/파운디드 ID", img: "avatar_daeun.png" },
-  "다은": { name: "권다은", role: "디자이너", team: "파운드/파운디드 ID", img: "avatar_daeun.png" },
+  // 서채민 (CM)
+  "CM": { name: "서채민", role: "VM", team: "INFJ", img: "profile_image.png" },
+  "서채민": { name: "서채민", role: "VM", team: "INFJ", img: "profile_image.png" },
+  "채민": { name: "서채민", role: "VM", team: "INFJ", img: "profile_image.png" },
 
-  // 남경선 (KS)
-  "KS": { name: "남경선", role: "디자이너", team: "파운드/파운디드 ID", img: "avatar_kyungsun.png" },
-  "남경선": { name: "남경선", role: "디자이너", team: "파운드/파운디드 ID", img: "avatar_kyungsun.png" },
-  "경선": { name: "남경선", role: "디자이너", team: "파운드/파운디드 ID", img: "avatar_kyungsun.png" },
+  // 설민규 (MK)
+  "MK": { name: "설민규", role: "PM", team: "MBTI", img: "profile_image.png" },
+  "설민규": { name: "설민규", role: "PM", team: "MBTI", img: "profile_image.png" },
+  "민규": { name: "설민규", role: "PM", team: "MBTI", img: "profile_image.png" },
 
-  // 신유진 (YJ)
-  "YJ": { name: "신유진", role: "시니어 디자이너", team: "파운드/파운디드 ID", img: "avatar_yujin.png" },
-  "신유진": { name: "신유진", role: "시니어 디자이너", team: "파운드/파운디드 ID", img: "avatar_yujin.png" },
-  "유진": { name: "신유진", role: "시니어 디자이너", team: "파운드/파운디드 ID", img: "avatar_yujin.png" },
+  // 심재정 (JJ)
+  "JJ": { name: "심재정", role: "OP", team: "ENFJ", img: "profile_image.png" },
+  "심재정": { name: "심재정", role: "OP", team: "ENFJ", img: "profile_image.png" },
+  "재정": { name: "심재정", role: "OP", team: "ENFJ", img: "profile_image.png" },
 
-  // 신준범 (JB)
-  "JB": { name: "신준범", role: "프리랜서 디자이너", team: "파운드/파운디드 ID", img: "avatar_junbeom.png" },
-  "신준범": { name: "신준범", role: "프리랜서 디자이너", team: "파운드/파운디드 ID", img: "avatar_junbeom.png" },
-  "준범": { name: "신준범", role: "프리랜서 디자이너", team: "파운드/파운디드 ID", img: "avatar_junbeom.png" },
+  // 윤효식 (HS)
+  "HS": { name: "윤효식", role: "OP", team: "ENFJ", img: "profile_image.png" },
+  "윤효식": { name: "윤효식", role: "OP", team: "ENFJ", img: "profile_image.png" },
+  "효식": { name: "윤효식", role: "OP", team: "ENFJ", img: "profile_image.png" },
 
-  // 신현열 (HY)
-  "HY": { name: "신현열", role: "시니어 디자이너", team: "파운드/파운디드 ID", img: "avatar_hyunyeol.png" },
-  "신현열": { name: "신현열", role: "시니어 디자이너", team: "파운드/파운디드 ID", img: "avatar_hyunyeol.png" },
-  "현열": { name: "신현열", role: "시니어 디자이너", team: "파운드/파운디드 ID", img: "avatar_hyunyeol.png" },
+  // 오선빈 (SB)
+  "SB": { name: "오선빈", role: "CDO", team: "ENTJ", img: "profile_image.png" },
+  "오선빈": { name: "오선빈", role: "CDO", team: "ENTJ", img: "profile_image.png" },
+  "선빈": { name: "오선빈", role: "CDO", team: "ENTJ", img: "profile_image.png" },
 
-  // 윤정수 (JS)
-  "JS": { name: "윤정수", role: "인턴", team: "파운드/파운디드 ID", img: "avatar_jungsoo.png" },
-  "윤정수": { name: "윤정수", role: "인턴", team: "파운드/파운디드 ID", img: "avatar_jungsoo.png" },
-  "정수": { name: "윤정수", role: "인턴", team: "파운드/파운디드 ID", img: "avatar_jungsoo.png" },
+  // 이강현 (GH)
+  "GH": { name: "이강현", role: "OP", team: "ENTP", img: "profile_image.png" },
+  "이강현": { name: "이강현", role: "OP", team: "ENTP", img: "profile_image.png" },
+  "강현": { name: "이강현", role: "OP", team: "ENTP", img: "profile_image.png" },
 
-  // 송규호 (GH)
-  "GH": { name: "송규호", role: "디렉터", team: "파운드/파운디드 ID", img: "avatar_gyuho.png" },
-  "송규호": { name: "송규호", role: "디렉터", team: "파운드/파운디드 ID", img: "avatar_gyuho.png" },
-  "규호": { name: "송규호", role: "디렉터", team: "파운드/파운디드 ID", img: "avatar_gyuho.png" },
+  // 이서연 (SY)
+  "SY": { name: "이서연", role: "VM", team: "ENFP", img: "profile_image.png" },
+  "이서연": { name: "이서연", role: "VM", team: "ENFP", img: "profile_image.png" },
+  "서연": { name: "이서연", role: "VM", team: "ENFP", img: "profile_image.png" },
 
-  // 김도영 (DY)
-  "DY": { name: "김도영", role: "인턴", team: "파운드/파운디드 VD", img: "avatar_doyoung.png" },
-  "김도영": { name: "김도영", role: "인턴", team: "파운드/파운디드 VD", img: "avatar_doyoung.png" },
-  "도영": { name: "김도영", role: "인턴", team: "파운드/파운디드 VD", img: "avatar_doyoung.png" },
+  // 이승희 (SH)
+  "SH": { name: "이승희", role: "OP", team: "ENTJ", img: "profile_image.png" },
+  "이승희": { name: "이승희", role: "OP", team: "ENTJ", img: "profile_image.png" },
+  "승희": { name: "이승희", role: "OP", team: "ENTJ", img: "profile_image.png" },
 
-  // 안혜경 (HK)
-  "HK": { name: "안혜경", role: "디자이너", team: "파운드/파운디드 VD", img: "avatar_hyekyung.png" },
-  "안혜경": { name: "안혜경", role: "디자이너", team: "파운드/파운디드 VD", img: "avatar_hyekyung.png" },
-  "혜경": { name: "안혜경", role: "디자이너", team: "파운드/파운디드 VD", img: "avatar_hyekyung.png" },
+  // 이유정 (YJ)
+  "YJ": { name: "이유정", role: "VM", team: "ENFP", img: "profile_image.png" },
+  "이유정": { name: "이유정", role: "VM", team: "ENFP", img: "profile_image.png" },
+  "유정": { name: "이유정", role: "VM", team: "ENFP", img: "profile_image.png" },
 
-  // 여지민 (JM)
-  "JM": { name: "여지민", role: "디자이너", team: "파운드/파운디드 VD", img: "avatar_jimin.png" },
-  "여지민": { name: "여지민", role: "디자이너", team: "파운드/파운디드 VD", img: "avatar_jimin.png" },
-  "지민": { name: "여지민", role: "디자이너", team: "파운드/파운디드 VD", img: "avatar_jimin.png" },
+  // 이진형 (JH)
+  "JH": { name: "이진형", role: "OP", team: "MBTI", img: "profile_image.png" },
+  "이진형": { name: "이진형", role: "OP", team: "MBTI", img: "profile_image.png" },
+  "진형": { name: "이진형", role: "OP", team: "MBTI", img: "profile_image.png" },
 
-  // 안수현 (SH)
-  "SH": { name: "안수현", role: "디자이너", team: "파운드/파운디드 VD", img: "avatar_suhyun.png" },
-  "안수현": { name: "안수현", role: "디자이너", team: "파운드/파운디드 VD", img: "avatar_suhyun.png" },
-  "수현": { name: "안수현", role: "디자이너", team: "파운드/파운디드 VD", img: "avatar_suhyun.png" },
+  // 장영우 (YW)
+  "YW": { name: "장영우", role: "OP", team: "ENFJ", img: "profile_image.png" },
+  "장영우": { name: "장영우", role: "OP", team: "ENFJ", img: "profile_image.png" },
+  "영우": { name: "장영우", role: "OP", team: "ENFJ", img: "profile_image.png" },
 
-  // oxo (OX)
-  "OX": { name: "oxo", role: "디렉터", team: "파운드/파운디드 VD", img: "avatar_oxo.png" },
-  "oxo": { name: "oxo", role: "디렉터", team: "파운드/파운디드 VD", img: "avatar_oxo.png" },
-  "OXO": { name: "oxo", role: "디렉터", team: "파운드/파운디드 VD", img: "avatar_oxo.png" },
+  // 장영재 (YJ2)
+  "YJ2": { name: "장영재", role: "PM", team: "INFP", img: "profile_image.png" },
+  "장영재": { name: "장영재", role: "PM", team: "INFP", img: "profile_image.png" },
+  "영재": { name: "장영재", role: "PM", team: "INFP", img: "profile_image.png" },
 
-  // 김준구 (avatar_jungoo.png)
-  "JG": { name: "김준구", role: "디렉터", team: "파운드/파운디드 VD", img: "avatar_jungoo.png" },
-  "김준구": { name: "김준구", role: "디렉터", team: "파운드/파운디드 VD", img: "avatar_jungoo.png" },
-  "준구": { name: "김준구", role: "디렉터", team: "파운드/파운디드 VD", img: "avatar_jungoo.png" },
-  "JUNGOO": { name: "김준구", role: "디렉터", team: "파운드/파운디드 VD", img: "avatar_jungoo.png" },
-  "jungoo": { name: "김준구", role: "디렉터", team: "파운드/파운디드 VD", img: "avatar_jungoo.png" }
+  // 조진주 (CJ)
+  "CJ": { name: "조진주", role: "VM", team: "ESFJ", img: "profile_image.png" },
+  "조진주": { name: "조진주", role: "VM", team: "ESFJ", img: "profile_image.png" },
+  "진주": { name: "조진주", role: "VM", team: "ESFJ", img: "profile_image.png" },
+
+  // 주재형 (JH2)
+  "JH2": { name: "주재형", role: "VM", team: "ENFJ", img: "profile_image.png" },
+  "주재형": { name: "주재형", role: "VM", team: "ENFJ", img: "profile_image.png" },
+  "재형": { name: "주재형", role: "VM", team: "ENFJ", img: "profile_image.png" },
+
+  // 최솔희 (SH2)
+  "SH2": { name: "최솔희", role: "VM", team: "ENFJ", img: "profile_image.png" },
+  "최솔희": { name: "최솔희", role: "VM", team: "ENFJ", img: "profile_image.png" },
+  "솔희": { name: "최솔희", role: "VM", team: "ENFJ", img: "profile_image.png" }
 };
 
 function getUserDisplay(initials) {
