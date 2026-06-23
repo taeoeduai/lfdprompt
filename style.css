@@ -165,7 +165,9 @@ body {
   padding: 6px 14px;
   border-radius: var(--r-pill);
   cursor: pointer;
-  transition: all var(--t-fast);
+  transition-property: background-color, color, transform;
+  transition-duration: var(--t-fast);
+  transition-timing-function: ease;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -502,7 +504,9 @@ body.is-admin .delete-btn--list {
   padding: 6px 16px;
   border-radius: var(--r-pill);
   cursor: pointer;
-  transition: all var(--t-fast);
+  transition-property: background-color, color, border-color, opacity, transform;
+  transition-duration: var(--t-fast);
+  transition-timing-function: ease;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -640,7 +644,9 @@ body.is-admin .delete-btn--list {
   padding: 6px 14px;
   border-radius: var(--r-pill);
   cursor: pointer;
-  transition: all var(--t-fast);
+  transition-property: background-color, color, border-color, transform;
+  transition-duration: var(--t-fast);
+  transition-timing-function: ease;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -1509,7 +1515,7 @@ body.is-admin .lib-card {
   height: 52px;
   background: linear-gradient(135deg, #00b0ff, #000033);
   border-radius: var(--r-lg);
-  color: #333;
+  color: #fff;
   margin-bottom: var(--sp-md);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
