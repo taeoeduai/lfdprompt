@@ -1331,8 +1331,8 @@ body.is-admin .lib-card {
   min-width: 0;
   font-size: 12px;
   font-weight: 800;
-  color: #000 !important;
-  background: linear-gradient(135deg, #00AEEF, #000033) !important; color: #fff;
+  color: #fff !important;
+  background: linear-gradient(135deg, #00AEEF, #000033) !important;
   border-radius: 20px !important;
   letter-spacing: 0.5px;
   box-sizing: border-box;
@@ -1592,8 +1592,8 @@ body.is-admin .lib-card {
   font-family: inherit;
   font-size: 15px;
   font-weight: 600;
-  color: #333;
-  background: linear-gradient(135deg, #00AEEF, #000033); color: #fff;
+  color: #fff;
+  background: linear-gradient(135deg, #00AEEF, #000033);
   border: none;
   border-radius: var(--r-md);
   padding: 12px;
@@ -1775,8 +1775,8 @@ body.is-admin .lib-card {
   font-family: inherit;
   font-size: 13px;
   font-weight: 600;
-  color: #333;
-  background: linear-gradient(135deg, #00AEEF, #000033); color: #fff;
+  color: #fff;
+  background: linear-gradient(135deg, #00AEEF, #000033);
   border: none;
   border-radius: var(--r-pill);
   padding: 6px 18px;
@@ -1949,15 +1949,14 @@ body.is-admin .lib-card {
   }
 }
 
-/* Add Button & New Inputs Style */
 .lib-add-btn {
   font-family: inherit;
   font-size: 13px;
   font-weight: 600;
-  color: #333;
-  background: linear-gradient(135deg, #00AEEF, #000033); color: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  padding: 6px 14px;
+  color: #fff;
+  background: linear-gradient(135deg, #00AEEF, #000033);
+  border: none;
+  padding: 8px 16px;
   border-radius: var(--r-pill);
   cursor: pointer;
   transition: all var(--t-fast);
@@ -1965,11 +1964,13 @@ body.is-admin .lib-card {
   display: flex;
   align-items: center;
   gap: 4px;
+  box-shadow: 0 2px 8px rgba(0, 174, 239, 0.15);
 }
 
 .lib-add-btn:hover {
-  background: #ffe394;
+  background: linear-gradient(135deg, #00c2ff, #00004d);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 174, 239, 0.3);
 }
 
 .lib-add-btn.hidden {
@@ -2707,6 +2708,97 @@ body.is-admin .lib-card {
   .usermgmt-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ============================================
+   DESIGN ENGINEERING POLISH (make-interfaces-feel-better)
+   ============================================ */
+
+/* 1. Font Smoothing Cross-platform support */
+body {
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 2. Optical Text Wrapping for Headings */
+.library-view__title,
+.login-modal__title,
+.profile-modal__title,
+.lib-type-modal h2,
+.lib-modal__title,
+.usermgmt-view h2,
+.usermgmt-view h3 {
+  text-wrap: balance;
+}
+
+/* 3. Tabular Numbers for Counter & Stats to prevent layout shifting */
+.lib-count,
+#mypage-stat-prompts,
+#mypage-stat-library,
+.user-display-team,
+.user-display-role {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 4. Image Outlines for Consistent Depth */
+.profile-img-list,
+.profile-img-badge,
+.profile-img-bubble,
+.lib-card__thumb img,
+.lib-modal__image-grid img,
+.lib-upload-preview {
+  outline: 1px solid rgba(0, 0, 0, 0.08);
+  outline-offset: -1px;
+}
+
+/* 5. Tactile Scale-on-Press (Exact 0.96 scale for perfect touch response) */
+.global-nav__link:active,
+.filter-pill:active,
+.lib-filter-pill:active,
+.lib-add-btn:active,
+.dashboard-list-btn:active,
+.nav-login-btn:active,
+.login-modal__submit:active,
+.lib-modal__copy-btn:active,
+.lib-modal__save-btn:active,
+.lib-modal__cancel-btn:active,
+.lib-modal__decline-btn:active,
+.lib-modal__approve-btn:active,
+#dropdown-mypage-btn:active,
+#dropdown-usermgmt-btn:active,
+#dropdown-logout-btn:active,
+#usermgmt-back-btn:active,
+#profile-btn-add:active,
+#profile-btn-delete:active,
+#btn-type-before-after:active,
+#btn-type-reference:active,
+#btn-type-video:active,
+.input-bar__send:active {
+  transform: scale(0.96) !important;
+}
+
+/* Ensure smooth transition for scale-on-press */
+.global-nav__link,
+.filter-pill,
+.lib-filter-pill,
+.lib-add-btn,
+.dashboard-list-btn,
+.nav-login-btn,
+.login-modal__submit,
+.lib-modal__copy-btn,
+.lib-modal__save-btn,
+.lib-modal__cancel-btn,
+.lib-modal__decline-btn,
+.lib-modal__approve-btn,
+#usermgmt-back-btn,
+#profile-btn-add,
+#profile-btn-delete,
+#btn-type-before-after,
+#btn-type-reference,
+#btn-type-video,
+.input-bar__send {
+  transition-property: transform, background-color, border-color, box-shadow, opacity;
+  transition-duration: 0.2s;
+  transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 
