@@ -136,8 +136,10 @@ body {
   align-items: center;
   justify-content: space-between;
   height: 100%;
-  max-width: 100%;
-  padding: 0 var(--sp-lg);
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 var(--sp-md);
+  box-sizing: border-box;
 }
 
 .global-nav__title {
@@ -2707,7 +2709,6 @@ body.is-admin .lib-card {
 .usermgmt-grid {
   display: block;
   width: 100%;
-  max-width: 800px;
   margin: 0 auto;
 }
 
