@@ -135,6 +135,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
   height: 100%;
   max-width: 980px;
   margin: 0 auto;
@@ -2092,7 +2093,7 @@ body.is-admin .lib-card {
   .global-nav__link {
     width: 100%;
     text-align: left;
-    padding: 10px 12px;
+    padding: 12px 12px;
     font-size: 14.5px; /* Slightly reduced font size */
     color: rgba(255, 255, 255, 0.7);
     border-radius: var(--r-sm);
