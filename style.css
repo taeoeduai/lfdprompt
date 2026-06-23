@@ -2703,11 +2703,10 @@ body.is-admin .lib-card {
 }
 
 .usermgmt-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
-  align-items: start;
+  display: block;
   width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 @media (max-width: 768px) {
