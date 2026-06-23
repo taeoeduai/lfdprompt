@@ -6,13 +6,13 @@
 
 // --- Firebase Init (compat SDK) ---
 const firebaseConfig = {
-  apiKey: "AIzaSyALsGTWeB1MUfkXQOsHuA4E2wVOh9tZ_iI",
-  authDomain: "foundfounded-7cd3e.firebaseapp.com",
-  projectId: "foundfounded-7cd3e",
-  storageBucket: "foundfounded-7cd3e.firebasestorage.app",
-  messagingSenderId: "705068371976",
-  appId: "1:705068371976:web:546b664ff9b87d99eac1bd",
-  measurementId: "G-G0DR5QJZY0"
+  apiKey: "AIzaSyA9FGodZVcjLK7rZWMXi_iIevncIgS2gQ8",
+  authDomain: "taeoeduai-78d9c.firebaseapp.com",
+  projectId: "taeoeduai-78d9c",
+  storageBucket: "taeoeduai-78d9c.firebasestorage.app",
+  messagingSenderId: "356215843013",
+  appId: "1:356215843013:web:a244c9a4b83d0752fce8ac",
+  measurementId: "G-P7KD1JV9JR"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -4581,4 +4581,4 @@ setTimeout(() => {
       });
     }).catch(console.error);
   }
-}, 3000);
+}, 3000);
