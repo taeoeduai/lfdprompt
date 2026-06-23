@@ -179,12 +179,9 @@ function getUserDisplay(initials) {
     return `
       <div class="user-display-wrap">
         ${imgSrc ? `<img src="${imgSrc}" class="profile-img-list" alt="${displayName}" />` : `<div class="profile-img-list" style="background:#f0f0f5; display:flex; align-items:center; justify-content:center; color:#555; font-size:14px; font-weight:700;">${displayName.slice(-2)}</div>`}
-        <div class="user-display-info">
-          <div>
-            <span class="user-display-name">${ff.name}</span>
-            <span class="user-display-role">${ff.role}</span>
-          </div>
-          <div class="user-display-team">${ff.team}</div>
+        <div class="user-display-info" style="display: flex; flex-direction: column;">
+          <span class="user-display-role" style="font-weight: 700; color: var(--color-ink); font-size: 14px;">${ff.role}</span>
+          <span class="user-display-name" style="font-weight: 500; color: #888; font-size: 12px; margin-top: 1px;">${ff.name}</span>
         </div>
       </div>
     `;
@@ -2697,7 +2694,7 @@ function renderLibrary() {
     } else if (isLoggedIn) {
       const userInitials = currentUser ? currentUser.id : '';
       const count = libraryRequests.filter(r => isAuthorMatch(r.author, userInitials)).length;
-      html += `<button class="lib-filter-pill ${libCurrentCat === 'my_req' ? 'is-active' : ''}" data-cat="my_req" style="background: rgba(255, 149, 0, 0.08); color: #ff9500; border-color: rgba(255, 149, 0, 0.2); font-weight: ${libCurrentCat === 'my_req' ? '600' : '400'};">요청 대기 <span class="lib-count" style="color: #ff9500;">${count}</span></button>`;
+      html += `<button class="lib-filter-pill ${libCurrentCat === 'my_req' ? 'is-active' : ''}" data-cat="my_req" style="background: rgba(0, 176, 255, 0.08); color: #0071e3; border-color: rgba(0, 176, 255, 0.3); font-weight: ${libCurrentCat === 'my_req' ? '600' : '400'};">요청 대기 <span class="lib-count" style="color: #0071e3;">${count}</span></button>`;
     }
 
     tagArray.forEach(cat => {
