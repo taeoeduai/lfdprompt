@@ -175,9 +175,10 @@ function getUserDisplay(initials) {
   const imgSrc = (ff && ff.img) ? ff.img : (uploadedImg ? uploadedImg : null);
   
   if (ff) {
+    const displayName = ff.name;
     return `
       <div class="user-display-wrap">
-        ${imgSrc ? `<img src="${imgSrc}" class="profile-img-list" alt="${initials}" />` : `<div class="profile-img-list" style="background:#f0f0f5; display:flex; align-items:center; justify-content:center; color:#555; font-size:14px; font-weight:700;">${initials}</div>`}
+        ${imgSrc ? `<img src="${imgSrc}" class="profile-img-list" alt="${displayName}" />` : `<div class="profile-img-list" style="background:#f0f0f5; display:flex; align-items:center; justify-content:center; color:#555; font-size:14px; font-weight:700;">${displayName.slice(-2)}</div>`}
         <div class="user-display-info">
           <div>
             <span class="user-display-name">${ff.name}</span>
@@ -282,6 +283,8 @@ function updateAuthUI() {
     navLoginBtn.classList.add('hidden');
     navUserInfo.classList.remove('hidden');
     const uId = currentUser.id.toUpperCase();
+    const ff = FF_MEMBERS[uId];
+    const displayName = ff ? ff.name : uId;
     if (isAdmin) {
       navUserBadge.textContent = uId;
       navUserBadge.classList.add('is-admin-badge');
@@ -291,13 +294,13 @@ function updateAuthUI() {
     } else {
       const avatarSrc = getAvatarSrc(uId);
       if (avatarSrc) {
-        navUserBadge.innerHTML = `<img src="${avatarSrc}" class="profile-img-badge" alt="${uId}" />`;
+        navUserBadge.innerHTML = `<img src="${avatarSrc}" class="profile-img-badge" alt="${displayName}" />`;
         navUserBadge.style.padding = '0';
         navUserBadge.style.border = '1px solid rgba(0,0,0,0.1)';
         navUserBadge.style.overflow = 'hidden';
         navUserBadge.classList.remove('is-admin-badge');
       } else {
-        navUserBadge.textContent = uId;
+        navUserBadge.textContent = displayName.slice(-2);
         navUserBadge.style.padding = '';
         navUserBadge.style.border = '';
         navUserBadge.style.overflow = '';
@@ -305,7 +308,7 @@ function updateAuthUI() {
       }
     }
     if (greetingEl) {
-      greetingEl.innerHTML = `${uId}님<br>환영합니다.`;
+      greetingEl.innerHTML = `${displayName}님<br>환영합니다.`;
     }
     document.querySelectorAll('.is-blurred').forEach(el => el.classList.remove('is-blurred'));
   } else {
@@ -379,7 +382,8 @@ function updateAuthUI() {
   if (filterMy) {
     if (isLoggedIn && !isAdmin && currentUser) {
       filterMy.style.display = 'inline-block';
-      filterMy.textContent = currentUser.id;
+      const ff = FF_MEMBERS[currentUser.id.toUpperCase()];
+      filterMy.textContent = ff ? ff.name : currentUser.id;
     } else {
       filterMy.style.display = 'none';
       filterMy.textContent = '내 요청 대기';
@@ -764,8 +768,10 @@ function startUserProfileListener() {
         if (p && p.author) {
           const authorEl = el.querySelector('.bubble__author');
           if (authorEl && userProfiles[p.author.toUpperCase()]) {
+            const ff = FF_MEMBERS[p.author.toUpperCase()];
+            const displayName = ff ? ff.name : p.author;
             if (!authorEl.querySelector('.profile-img-bubble')) {
-              authorEl.innerHTML = `<img src="${userProfiles[p.author.toUpperCase()]}" class="profile-img-bubble" />` + p.author + (p.isPending ? ' <span style="color:#ff3b30; font-size:9px; border:1px solid #ff3b30; padding:1px 4px; border-radius:10px; margin-left:4px;">대기중</span>' : '');
+              authorEl.innerHTML = `<img src="${userProfiles[p.author.toUpperCase()]}" class="profile-img-bubble" />` + displayName + (p.isPending ? ' <span style="color:#ff3b30; font-size:9px; border:1px solid #ff3b30; padding:1px 4px; border-radius:10px; margin-left:4px;">대기중</span>' : '');
             } else {
               authorEl.querySelector('.profile-img-bubble').src = userProfiles[p.author.toUpperCase()];
             }
@@ -986,18 +992,13 @@ function renderUserMgmtPage() {
     }
   }
 
-  // Sort uniqueStaff by Role, then Team, then Name
-  const roleOrder = { "디렉터": 1, "시니어 디자이너": 2, "디자이너": 3, "프리랜서 디자이너": 4, "인턴": 5 };
-  const teamOrder = { "파운드/파운디드 ID": 1, "파운드/파운디드 VD": 2 };
+  // Sort uniqueStaff: HDO, COO, CDO first, then others by name
+  const roleOrder = { "HDO": 1, "COO": 2, "CDO": 3 };
   
   uniqueStaff.sort((a, b) => {
     const roleA = roleOrder[a.role] || 99;
     const roleB = roleOrder[b.role] || 99;
     if (roleA !== roleB) return roleA - roleB;
-    
-    const teamA = teamOrder[a.team] || 99;
-    const teamB = teamOrder[b.team] || 99;
-    if (teamA !== teamB) return teamA - teamB;
     
     return a.name.localeCompare(b.name, 'ko');
   });
@@ -1015,15 +1016,17 @@ function renderUserMgmtPage() {
     const avatarSrc = s.img ? s.img : '';
     const avatarHtml = avatarSrc 
       ? `<img src="${avatarSrc}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />`
-      : `<div style="width:36px; height:36px; border-radius:50%; background:#eaeaea; display:flex; align-items:center; justify-content:center; font-weight:700; color:#888; font-size:13px;">${s.id}</div>`;
+      : `<div style="width:36px; height:36px; border-radius:50%; background:#eaeaea; display:flex; align-items:center; justify-content:center; font-weight:700; color:#888; font-size:13px;">${s.name.slice(-2)}</div>`;
+
+    const memberType = (s.role === 'HDO' || s.role === 'COO' || s.role === 'CDO') ? '임원' : '운영진';
 
     div.innerHTML = `
       <div style="display:flex; align-items:center; gap:12px;">
         ${avatarHtml}
         <div>
           <div style="font-weight:700; font-size:14px; color:var(--color-ink); display:flex; align-items:center; gap:6px;">
-            ${s.name} <span style="font-size:11px; font-weight:500; color:#888;">(${s.id})</span>
-            <span style="color:#34c759; font-size:11px; font-weight:700; padding:1px 6px; background:rgba(52,199,89,0.1); border-radius:10px;">${s.role === '디렉터' ? '대표' : '직원'}</span>
+            ${s.name}
+            <span style="color:#34c759; font-size:11px; font-weight:700; padding:1px 6px; background:rgba(52,199,89,0.1); border-radius:10px;">${memberType}</span>
           </div>
           <div style="font-size:12px; color:#888; margin-top:2px;">${s.team} · ${s.role}</div>
         </div>
@@ -1420,7 +1423,9 @@ function mkBubble(p, x, y, enter) {
   if (a && !hideAuthor) {
     const imgSrc = getAvatarSrc(a);
     let profileImg = imgSrc ? `<img src="${imgSrc}" class="profile-img-bubble" />` : '';
-    authorHtml = `<div class="bubble__author">${profileImg}${a}${p.isPending ? ' <span style="color:#ff3b30; font-size:9px; border:1px solid #ff3b30; padding:1px 4px; border-radius:10px; margin-left:4px;">대기중</span>' : ''}</div>`;
+    const ff = FF_MEMBERS[a.toUpperCase()];
+    const displayName = ff ? ff.name : a;
+    authorHtml = `<div class="bubble__author">${profileImg}${displayName}${p.isPending ? ' <span style="color:#ff3b30; font-size:9px; border:1px solid #ff3b30; padding:1px 4px; border-radius:10px; margin-left:4px;">대기중</span>' : ''}</div>`;
   }
 
   el.innerHTML =
@@ -1774,7 +1779,8 @@ function renderComments(el, comments, promptId) {
     if (isLoggedIn && currentUser && currentUser.role === 'registered_user' && cAuthorUpper !== currentAuthorUpper) {
       authorSpan.textContent = '익명';
     } else {
-      authorSpan.textContent = c.author;
+      const ff = FF_MEMBERS[cAuthorUpper];
+      authorSpan.textContent = ff ? ff.name : c.author;
     }
     
     const textSpan = document.createElement('span');
@@ -1953,7 +1959,9 @@ function renderList() {
       
       uniqueAuthors.forEach(auth => {
         const isActive = selectedAuthorFilter === auth;
-        html += `<button class="filter-pill ${isActive ? 'is-active' : ''}" style="padding: 4px 12px; font-size: 11.5px; border-radius: var(--r-pill);" data-author="${escHtml(auth)}">${escHtml(auth)} <span style="font-size: 9px; opacity: 0.6;">(${authorCounts[auth]})</span></button>`;
+        const ff = FF_MEMBERS[auth.toUpperCase()];
+        const displayName = ff ? ff.name : auth;
+        html += `<button class="filter-pill ${isActive ? 'is-active' : ''}" style="padding: 4px 12px; font-size: 11.5px; border-radius: var(--r-pill);" data-author="${escHtml(auth)}">${escHtml(displayName)} <span style="font-size: 9px; opacity: 0.6;">(${authorCounts[auth]})</span></button>`;
       });
       
       participantFiltersContainer.innerHTML = html;
@@ -2041,11 +2049,13 @@ function renderList() {
     const isAuthorSelected = selectedAuthorFilter === a;
     let authorHtml = '';
     if (a) {
+      const ff = FF_MEMBERS[a.toUpperCase()];
+      const displayName = ff ? ff.name : a;
       const imgSrc = getAvatarSrc(a);
       if (imgSrc) {
-        authorHtml = `<img src="${imgSrc}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" alt="${a}" />`;
+        authorHtml = `<img src="${imgSrc}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" alt="${displayName}" />`;
       } else {
-        authorHtml = a;
+        authorHtml = displayName;
       }
     }
 
@@ -3160,7 +3170,9 @@ function openLibModal(item) {
           pendingBanner.style.background = 'rgba(255, 59, 48, 0.08)';
           pendingBanner.style.borderColor = 'rgba(255, 59, 48, 0.2)';
           pendingBanner.style.color = '#ff3b30';
-          authorInfo.innerHTML = `유저 <strong>${item.author || 'GST'}</strong> 님이 요청한 프롬프트입니다. 아래 버튼으로 게시하거나 거절해 주세요.`;
+          const ff = FF_MEMBERS[(item.author || '').toUpperCase()];
+          const displayName = ff ? ff.name : (item.author || 'GST');
+          authorInfo.innerHTML = `유저 <strong>${displayName}</strong> 님이 요청한 프롬프트입니다. 아래 버튼으로 게시하거나 거절해 주세요.`;
         } else {
           // Orange color for user
           pendingBanner.style.background = 'rgba(255, 149, 0, 0.08)';
