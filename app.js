@@ -431,6 +431,8 @@ function attemptLogin() {
     return;
   }
 
+  const upperId = id.toUpperCase();
+
   // Check admin
   if (id.toLowerCase() === 'admin') {
     if (pw === AUTH_CREDENTIALS.admin.password) {
@@ -453,31 +455,27 @@ function attemptLogin() {
     }
   }
 
-  // Check normal user (initials)
-  if (pw === DEFAULT_PASSWORD) {
-    loginSuccess({ id: id.toUpperCase().slice(0, 3), role: 'user' });
+  // Check member account in FF_MEMBERS
+  const matchedKey = Object.keys(FF_MEMBERS).find(k => k.toUpperCase() === upperId);
+  if (!matchedKey) {
+    showLoginError('등록된 멤버가 아닙니다.');
     return;
   }
 
-  // Check registered users in registered_users_list document in prompts collection
-  const upperId = id.toUpperCase();
-  db.collection('prompts').doc('registered_users_list').get()
+  const ff = FF_MEMBERS[matchedKey];
+  const canonicalId = Object.keys(FF_MEMBERS).find(k => FF_MEMBERS[k].name === ff.name && k === k.toUpperCase() && k.length <= 3) || matchedKey;
+
+  db.collection('member_accounts').doc(canonicalId).get()
     .then((doc) => {
-      const list = (doc.exists && doc.data().list) ? doc.data().list : [];
-      const userObj = list.find(u => u.id.toUpperCase() === upperId);
-      
-      if (userObj) {
-        if (userObj.password === pw) {
-          if (userObj.isApproved === true) {
-            loginSuccess({ id: userObj.id, role: 'registered_user' });
-          } else {
-            showLoginError('관리자의 승인을 대기 중입니다.');
-          }
+      if (doc.exists) {
+        const data = doc.data();
+        if (data.password === pw) {
+          loginSuccess({ id: canonicalId, role: 'user' });
         } else {
           showLoginError('비밀번호가 올바르지 않습니다.');
         }
       } else {
-        showLoginError('아이디 또는 비밀번호가 올바르지 않습니다.');
+        showLoginError('아직 가입되지 않은 계정입니다. 회원가입을 해주세요.');
       }
     })
     .catch((err) => {
@@ -499,34 +497,34 @@ function attemptSignUp() {
 
   // Prevent signing up as admin or guest
   if (upperId === 'ADMIN' || upperId === 'GUEST' || upperId === '게스트') {
-    showLoginError('사용할 수 없는 아이디입니다.');
+    showLoginError('사용할 수 없는 이름입니다.');
     return;
   }
 
-  // Check if user already exists in registered_users_list
-  db.collection('prompts').doc('registered_users_list').get()
+  // Check if member exists in FF_MEMBERS
+  const matchedKey = Object.keys(FF_MEMBERS).find(k => k.toUpperCase() === upperId);
+  if (!matchedKey) {
+    showLoginError('등록된 LFD 멤버 이름이 아닙니다.');
+    return;
+  }
+
+  const ff = FF_MEMBERS[matchedKey];
+  const canonicalId = Object.keys(FF_MEMBERS).find(k => FF_MEMBERS[k].name === ff.name && k === k.toUpperCase() && k.length <= 3) || matchedKey;
+
+  // Check if account already registered
+  db.collection('member_accounts').doc(canonicalId).get()
     .then((doc) => {
-      const list = (doc.exists && doc.data().list) ? doc.data().list : [];
-      const userExists = list.some(u => u.id.toUpperCase() === upperId);
-      
-      if (userExists) {
-        showLoginError('이미 존재하는 아이디입니다.');
+      if (doc.exists) {
+        showLoginError('이미 가입된 멤버 계정입니다. 로그인을 시도해 주세요.');
       } else {
-        const newUser = {
-          id: id,
+        db.collection('member_accounts').doc(canonicalId).set({
           password: pw,
-          role: 'registered_user',
-          isApproved: false
-        };
-        list.push(newUser);
-        
-        db.collection('prompts').doc('registered_users_list').set({ list: list })
+          name: ff.name,
+          registeredAt: firebase.firestore.FieldValue.serverTimestamp()
+        })
           .then(() => {
-            showToast('회원가입이 완료되었습니다! 승인 대기 후 이용해 주세요.');
-            setModalSignUpMode(false);
-            loginIdInput.value = id;
-            loginPwInput.value = '';
-            loginPwInput.focus();
+            showToast('회원가입이 완료되었습니다! 로그인됩니다.');
+            loginSuccess({ id: canonicalId, role: 'user' });
           })
           .catch((err) => {
             console.error(err);
@@ -536,7 +534,7 @@ function attemptSignUp() {
     })
     .catch((err) => {
       console.error(err);
-      showLoginError('서버 통신 오류가 발생했습니다.');
+      showLoginError('서버 통신 중 오류가 발생했습니다.');
     });
 }
 
@@ -737,6 +735,13 @@ loginIdInput.addEventListener('keydown', function(e) {
 if (loginModalToggleBtn) {
   loginModalToggleBtn.addEventListener('click', () => {
     setModalSignUpMode(!isSignUpMode);
+  });
+}
+
+const findPwBtn = document.getElementById('login-modal-find-pw-btn');
+if (findPwBtn) {
+  findPwBtn.addEventListener('click', () => {
+    alert('비밀번호를 잊으셨나요?\n\n사내 관리자(admin)에게 문의하시거나, 관리자 페이지를 통해 비밀번호를 조회/초기화해 주세요.');
   });
 }
 
@@ -1024,46 +1029,77 @@ function renderUserMgmtPage() {
     return a.name.localeCompare(b.name, 'ko');
   });
 
-  uniqueStaff.forEach(s => {
-    // Apply filter
-    const isExec = s.role === 'HDO' || s.role === 'COO' || s.role === 'CDO';
-    if (usermgmtStaffFilter === 'executive' && !isExec) return;
-    if (usermgmtStaffFilter === 'OP' && s.role !== 'OP') return;
-    if (usermgmtStaffFilter === 'PM' && s.role !== 'PM') return;
-    if (usermgmtStaffFilter === 'VM' && s.role !== 'VM') return;
+  // Fetch registered user passwords from member_accounts collection
+  db.collection('member_accounts').get().then(snapshot => {
+    const passwordsMap = {};
+    snapshot.forEach(doc => {
+      passwordsMap[doc.id] = doc.data().password;
+    });
 
-    const div = document.createElement('div');
-    div.style.display = 'flex';
-    div.style.alignItems = 'center';
-    div.style.justifyContent = 'space-between';
-    div.style.padding = '12px 16px';
-    div.style.background = '#f9f9fb';
-    div.style.borderRadius = 'var(--r-md)';
-    div.style.border = '1px solid rgba(0,0,0,0.03)';
-    
-    const avatarSrc = s.img ? s.img : '';
-    const avatarHtml = avatarSrc 
-      ? `<img src="${avatarSrc}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />`
-      : `<div style="width:36px; height:36px; border-radius:50%; background:#eaeaea; display:flex; align-items:center; justify-content:center; font-weight:700; color:#888; font-size:13px;">${s.name.slice(-2)}</div>`;
+    uniqueStaff.forEach(s => {
+      // Apply filter
+      const isExec = s.role === 'HDO' || s.role === 'COO' || s.role === 'CDO';
+      if (usermgmtStaffFilter === 'executive' && !isExec) return;
+      if (usermgmtStaffFilter === 'OP' && s.role !== 'OP') return;
+      if (usermgmtStaffFilter === 'PM' && s.role !== 'PM') return;
+      if (usermgmtStaffFilter === 'VM' && s.role !== 'VM') return;
 
-    const memberType = isExec ? '임원' : '운영진';
+      const div = document.createElement('div');
+      div.style.display = 'flex';
+      div.style.alignItems = 'center';
+      div.style.justifyContent = 'space-between';
+      div.style.padding = '12px 16px';
+      div.style.background = '#f9f9fb';
+      div.style.borderRadius = 'var(--r-md)';
+      div.style.border = '1px solid rgba(0,0,0,0.03)';
+      
+      const avatarSrc = s.img ? s.img : '';
+      const avatarHtml = avatarSrc 
+        ? `<img src="${avatarSrc}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />`
+        : `<div style="width:36px; height:36px; border-radius:50%; background:#eaeaea; display:flex; align-items:center; justify-content:center; font-weight:700; color:#888; font-size:13px;">${s.name.slice(-2)}</div>`;
 
-    div.innerHTML = `
-      <div style="display:flex; align-items:center; gap:12px;">
-        ${avatarHtml}
-        <div>
-          <div style="font-weight:700; font-size:14px; color:var(--color-ink); display:flex; align-items:center; gap:6px;">
-            ${s.name} <span style="font-weight:800; font-size:12px; color:#0071e3; margin-left:2px;">${s.role}</span>
-            <span style="color:#34c759; font-size:11px; font-weight:700; padding:1px 6px; background:rgba(52,199,89,0.1); border-radius:10px;">${memberType}</span>
+      const memberType = isExec ? '임원' : '운영진';
+      const hasSignedUp = passwordsMap[s.id] !== undefined;
+      const pwText = hasSignedUp ? `비밀번호: ${passwordsMap[s.id]}` : '미가입';
+
+      div.innerHTML = `
+        <div style="display:flex; align-items:center; gap:12px;">
+          ${avatarHtml}
+          <div>
+            <div style="font-weight:700; font-size:14px; color:var(--color-ink); display:flex; align-items:center; gap:6px;">
+              ${s.name} <span style="font-weight:800; font-size:12px; color:#0071e3; margin-left:2px;">${s.role}</span>
+              <span style="color:#34c759; font-size:11px; font-weight:700; padding:1px 6px; background:rgba(52,199,89,0.1); border-radius:10px;">${memberType}</span>
+            </div>
+            <div style="font-size:12px; color:#888; margin-top:2px;">${s.team}</div>
           </div>
-          <div style="font-size:12px; color:#888; margin-top:2px;">${s.team}</div>
         </div>
-      </div>
-      <div style="font-size:12px; font-weight:600; color:#888; padding-right:8px;">
-        비밀번호: 373737
-      </div>
-    `;
-    usermgmtStaffList.appendChild(div);
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="font-size:12px; font-weight:600; color:#888;">
+            ${pwText}
+          </div>
+          ${hasSignedUp ? `<button class="reset-member-btn" data-id="${s.id}" style="padding:4px 8px; font-size:11px; font-weight:600; background:rgba(255,59,48,0.1); color:#ff3b30; border:1px solid rgba(255,59,48,0.15); border-radius:var(--r-sm); cursor:pointer; transition: all 0.2s;">계정 초기화</button>` : ''}
+        </div>
+      `;
+
+      const resetBtn = div.querySelector('.reset-member-btn');
+      if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+          if (confirm(`${s.name} 멤버의 가입 정보(비밀번호)를 초기화하시겠습니까?`)) {
+            db.collection('member_accounts').doc(s.id).delete()
+              .then(() => {
+                showToast(`${s.name} 멤버의 계정이 초기화되었습니다.`);
+                renderUserMgmtPage();
+              })
+              .catch(err => console.error(err));
+          }
+        });
+      }
+
+      usermgmtStaffList.appendChild(div);
+    });
+  }).catch(err => {
+    console.error(err);
+    usermgmtStaffList.innerHTML = '<div style="text-align:center; padding:20px; color:#ff3b30;">멤버 비밀번호 데이터 로드 실패</div>';
   });
 }
 
