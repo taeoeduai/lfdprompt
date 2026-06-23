@@ -3239,7 +3239,7 @@ document.getElementById('lib-prompt-tab-en').addEventListener('click', function(
 // Add event listeners for edit view tabs
 document.getElementById('lib-edit-tab-ko').addEventListener('click', function() {
   libEditActiveLang = 'ko';
-  document.getElementById('lib-edit-tab-ko').style.background = '#FFF1BC';
+  document.getElementById('lib-edit-tab-ko').style.background = 'linear-gradient(135deg, #00AEEF, #000033)';
   document.getElementById('lib-edit-tab-ko').style.color = '#333';
   document.getElementById('lib-edit-tab-en').style.background = 'transparent';
   document.getElementById('lib-edit-tab-en').style.color = '#888';
@@ -3249,7 +3249,7 @@ document.getElementById('lib-edit-tab-ko').addEventListener('click', function() 
 });
 document.getElementById('lib-edit-tab-en').addEventListener('click', function() {
   libEditActiveLang = 'en';
-  document.getElementById('lib-edit-tab-en').style.background = '#FFF1BC';
+  document.getElementById('lib-edit-tab-en').style.background = 'linear-gradient(135deg, #00AEEF, #000033)';
   document.getElementById('lib-edit-tab-en').style.color = '#333';
   document.getElementById('lib-edit-tab-ko').style.background = 'transparent';
   document.getElementById('lib-edit-tab-ko').style.color = '#888';
@@ -3279,7 +3279,7 @@ function renderLibImages(item) {
     div.className = 'lib-modal__image-item';
     div.style.cursor = 'pointer';
     
-    const isVideoFile = src.startsWith('data:video/') || src.includes('.mp4') || src.includes('.webm');
+    const isVideoFile = src.startsWith('data: video/') || src.includes('.mp4') || src.includes('.webm');
     
     if (isVideoFile) {
       div.innerHTML = `<video src="${src}" autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s;"></video>` +
@@ -3429,7 +3429,7 @@ function enterEditMode() {
   libModalEditTextareaEn.value = libEditingItem.promptEn || libEditingItem.prompt || '';
   
   // Reset tab UI to Korean
-  document.getElementById('lib-edit-tab-ko').style.background = '#FFF1BC';
+  document.getElementById('lib-edit-tab-ko').style.background = '#00b0ff';
   document.getElementById('lib-edit-tab-ko').style.color = '#333';
   document.getElementById('lib-edit-tab-en').style.background = 'transparent';
   document.getElementById('lib-edit-tab-en').style.color = '#888';
@@ -3681,7 +3681,7 @@ function updateDropdownSelections() {
   document.querySelectorAll('.program-dropdown-item').forEach(item => {
     const prog = item.dataset.program;
     if (currentProgs.includes(prog)) {
-      item.style.background = '#FFF1BC';
+      item.style.background = '#00b0ff';
       item.style.fontWeight = '600';
     } else {
       item.style.background = '';
