@@ -284,7 +284,7 @@ function updateAuthUI() {
     const ff = FF_MEMBERS[uId];
     const displayName = ff ? ff.name : uId;
     if (isAdmin) {
-      navUserBadge.textContent = uId;
+      navUserBadge.textContent = 'Admin';
       navUserBadge.classList.add('is-admin-badge');
       navUserBadge.style.padding = '';
       navUserBadge.style.border = '';
@@ -469,6 +469,10 @@ function attemptLogin() {
     .then((doc) => {
       if (doc.exists) {
         const data = doc.data();
+        if (data.isSuspended === true) {
+          showLoginError('정지되었거나 휴식기 중인 계정입니다. 관리자에게 문의해 주세요.');
+          return;
+        }
         if (data.password === pw) {
           loginSuccess({ id: canonicalId, role: 'user' });
         } else {
@@ -901,80 +905,84 @@ let userMgmtListenerUnsubscribe = null;
 function renderUserMgmtPage() {
   if (!isLoggedIn || !isAdmin) return;
   
-  usermgmtRegisteredList.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">로딩 중...</div>';
+  if (usermgmtRegisteredList) {
+    usermgmtRegisteredList.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">로딩 중...</div>';
+  }
   usermgmtStaffList.innerHTML = '';
   
   // 1. Render Registered Users list in real-time
-  if (userMgmtListenerUnsubscribe) {
-    userMgmtListenerUnsubscribe();
-  }
-  
-  userMgmtListenerUnsubscribe = db.collection('prompts').doc('registered_users_list').onSnapshot((doc) => {
-    usermgmtRegisteredList.innerHTML = '';
-    const users = (doc.exists && doc.data().list) ? doc.data().list : [];
-    
-    if (users.length === 0) {
-      usermgmtRegisteredList.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">가입된 사용자가 없습니다.</div>';
-      return;
+  if (usermgmtRegisteredList) {
+    if (userMgmtListenerUnsubscribe) {
+      userMgmtListenerUnsubscribe();
     }
     
-    users.forEach((u) => {
-      const div = document.createElement('div');
-      div.style.display = 'flex';
-      div.style.alignItems = 'center';
-      div.style.justifyContent = 'space-between';
-      div.style.padding = '12px 16px';
-      div.style.background = '#f9f9fb';
-      div.style.borderRadius = 'var(--r-md)';
-      div.style.border = '1px solid rgba(0,0,0,0.04)';
+    userMgmtListenerUnsubscribe = db.collection('prompts').doc('registered_users_list').onSnapshot((doc) => {
+      usermgmtRegisteredList.innerHTML = '';
+      const users = (doc.exists && doc.data().list) ? doc.data().list : [];
       
-      const statusText = u.isApproved ? '<span style="color:#34c759; font-size:12px; font-weight:700; margin-left:8px;">승인됨</span>' : '<span style="color:#ff9500; font-size:12px; font-weight:700; margin-left:8px;">대기중</span>';
+      if (users.length === 0) {
+        usermgmtRegisteredList.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">가입된 사용자가 없습니다.</div>';
+        return;
+      }
       
-      div.innerHTML = `
-        <div style="display:flex; align-items:center; gap:12px;">
-          <div style="width:36px; height:36px; border-radius:50%; background:#e0e0e6; display:flex; align-items:center; justify-content:center; font-weight:700; color:#666; font-size:14px;">${u.id.slice(0, 2).toUpperCase()}</div>
-          <div>
-            <div style="font-weight:700; font-size:14px; color:var(--color-ink); display:flex; align-items:center;">
-              ${u.id}
-              ${statusText}
+      users.forEach((u) => {
+        const div = document.createElement('div');
+        div.style.display = 'flex';
+        div.style.alignItems = 'center';
+        div.style.justifyContent = 'space-between';
+        div.style.padding = '12px 16px';
+        div.style.background = '#f9f9fb';
+        div.style.borderRadius = 'var(--r-md)';
+        div.style.border = '1px solid rgba(0,0,0,0.04)';
+        
+        const statusText = u.isApproved ? '<span style="color:#34c759; font-size:12px; font-weight:700; margin-left:8px;">승인됨</span>' : '<span style="color:#ff9500; font-size:12px; font-weight:700; margin-left:8px;">대기중</span>';
+        
+        div.innerHTML = `
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="width:36px; height:36px; border-radius:50%; background:#e0e0e6; display:flex; align-items:center; justify-content:center; font-weight:700; color:#666; font-size:14px;">${u.id.slice(0, 2).toUpperCase()}</div>
+            <div>
+              <div style="font-weight:700; font-size:14px; color:var(--color-ink); display:flex; align-items:center;">
+                ${u.id}
+                ${statusText}
+              </div>
+              <div style="font-size:12px; color:#888; margin-top:2px;">일반 가입 계정</div>
             </div>
-            <div style="font-size:12px; color:#888; margin-top:2px;">일반 가입 계정</div>
           </div>
-        </div>
-        <div style="display:flex; gap:6px;">
-          ${!u.isApproved ? `<button class="approve-user-btn" style="padding:6px 12px; font-size:12px; font-weight:600; background:#34c759; color:#fff; border:none; border-radius:var(--r-sm); cursor:pointer; transition: opacity 0.2s;">승인</button>` : ''}
-          <button class="delete-user-btn" style="padding:6px 12px; font-size:12px; font-weight:600; background:rgba(255,59,48,0.1); color:#ff3b30; border:1px solid rgba(255,59,48,0.15); border-radius:var(--r-sm); cursor:pointer; transition: all 0.2s;">삭제</button>
-        </div>
-      `;
-      
-      const approveBtn = div.querySelector('.approve-user-btn');
-      if (approveBtn) {
-        approveBtn.addEventListener('click', () => {
-          u.isApproved = true;
-          db.collection('prompts').doc('registered_users_list').set({ list: users })
-            .then(() => showToast(`${u.id} 계정이 승인되었습니다.`))
-            .catch(err => console.error(err));
-        });
-      }
-      
-      const deleteBtn = div.querySelector('.delete-user-btn');
-      if (deleteBtn) {
-        deleteBtn.addEventListener('click', () => {
-          if (confirm(`${u.id} 사용자를 삭제하시겠습니까?`)) {
-            const updatedUsers = users.filter(usr => usr.id.toUpperCase() !== u.id.toUpperCase());
-            db.collection('prompts').doc('registered_users_list').set({ list: updatedUsers })
-              .then(() => showToast(`${u.id} 계정이 삭제되었습니다.`))
+          <div style="display:flex; gap:6px;">
+            ${!u.isApproved ? `<button class="approve-user-btn" style="padding:6px 12px; font-size:12px; font-weight:600; background:#34c759; color:#fff; border:none; border-radius:var(--r-sm); cursor:pointer; transition: opacity 0.2s;">승인</button>` : ''}
+            <button class="delete-user-btn" style="padding:6px 12px; font-size:12px; font-weight:600; background:rgba(255,59,48,0.1); color:#ff3b30; border:1px solid rgba(255,59,48,0.15); border-radius:var(--r-sm); cursor:pointer; transition: all 0.2s;">삭제</button>
+          </div>
+        `;
+        
+        const approveBtn = div.querySelector('.approve-user-btn');
+        if (approveBtn) {
+          approveBtn.addEventListener('click', () => {
+            u.isApproved = true;
+            db.collection('prompts').doc('registered_users_list').set({ list: users })
+              .then(() => showToast(`${u.id} 계정이 승인되었습니다.`))
               .catch(err => console.error(err));
-          }
-        });
-      }
-      
-      usermgmtRegisteredList.appendChild(div);
+          });
+        }
+        
+        const deleteBtn = div.querySelector('.delete-user-btn');
+        if (deleteBtn) {
+          deleteBtn.addEventListener('click', () => {
+            if (confirm(`${u.id} 사용자를 삭제하시겠습니까?`)) {
+              const updatedUsers = users.filter(usr => usr.id.toUpperCase() !== u.id.toUpperCase());
+              db.collection('prompts').doc('registered_users_list').set({ list: updatedUsers })
+                .then(() => showToast(`${u.id} 계정이 삭제되었습니다.`))
+                .catch(err => console.error(err));
+            }
+          });
+        }
+        
+        usermgmtRegisteredList.appendChild(div);
+      });
+    }, (err) => {
+      console.error(err);
+      usermgmtRegisteredList.innerHTML = '<div style="text-align:center; padding:20px; color:#ff3b30;">데이터 로드 오류</div>';
     });
-  }, (err) => {
-    console.error(err);
-    usermgmtRegisteredList.innerHTML = '<div style="text-align:center; padding:20px; color:#ff3b30;">데이터 로드 오류</div>';
-  });
+  }
 
   // 2. Render unique FF_MEMBERS staff list
   const uniqueStaff = [];
@@ -1031,9 +1039,9 @@ function renderUserMgmtPage() {
 
   // Fetch registered user passwords from member_accounts collection
   db.collection('member_accounts').get().then(snapshot => {
-    const passwordsMap = {};
+    const membersData = {};
     snapshot.forEach(doc => {
-      passwordsMap[doc.id] = doc.data().password;
+      membersData[doc.id] = doc.data();
     });
 
     uniqueStaff.forEach(s => {
@@ -1059,8 +1067,26 @@ function renderUserMgmtPage() {
         : `<div style="width:36px; height:36px; border-radius:50%; background:#eaeaea; display:flex; align-items:center; justify-content:center; font-weight:700; color:#888; font-size:13px;">${s.name.slice(-2)}</div>`;
 
       const memberType = isExec ? '임원' : '운영진';
-      const hasSignedUp = passwordsMap[s.id] !== undefined;
-      const pwText = hasSignedUp ? `비밀번호: ${passwordsMap[s.id]}` : '미가입';
+      const mData = membersData[s.id];
+      const hasSignedUp = mData !== undefined;
+      const isSuspended = hasSignedUp && mData.isSuspended === true;
+      
+      let pwText = hasSignedUp ? `비밀번호: ${mData.password}` : '미가입';
+      if (isSuspended) {
+        pwText += ' <span style="color:#ff3b30; font-weight:700; font-size:11px; margin-left:4px;">[정지됨/휴식기]</span>';
+      }
+
+      let actionButtons = '';
+      if (hasSignedUp) {
+        actionButtons = `
+          <button class="suspend-member-btn" data-id="${s.id}" style="padding:4px 8px; font-size:11px; font-weight:600; background:${isSuspended ? 'rgba(52,199,89,0.1)' : 'rgba(142,142,147,0.1)'}; color:${isSuspended ? '#34c759' : '#8e8e93'}; border:1px solid ${isSuspended ? 'rgba(52,199,89,0.15)' : 'rgba(142,142,147,0.15)'}; border-radius:var(--r-sm); cursor:pointer; transition: all 0.2s; margin-right:4px;">
+            ${isSuspended ? '정지 해제' : '계정 정지'}
+          </button>
+          <button class="reset-member-btn" data-id="${s.id}" style="padding:4px 8px; font-size:11px; font-weight:600; background:rgba(255,59,48,0.1); color:#ff3b30; border:1px solid rgba(255,59,48,0.15); border-radius:var(--r-sm); cursor:pointer; transition: all 0.2s;">
+            탈퇴 처리
+          </button>
+        `;
+      }
 
       div.innerHTML = `
         <div style="display:flex; align-items:center; gap:12px;">
@@ -1077,17 +1103,34 @@ function renderUserMgmtPage() {
           <div style="font-size:12px; font-weight:600; color:#888;">
             ${pwText}
           </div>
-          ${hasSignedUp ? `<button class="reset-member-btn" data-id="${s.id}" style="padding:4px 8px; font-size:11px; font-weight:600; background:rgba(255,59,48,0.1); color:#ff3b30; border:1px solid rgba(255,59,48,0.15); border-radius:var(--r-sm); cursor:pointer; transition: all 0.2s;">계정 초기화</button>` : ''}
+          ${actionButtons}
         </div>
       `;
 
       const resetBtn = div.querySelector('.reset-member-btn');
       if (resetBtn) {
         resetBtn.addEventListener('click', () => {
-          if (confirm(`${s.name} 멤버의 가입 정보(비밀번호)를 초기화하시겠습니까?`)) {
+          if (confirm(`${s.name} 멤버를 탈퇴 처리(가입 정보 영구 삭제)하시겠습니까?`)) {
             db.collection('member_accounts').doc(s.id).delete()
               .then(() => {
-                showToast(`${s.name} 멤버의 계정이 초기화되었습니다.`);
+                showToast(`${s.name} 멤버의 계정이 탈퇴(삭제) 처리되었습니다.`);
+                renderUserMgmtPage();
+              })
+              .catch(err => console.error(err));
+          }
+        });
+      }
+
+      const suspendBtn = div.querySelector('.suspend-member-btn');
+      if (suspendBtn) {
+        suspendBtn.addEventListener('click', () => {
+          const actionText = isSuspended ? '정지 해제' : '정지(휴식기)';
+          if (confirm(`${s.name} 멤버를 ${actionText} 처리하시겠습니까?`)) {
+            db.collection('member_accounts').doc(s.id).update({
+              isSuspended: !isSuspended
+            })
+              .then(() => {
+                showToast(`${s.name} 멤버가 ${actionText} 처리되었습니다.`);
                 renderUserMgmtPage();
               })
               .catch(err => console.error(err));

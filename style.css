@@ -1332,16 +1332,18 @@ body.is-admin .lib-card {
 }
 
 .nav-user-badge.is-admin-badge {
-  padding: 6px 18px;
-  height: 32px;
+  padding: 6px 14px;
+  height: auto;
   min-width: 0;
-  font-size: 12px;
-  font-weight: 800;
-  color: #fff !important;
-  background: linear-gradient(135deg, #00AEEF, #000033) !important;
-  border-radius: 20px !important;
-  letter-spacing: 0.5px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #00b0ff !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  letter-spacing: -0.12px;
   box-sizing: border-box;
+  box-shadow: none !important;
+  border: none !important;
 }
 
 .nav-user-dropdown {
