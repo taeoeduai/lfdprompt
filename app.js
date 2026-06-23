@@ -56,6 +56,7 @@ let sortOrder = 'newest';
 let unauthorizedClicksCount = 0;
 let selectedAuthorFilter = null;
 let userProfiles = {};
+let usermgmtStaffFilter = 'all';
 
 // Default profiles from foundfoundedmeet
 const FF_MEMBERS = {
@@ -989,8 +990,31 @@ function renderUserMgmtPage() {
     }
   }
 
-  // Sort uniqueStaff: HDO, COO, CDO first, then others by name
-  const roleOrder = { "HDO": 1, "COO": 2, "CDO": 3 };
+  // Render staff filters
+  const staffFiltersContainer = document.getElementById('usermgmt-staff-filters');
+  if (staffFiltersContainer) {
+    const filters = [
+      { id: 'all', label: '전체' },
+      { id: 'executive', label: '임원' },
+      { id: 'OP', label: 'OP' },
+      { id: 'PM', label: 'PM' },
+      { id: 'VM', label: 'VM' }
+    ];
+    staffFiltersContainer.innerHTML = filters.map(f => {
+      const isActive = usermgmtStaffFilter === f.id;
+      return `<button class="filter-pill ${isActive ? 'is-active' : ''}" style="padding: 4px 12px; font-size: 11px; border-radius: var(--r-pill); cursor: pointer;" data-filter="${f.id}">${f.label}</button>`;
+    }).join('');
+
+    staffFiltersContainer.querySelectorAll('.filter-pill').forEach(btn => {
+      btn.addEventListener('click', function() {
+        usermgmtStaffFilter = this.dataset.filter;
+        renderUserMgmtPage();
+      });
+    });
+  }
+
+  // Sort uniqueStaff: Executives (HDO, COO, CDO) first, then OP, PM, VM
+  const roleOrder = { "HDO": 1, "COO": 1, "CDO": 1, "OP": 2, "PM": 3, "VM": 4 };
   
   uniqueStaff.sort((a, b) => {
     const roleA = roleOrder[a.role] || 99;
@@ -1001,6 +1025,13 @@ function renderUserMgmtPage() {
   });
 
   uniqueStaff.forEach(s => {
+    // Apply filter
+    const isExec = s.role === 'HDO' || s.role === 'COO' || s.role === 'CDO';
+    if (usermgmtStaffFilter === 'executive' && !isExec) return;
+    if (usermgmtStaffFilter === 'OP' && s.role !== 'OP') return;
+    if (usermgmtStaffFilter === 'PM' && s.role !== 'PM') return;
+    if (usermgmtStaffFilter === 'VM' && s.role !== 'VM') return;
+
     const div = document.createElement('div');
     div.style.display = 'flex';
     div.style.alignItems = 'center';
@@ -1015,17 +1046,17 @@ function renderUserMgmtPage() {
       ? `<img src="${avatarSrc}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />`
       : `<div style="width:36px; height:36px; border-radius:50%; background:#eaeaea; display:flex; align-items:center; justify-content:center; font-weight:700; color:#888; font-size:13px;">${s.name.slice(-2)}</div>`;
 
-    const memberType = (s.role === 'HDO' || s.role === 'COO' || s.role === 'CDO') ? '임원' : '운영진';
+    const memberType = isExec ? '임원' : '운영진';
 
     div.innerHTML = `
       <div style="display:flex; align-items:center; gap:12px;">
         ${avatarHtml}
         <div>
           <div style="font-weight:700; font-size:14px; color:var(--color-ink); display:flex; align-items:center; gap:6px;">
-            ${s.name}
+            ${s.name} <span style="font-weight:800; font-size:12px; color:#0071e3; margin-left:2px;">${s.role}</span>
             <span style="color:#34c759; font-size:11px; font-weight:700; padding:1px 6px; background:rgba(52,199,89,0.1); border-radius:10px;">${memberType}</span>
           </div>
-          <div style="font-size:12px; color:#888; margin-top:2px;">${s.team} · ${s.role}</div>
+          <div style="font-size:12px; color:#888; margin-top:2px;">${s.team}</div>
         </div>
       </div>
       <div style="font-size:12px; font-weight:600; color:#888; padding-right:8px;">

@@ -21,18 +21,7 @@
       <div class="global-nav__inner">
         <span class="global-nav__title" onclick="window.location.reload();">Promptlibrary</span>
 
-        <!-- Global Top Search Bar -->
-        <div class="global-nav__search-container"
-          style="flex: 1; max-width: 320px; margin: 0 var(--sp-md); position: relative; display: none;">
-          <input type="text" id="global-search-input" placeholder="프롬프트 검색..."
-            style="width: 100%; font-family: inherit; font-size: 13px; font-weight: 400; padding: 7px 12px 7px 32px; border-radius: var(--r-pill); border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.08); color: #fff; outline: none; transition: all 0.25s;" />
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2.5"
-            stroke-linecap="round" stroke-linejoin="round"
-            style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-        </div>
+
 
         <div class="global-nav__right" id="global-nav-right">
           <div class="global-nav__links">
@@ -126,7 +115,18 @@
           style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--sp-sm);">
           <div>
             <h2 class="library-view__title">프롬프트 라이브러리</h2>
-            <p class="library-view__subtitle">바로 복사해서 쓸 수 있는 실전 프롬프트 모음.</p>
+            <p class="library-view__subtitle" style="margin-bottom: 0;">바로 복사해서 쓸 수 있는 실전 프롬프트 모음.</p>
+            <div class="global-nav__search-container"
+              style="position: relative; width: 100%; max-width: 320px; margin-top: 12px; display: none;">
+              <input type="text" id="global-search-input" placeholder="프롬프트 검색..."
+                style="width: 100%; font-family: inherit; font-size: 13.5px; font-weight: 400; padding: 8px 12px 8px 36px; border-radius: var(--r-md); border: 1.5px solid rgba(0, 0, 0, 0.08); background: #f5f5f7; color: var(--color-ink); outline: none; transition: border-color 0.2s;" />
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(0, 0, 0, 0.4)" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round"
+                style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </div>
           </div>
 
           <!-- Gallery/List view toggler inside library -->
@@ -182,11 +182,12 @@
 
           <!-- Right Column: Default/Existing Staff -->
           <div style="background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: var(--r-xl); padding: var(--sp-xl); box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
-            <h3 style="margin: 0 0 16px; font-size: 18px; font-weight: 700; color: var(--color-ink); display: flex; align-items: center; gap: 8px;">
+             <h3 style="margin: 0 0 16px; font-size: 18px; font-weight: 700; color: var(--color-ink); display: flex; align-items: center; gap: 8px;">
               <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #34c759;"></span>
               LFD 멤버 계정
             </h3>
-            <div id="usermgmt-staff-list" style="display: flex; flex-direction: column; gap: 12px; max-height: 600px; overflow-y: auto; padding-right: 4px;">
+            <div id="usermgmt-staff-filters" style="display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap;"></div>
+            <div id="usermgmt-staff-list" style="display: flex; flex-direction: column; gap: 12px; max-height: 560px; overflow-y: auto; padding-right: 4px;">
               <!-- Default staff members will go here dynamically -->
             </div>
           </div>
@@ -522,7 +523,7 @@
   <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-analytics-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore-compat.js"></script>
-  <script src="app.js?v=2.2"></script>
+  <script src="app.js?v=2.4"></script>
 </body>
 
 </html>
