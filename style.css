@@ -1564,7 +1564,7 @@ body.is-admin .lib-card {
   justify-content: center;
   width: 52px;
   height: 52px;
-  background: linear-gradient(135deg, #00b0ff, #000033);
+  background: var(--color-lfd-60);
   border-radius: var(--r-lg);
   color: #fff;
   margin-bottom: var(--sp-md);
@@ -1612,7 +1612,7 @@ body.is-admin .lib-card {
   font-weight: 400;
   color: var(--color-ink);
   background: rgba(0, 0, 0, 0.04);
-  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  border: 1.5px solid #AEAEB2;
   border-radius: var(--r-md);
   padding: 11px 14px;
   outline: none;
@@ -1650,7 +1650,7 @@ body.is-admin .lib-card {
   font-size: 15px;
   font-weight: 600;
   color: #fff;
-  background: linear-gradient(135deg, var(--color-lfd-20), var(--color-lfd-80));
+  background: var(--color-lfd-60);
   border: none;
   border-radius: var(--r-md);
   padding: 12px;
@@ -1666,6 +1666,98 @@ body.is-admin .lib-card {
 
 .login-modal__submit:active {
   transform: scale(0.98);
+}
+
+/* ============================================
+   PROMPT TYPE SELECTION MODAL
+   ============================================ */
+.lib-type-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lib-type-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.lib-type-modal__content {
+  position: relative;
+  background: rgba(10, 10, 20, 0.85);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  width: 90%;
+  max-width: 400px;
+  border-radius: var(--r-xl);
+  padding: var(--sp-xl);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  text-align: center;
+  color: var(--color-ink);
+}
+
+.lib-type-modal__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--color-ink);
+  opacity: 0.6;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all var(--t-fast);
+}
+
+.lib-type-modal__close:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.lib-type-modal h2 {
+  margin: 0 0 24px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.lib-type-modal__options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lib-type-modal__btn {
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--r-lg);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-ink);
+  cursor: pointer;
+  transition: all var(--t-fast);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.lib-type-modal__btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--color-primary);
 }
 
 /* ============================================
