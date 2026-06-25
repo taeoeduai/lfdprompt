@@ -3242,21 +3242,21 @@ function updatePromptDisplay() {
   let activePrompt = '';
   if (libActiveLang === 'ko') {
     activePrompt = libEditingItem.promptKo || libEditingItem.prompt || '';
-    tabKo.style.background = '#f5f5f7';
-    tabKo.style.color = '#555';
+    tabKo.style.background = 'rgba(255, 255, 255, 0.15)';
+    tabKo.style.color = '#ffffff';
     tabKo.classList.add('is-active');
     
     tabEn.style.background = 'transparent';
-    tabEn.style.color = '#888';
+    tabEn.style.color = 'rgba(255, 255, 255, 0.4)';
     tabEn.classList.remove('is-active');
   } else {
     activePrompt = libEditingItem.promptEn || libEditingItem.prompt || '';
-    tabEn.style.background = '#f5f5f7';
-    tabEn.style.color = '#555';
+    tabEn.style.background = 'rgba(255, 255, 255, 0.15)';
+    tabEn.style.color = '#ffffff';
     tabEn.classList.add('is-active');
     
     tabKo.style.background = 'transparent';
-    tabKo.style.color = '#888';
+    tabKo.style.color = 'rgba(255, 255, 255, 0.4)';
     tabKo.classList.remove('is-active');
   }
 
@@ -3277,20 +3277,20 @@ document.getElementById('lib-prompt-tab-en').addEventListener('click', function(
 // Add event listeners for edit view tabs
 document.getElementById('lib-edit-tab-ko').addEventListener('click', function() {
   libEditActiveLang = 'ko';
-  document.getElementById('lib-edit-tab-ko').style.background = 'linear-gradient(135deg, #00AEEF, #000033)';
-  document.getElementById('lib-edit-tab-ko').style.color = '#333';
+  document.getElementById('lib-edit-tab-ko').style.background = '#0071E3';
+  document.getElementById('lib-edit-tab-ko').style.color = '#ffffff';
   document.getElementById('lib-edit-tab-en').style.background = 'transparent';
-  document.getElementById('lib-edit-tab-en').style.color = '#888';
+  document.getElementById('lib-edit-tab-en').style.color = 'rgba(255, 255, 255, 0.4)';
   
   libModalEditTextareaKo.classList.remove('hidden');
   libModalEditTextareaEn.classList.add('hidden');
 });
 document.getElementById('lib-edit-tab-en').addEventListener('click', function() {
   libEditActiveLang = 'en';
-  document.getElementById('lib-edit-tab-en').style.background = 'linear-gradient(135deg, #00AEEF, #000033)';
-  document.getElementById('lib-edit-tab-en').style.color = '#333';
+  document.getElementById('lib-edit-tab-en').style.background = '#0071E3';
+  document.getElementById('lib-edit-tab-en').style.color = '#ffffff';
   document.getElementById('lib-edit-tab-ko').style.background = 'transparent';
-  document.getElementById('lib-edit-tab-ko').style.color = '#888';
+  document.getElementById('lib-edit-tab-ko').style.color = 'rgba(255, 255, 255, 0.4)';
   
   libModalEditTextareaEn.classList.remove('hidden');
   libModalEditTextareaKo.classList.add('hidden');
@@ -3467,10 +3467,10 @@ function enterEditMode() {
   libModalEditTextareaEn.value = libEditingItem.promptEn || libEditingItem.prompt || '';
   
   // Reset tab UI to Korean
-  document.getElementById('lib-edit-tab-ko').style.background = '#00b0ff';
-  document.getElementById('lib-edit-tab-ko').style.color = '#333';
+  document.getElementById('lib-edit-tab-ko').style.background = '#0071E3';
+  document.getElementById('lib-edit-tab-ko').style.color = '#ffffff';
   document.getElementById('lib-edit-tab-en').style.background = 'transparent';
-  document.getElementById('lib-edit-tab-en').style.color = '#888';
+  document.getElementById('lib-edit-tab-en').style.color = 'rgba(255, 255, 255, 0.4)';
   
   libModalEditTextareaKo.classList.remove('hidden');
   libModalEditTextareaEn.classList.add('hidden');
@@ -3719,10 +3719,12 @@ function updateDropdownSelections() {
   document.querySelectorAll('.program-dropdown-item').forEach(item => {
     const prog = item.dataset.program;
     if (currentProgs.includes(prog)) {
-      item.style.background = '#00b0ff';
+      item.style.background = '#0071E3';
+      item.style.color = '#ffffff';
       item.style.fontWeight = '600';
     } else {
       item.style.background = '';
+      item.style.color = '';
       item.style.fontWeight = '';
     }
   });

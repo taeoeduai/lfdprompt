@@ -12,19 +12,28 @@
 }
 
 :root {
-  /* Apple Colors */
-  --color-primary: #0066cc;
-  --color-primary-on-dark: #2997ff;
-  --color-ink: #1d1d1f;
+  /* LFD Brand Color System */
+  --color-lfd-00: #04CDF8;
+  --color-lfd-20: #0071E3;
+  --color-lfd-40: #0033CC;
+  --color-lfd-60: #001168;
+  --color-lfd-80: #00052A;
+  --color-lfd-100: #000000;
+
+  /* Functional Color Mappings */
+  --color-primary: var(--color-lfd-20);
+  --color-primary-hover: var(--color-lfd-40);
+  --color-accent: var(--color-lfd-00);
+  --color-ink: #ffffff;
   --color-on-dark: #ffffff;
-  --color-body-muted: #cccccc;
-  --color-canvas: #E2E2E2;
-  --color-surface-black: #000000;
-  --color-hairline: rgba(255, 255, 255, 0.18);
-  --color-glass-bg: rgba(255, 255, 255, 0.70);
-  --color-glass-border: rgba(255, 255, 255, 0.50);
-  --color-glass-highlight: rgba(255, 255, 255, 0.40);
-  --color-glass-bg-strong: rgba(255, 255, 255, 0.60);
+  --color-body-muted: rgba(255, 255, 255, 0.65);
+  --color-canvas: var(--color-lfd-80);
+  --color-surface-black: var(--color-lfd-100);
+  --color-hairline: rgba(255, 255, 255, 0.08);
+  --color-glass-bg: rgba(255, 255, 255, 0.06);
+  --color-glass-border: rgba(255, 255, 255, 0.08);
+  --color-glass-highlight: rgba(255, 255, 255, 0.03);
+  --color-glass-bg-strong: rgba(255, 255, 255, 0.12);
 
   /* Spacing */
   --sp-xs: 8px;
@@ -143,11 +152,19 @@ body {
   box-sizing: border-box;
 }
 
+.global-nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
 .global-nav__title {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 500;
   color: #ffffff;
-  letter-spacing: -0.12px;
+  letter-spacing: -0.5px;
   cursor: pointer;
   user-select: none;
   line-height: 1;
@@ -184,7 +201,7 @@ body {
 
 .global-nav__link.is-active {
   background: transparent !important;
-  color: #00b0ff !important;
+  color: var(--color-accent) !important;
   font-weight: 600;
 }
 
@@ -199,11 +216,13 @@ body {
   flex: 1;
   position: relative;
   overflow: hidden;
-  background-color: var(--color-canvas);
+  background-color: var(--color-lfd-80);
   background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.3) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.3) 1px, transparent 1px);
-  background-size: 16px 16px;
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(180deg, var(--color-lfd-100) 0%, var(--color-lfd-80) 50%, var(--color-lfd-60) 100%);
+  background-size: 16px 16px, 16px 16px, 100% 100%;
+  background-attachment: scroll, scroll, fixed;
 }
 
 /* Subtle gradient orbs for glass refraction */
@@ -240,19 +259,18 @@ body {
   max-width: 90vw;
   min-width: 40px;
   min-height: 50px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
   backdrop-filter: blur(40px) saturate(200%);
   -webkit-backdrop-filter: blur(40px) saturate(200%);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-top: 1px solid rgba(255, 255, 255, 0.85);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   resize: horizontal;
   overflow: hidden;
   box-shadow: 
-    inset 0 2px 3px rgba(255, 255, 255, 0.9), 
-    inset 0 -1px 2px rgba(255, 255, 255, 0.2), 
-    0 12px 36px rgba(0, 0, 0, 0.08), 
-    0 2px 8px rgba(0, 0, 0, 0.04);
+    inset 0 1px 0 rgba(255, 255, 255, 0.1), 
+    0 12px 36px rgba(0, 0, 0, 0.3), 
+    0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 @media (max-width: 768px) {
@@ -282,9 +300,20 @@ body {
 
 .bubble-wrapper:hover .bubble,
 .bubble-wrapper.is-selected .bubble {
-  background: #00b0ff;
+  background: var(--color-accent);
   border-color: rgba(0, 0, 0, 0.05);
-  color: #000;
+  color: var(--color-surface-black);
+}
+
+.bubble-wrapper:hover .bubble__text,
+.bubble-wrapper.is-selected .bubble__text {
+  color: var(--color-lfd-100);
+}
+
+.bubble-wrapper:hover .bubble__author,
+.bubble-wrapper.is-selected .bubble__author {
+  color: var(--color-lfd-100);
+  opacity: 0.6;
 }
 
 .bubble-wrapper.is-dragging {
@@ -474,7 +503,7 @@ body.is-admin .delete-btn--list {
   flex-direction: column;
   align-items: center;
   overflow-y: auto;
-  background: var(--color-canvas);
+  background: linear-gradient(180deg, var(--color-lfd-100) 0%, var(--color-lfd-80) 50%, var(--color-lfd-60) 100%) no-repeat fixed;
 }
 
 .list-view.hidden {
@@ -522,8 +551,8 @@ body.is-admin .delete-btn--list {
 }
 
 .filter-pill.is-active {
-  background: #00b0ff;
-  color: #333333;
+  background: var(--color-accent);
+  color: var(--color-surface-black);
   border-color: transparent;
   opacity: 1;
 }
@@ -603,7 +632,7 @@ body.is-admin .delete-btn--list {
   flex-direction: column;
   align-items: center;
   overflow-y: auto;
-  background: var(--color-canvas);
+  background: linear-gradient(180deg, var(--color-lfd-100) 0%, var(--color-lfd-80) 50%, var(--color-lfd-60) 100%) no-repeat fixed;
 }
 
 .library-view.hidden {
@@ -664,8 +693,8 @@ body.is-admin .delete-btn--list {
 }
 
 .lib-filter-pill.is-active {
-  background: #00b0ff;
-  color: #333333;
+  background: var(--color-accent);
+  color: var(--color-surface-black);
   border-color: transparent;
   font-weight: 600;
 }
@@ -881,8 +910,8 @@ body.is-admin .lib-card {
 .lib-card__program {
   font-size: 11.5px;
   font-weight: 700;
-  color: #0071e3;
-  background-color: rgba(0, 176, 255, 0.15);
+  color: var(--color-accent);
+  background-color: rgba(4, 205, 248, 0.12);
   padding: 2px 6px;
   border-radius: 4px;
   display: inline-block;
@@ -919,9 +948,9 @@ body.is-admin .lib-card {
   font-family: inherit;
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-ink);
-  background: rgba(0, 0, 0, 0.06);
-  border: none;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--r-pill);
   padding: 5px 12px;
   cursor: pointer;
@@ -931,7 +960,7 @@ body.is-admin .lib-card {
 }
 
 .lib-card__copy:hover {
-  background: var(--color-ink);
+  background: var(--color-primary);
   color: #fff;
 }
 
@@ -1008,7 +1037,12 @@ body.is-admin .lib-card {
   width: 100%;
   max-width: 680px;
   max-height: 88dvh;
-  background: #fff;
+  background: rgba(28, 28, 30, 0.94);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--r-xl) var(--r-xl) 0 0;
   padding: var(--sp-lg) var(--sp-lg) calc(var(--sp-lg) + env(safe-area-inset-bottom, 0px));
   display: flex;
@@ -1075,7 +1109,8 @@ body.is-admin .lib-card {
   flex: none;
   height: auto;
   overflow-y: visible;
-  background: #f5f5f7;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--r-md);
   padding: var(--sp-md);
 }
@@ -1099,8 +1134,8 @@ body.is-admin .lib-card {
   font-family: inherit;
   font-size: 15px;
   font-weight: 600;
-  color: var(--color-ink);
-  background: #00b0ff;
+  color: var(--color-surface-black);
+  background: var(--color-accent);
   border: none;
   border-radius: var(--r-lg);
   padding: 14px;
@@ -1123,8 +1158,8 @@ body.is-admin .lib-card {
    ============================================ */
 .input-bar {
   flex-shrink: 0;
-  background: linear-gradient(135deg, #00AEEF, #000033);
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  background: linear-gradient(135deg, var(--color-lfd-20) 0%, var(--color-lfd-80) 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding: var(--sp-sm) var(--sp-md);
   z-index: 20;
 }
@@ -1214,8 +1249,8 @@ body.is-admin .lib-card {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #00b0ff;
-  color: #333333;
+  background: var(--color-accent);
+  color: var(--color-surface-black);
   border: none;
   border-radius: var(--r-pill);
   cursor: pointer;
@@ -1477,19 +1512,19 @@ body.is-admin .lib-card {
   z-index: 1;
   width: 90%;
   max-width: 360px;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(10, 10, 20, 0.85);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--r-xl);
   padding: var(--sp-xl) var(--sp-lg);
   text-align: center;
   transform: scale(0.92) translateY(20px);
   transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   box-shadow:
-    0 24px 80px rgba(0, 0, 0, 0.12),
-    0 8px 24px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    0 24px 80px rgba(0, 0, 0, 0.4),
+    0 8px 24px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .login-modal.is-open .login-modal__card {
@@ -1612,7 +1647,7 @@ body.is-admin .lib-card {
   font-size: 15px;
   font-weight: 600;
   color: #fff;
-  background: linear-gradient(135deg, #00AEEF, #000033);
+  background: linear-gradient(135deg, var(--color-lfd-20), var(--color-lfd-80));
   border: none;
   border-radius: var(--r-md);
   padding: 12px;
@@ -1623,7 +1658,7 @@ body.is-admin .lib-card {
 }
 
 .login-modal__submit:hover {
-  background: #000033;
+  background: var(--color-lfd-40);
 }
 
 .login-modal__submit:active {
@@ -2448,11 +2483,16 @@ body.is-admin .lib-card {
 
 /* List Item Edit Mode Styles */
 .list-item.is-editable {
-  background: #00b0ff !important;
+  background: var(--color-accent) !important;
   border-color: rgba(0, 0, 0, 0.05) !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
   transform: scale(1.01);
   transition: all 0.2s var(--ease);
+}
+.list-item.is-editable .list-item__text,
+.list-item.is-editable .list-item__time,
+.list-item.is-editable .list-item__author {
+  color: var(--color-lfd-100) !important;
 }
 
 .list-item__text[contenteditable="true"] {
@@ -2708,7 +2748,7 @@ body.is-admin .lib-card {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  background: var(--color-canvas);
+  background: linear-gradient(180deg, var(--color-lfd-100) 0%, var(--color-lfd-80) 50%, var(--color-lfd-60) 100%) no-repeat fixed;
 }
 
 .usermgmt-view.hidden {
@@ -2816,6 +2856,51 @@ body {
   transition-property: transform, background-color, border-color, box-shadow, opacity;
   transition-duration: 0.2s;
   transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* ============================================
+   LFD DESIGN SYSTEM OVERRIDES & FIXES
+   ============================================ */
+
+/* 1. Modal Edit fields to fit Dark Theme */
+.lib-modal__edit-title,
+.lib-modal__edit-desc,
+.lib-modal__edit-tags,
+.lib-modal__edit-textarea,
+#lib-modal-edit-program-input {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+.lib-modal__edit-title::placeholder,
+.lib-modal__edit-desc::placeholder,
+.lib-modal__edit-tags::placeholder,
+.lib-modal__edit-textarea::placeholder,
+#lib-modal-edit-program-input::placeholder {
+  color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* 2. Detail prompt tabs (KO/EN) alignment for Dark Theme */
+.lib-prompt-tab {
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.lib-prompt-tab.is-active {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+}
+
+/* 3. Image outline updates for dark theme */
+.profile-img-list,
+.profile-img-badge,
+.profile-img-bubble,
+.lib-card__thumb img,
+.lib-modal__image-grid img,
+.lib-upload-preview {
+  outline: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 

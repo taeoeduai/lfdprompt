@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet"
     href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
-  <link rel="stylesheet" href="style.css?v=3.2" />
+  <link rel="stylesheet" href="style.css?v=3.3" />
   <link rel="icon" href="favicon.png" type="image/png" />
 </head>
 
@@ -19,9 +19,9 @@
   <div class="page" id="page">
     <nav class="global-nav" id="global-nav">
       <div class="global-nav__inner">
-        <div class="global-nav__brand" style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer;" onclick="window.location.reload();">
-          <img src="logo.png" class="global-nav__logo" style="margin-top: 3px;" />
-          <span class="global-nav__title" style="margin: 0;">lfdlibrary</span>
+        <div class="global-nav__brand" onclick="window.location.reload();">
+          <img src="logo.png" class="global-nav__logo" alt="lfdlibrary logo" />
+          <span class="global-nav__title">lfdlibrary</span>
         </div>
 
 
@@ -346,10 +346,10 @@
       <div class="lib-modal__prompt-tabs" id="lib-modal-prompt-tabs"
         style="display: flex; gap: 8px; margin-bottom: 8px;">
         <button class="lib-prompt-tab is-active" id="lib-prompt-tab-ko"
-          style="font-family: inherit; font-size: 12px; font-weight: 600; padding: 6px 16px; border-radius: var(--r-pill); border: 1px solid rgba(0,0,0,0.08); background: #f5f5f7; color: #555; cursor: pointer; transition: all 0.2s;">한글
+          style="font-family: inherit; font-size: 12px; font-weight: 600; padding: 6px 16px; border-radius: var(--r-pill); border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.15); color: #ffffff; cursor: pointer; transition: all 0.2s;">한글
           (KO)</button>
         <button class="lib-prompt-tab" id="lib-prompt-tab-en"
-          style="font-family: inherit; font-size: 12px; font-weight: 600; padding: 6px 16px; border-radius: var(--r-pill); border: 1px solid rgba(0,0,0,0.08); background: transparent; color: #888; cursor: pointer; transition: all 0.2s;">영어
+          style="font-family: inherit; font-size: 12px; font-weight: 600; padding: 6px 16px; border-radius: var(--r-pill); border: 1px solid rgba(255,255,255,0.08); background: transparent; color: rgba(255,255,255,0.4); cursor: pointer; transition: all 0.2s;">영어
           (EN)</button>
       </div>
       <div class="lib-modal__prompt-wrap" id="lib-modal-prompt-wrap">
@@ -450,10 +450,10 @@
 
         <div class="lib-modal__edit-tabs" style="display: flex; gap: 8px; margin: 8px 0;">
           <button class="lib-edit-tab is-active" id="lib-edit-tab-ko"
-            style="font-family: inherit; font-size: 12px; font-weight: 600; padding: 6px 16px; border-radius: var(--r-pill); border: 1px solid rgba(0,0,0,0.08); background: #00b0ff; color: #333; cursor: pointer; transition: all 0.2s;">한글
+            style="font-family: inherit; font-size: 12px; font-weight: 600; padding: 6px 16px; border-radius: var(--r-pill); border: 1px solid rgba(255,255,255,0.08); background: #0071E3; color: #ffffff; cursor: pointer; transition: all 0.2s;">한글
             편집 (KO)</button>
           <button class="lib-edit-tab" id="lib-edit-tab-en"
-            style="font-family: inherit; font-size: 12px; font-weight: 600; padding: 6px 16px; border-radius: var(--r-pill); border: 1px solid rgba(0,0,0,0.08); background: transparent; color: #888; cursor: pointer; transition: all 0.2s;">영어
+            style="font-family: inherit; font-size: 12px; font-weight: 600; padding: 6px 16px; border-radius: var(--r-pill); border: 1px solid rgba(255,255,255,0.08); background: transparent; color: rgba(255,255,255,0.4); cursor: pointer; transition: all 0.2s;">영어
             편집 (EN)</button>
         </div>
 
@@ -518,7 +518,7 @@
   <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-analytics-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore-compat.js"></script>
-  <script src="app.js?v=3.2"></script>
+  <script src="app.js?v=3.3"></script>
 </body>
 
 </html>
