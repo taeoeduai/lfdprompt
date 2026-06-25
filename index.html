@@ -29,7 +29,8 @@
         <div class="global-nav__right" id="global-nav-right">
           <div class="global-nav__links">
             <button class="global-nav__link" data-view="library" id="nav-library">라이브러리</button>
-            <button class="global-nav__link is-active" data-view="float" id="nav-float">대시보드</button>
+            <button class="global-nav__link" data-view="archive" id="nav-archive">아카이브</button>
+            <button class="global-nav__link is-active" data-view="float" id="nav-float">게시판</button>
             <button class="global-nav__link hidden" data-view="usermgmt" id="nav-usermgmt">사용자 관리</button>
           </div>
           <div class="global-nav__auth">
@@ -95,7 +96,7 @@
                 <line x1="5" y1="12" x2="19" y2="12"></line>
                 <polyline points="12 5 19 12 12 19"></polyline>
               </svg>
-              대시보드
+              게시판
             </button>
             <button class="admin-cleanup-btn hidden" id="admin-cleanup-btn-list" style="position: static;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
@@ -153,6 +154,25 @@
         </div>
       </div>
       <div class="library-view__content" id="lib-content"></div>
+    </section>
+
+    <!-- Archive View -->
+    <section class="archive-view hidden" id="archive-view">
+      <div class="archive-view__header">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--sp-sm);">
+          <div>
+            <h2 class="archive-view__title" style="margin: 0; font-size: 26px; font-weight: 700; color: var(--color-ink); letter-spacing: -0.5px;">아카이브</h2>
+            <p class="archive-view__subtitle" style="margin-bottom: 0; font-size: 14px; color: #666; margin-top: 4px;">유용한 꿀팁과 사이트를 공유하는 공간입니다.</p>
+          </div>
+          <div>
+            <button class="archive-add-btn" id="archive-add-btn" style="padding: 10px 16px; font-family: inherit; font-size: 13.5px; font-weight: 600; color: #fff; background: linear-gradient(135deg, var(--color-primary), #000033); border: none; border-radius: var(--r-md); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(0,174,239,0.2);">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              새 아카이브 추가
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="archive-view__content" id="archive-content" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 24px; padding-bottom: 40px;"></div>
     </section>
 
     <!-- User Management Page View -->
@@ -488,6 +508,32 @@
         </svg>
         프롬프트 복사하기
       </button>
+    </div>
+  </div>
+
+  <!-- Archive Add Modal -->
+  <div class="archive-modal hidden" id="archive-add-modal" aria-hidden="true" style="position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center;">
+    <div class="archive-modal__backdrop" id="archive-modal-backdrop" style="position: absolute; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);"></div>
+    <div class="archive-modal__content" style="position: relative; background: #fff; width: 90%; max-width: 480px; border-radius: var(--r-xl); padding: var(--sp-xl); box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+      <button class="archive-modal__close" id="archive-modal-close" aria-label="닫기" style="position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border: none; background: transparent; color: #888; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+      <h2 style="margin: 0 0 24px; font-size: 20px; font-weight: 700; color: var(--color-ink);">새 아카이브 추가</h2>
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div>
+          <label style="display: block; font-size: 13px; font-weight: 600; color: var(--color-ink); margin-bottom: 6px;">사이트 이름 / 제목</label>
+          <input type="text" id="archive-input-title" placeholder="예: 유용한 디자인 레퍼런스 사이트" style="width: 100%; font-family: inherit; font-size: 14px; padding: 12px; border-radius: var(--r-md); border: 1.5px solid rgba(0,0,0,0.1); outline: none; box-sizing: border-box;" />
+        </div>
+        <div>
+          <label style="display: block; font-size: 13px; font-weight: 600; color: var(--color-ink); margin-bottom: 6px;">링크 (URL)</label>
+          <input type="url" id="archive-input-url" placeholder="https://..." style="width: 100%; font-family: inherit; font-size: 14px; padding: 12px; border-radius: var(--r-md); border: 1.5px solid rgba(0,0,0,0.1); outline: none; box-sizing: border-box;" />
+        </div>
+        <div>
+          <label style="display: block; font-size: 13px; font-weight: 600; color: var(--color-ink); margin-bottom: 6px;">설명</label>
+          <textarea id="archive-input-desc" placeholder="어떤 점이 좋은지, 어떻게 활용하면 좋은지 적어주세요." rows="4" style="width: 100%; font-family: inherit; font-size: 14px; padding: 12px; border-radius: var(--r-md); border: 1.5px solid rgba(0,0,0,0.1); outline: none; resize: vertical; box-sizing: border-box;"></textarea>
+        </div>
+        <button id="archive-submit-btn" style="width: 100%; padding: 14px; margin-top: 8px; font-family: inherit; font-size: 15px; font-weight: 600; color: #fff; background: var(--color-primary); border: none; border-radius: var(--r-md); cursor: pointer; transition: all 0.2s;">추가하기</button>
+      </div>
     </div>
   </div>
 

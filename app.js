@@ -45,12 +45,15 @@ const submitBtn = document.getElementById('submit-btn');
 const navFloat = document.getElementById('nav-float');
 const navList = document.getElementById('nav-list');
 const navLibrary = document.getElementById('nav-library');
+const navArchive = document.getElementById('nav-archive');
+const archiveView = document.getElementById('archive-view');
 const navUsermgmt = document.getElementById('nav-usermgmt');
 const filterNewest = document.getElementById('filter-newest');
 const filterOldest = document.getElementById('filter-oldest');
 
 // --- State ---
 let prompts = [];
+let archiveData = [];
 let currentView = '';
 let sortOrder = 'newest';
 let unauthorizedClicksCount = 0;
@@ -1025,7 +1028,7 @@ function renderUserMgmtPage() {
         <div style="display:flex; align-items:center; gap:12px;">
           ${avatarHtml}
           <div>
-            <div style="font-weight:700; font-size:14px; color:var(--color-ink); display:flex; align-items:center; gap:6px;">
+            <div style="font-weight:700; font-size:14px; color:#000; display:flex; align-items:center; gap:6px;">
               ${s.name} <span style="font-weight:800; font-size:12px; color:#0071e3; margin-left:2px;">${s.role}</span>
               <span style="color:#34c759; font-size:11px; font-weight:700; padding:1px 6px; background:rgba(52,199,89,0.1); border-radius:10px;">${memberType}</span>
             </div>
@@ -4367,6 +4370,7 @@ function setView(v) {
   navFloat.classList.toggle('is-active', v === 'float');
   if (navList) navList.classList.toggle('is-active', v === 'list');
   navLibrary.classList.toggle('is-active', v === 'library');
+  if (navArchive) navArchive.classList.toggle('is-active', v === 'archive');
   const navUserMgmt = document.getElementById('nav-usermgmt');
   if (navUserMgmt) {
     navUserMgmt.classList.toggle('is-active', v === 'usermgmt');
@@ -4375,6 +4379,7 @@ function setView(v) {
   canvas.classList.add('hidden');
   listView.classList.add('hidden');
   libraryView.classList.add('hidden');
+  if (archiveView) archiveView.classList.add('hidden');
   if (usermgmtView) usermgmtView.classList.add('hidden');
 
   // Show/Hide search bar: only show in library view
@@ -4391,7 +4396,7 @@ function setView(v) {
   }
 
   // Hide input bar in library view or user management view
-  if (v === 'library' || v === 'usermgmt') {
+  if (v === 'library' || v === 'usermgmt' || v === 'archive') {
     inputBar.classList.add('hidden');
   } else {
     inputBar.classList.remove('hidden');
@@ -4406,6 +4411,9 @@ function setView(v) {
   } else if (v === 'library') {
     libraryView.classList.remove('hidden');
     renderLibrary();
+  } else if (v === 'archive') {
+    if (archiveView) archiveView.classList.remove('hidden');
+    renderArchive();
   } else if (v === 'usermgmt') {
     if (usermgmtView) {
       usermgmtView.classList.remove('hidden');
@@ -4459,6 +4467,12 @@ navLibrary.addEventListener('click', function () {
     closeMobileMenu(); 
   });
 });
+if (navArchive) {
+  navArchive.addEventListener('click', function () {
+    setView('archive');
+    closeMobileMenu();
+  });
+}
 if (navUsermgmt) {
   navUsermgmt.addEventListener('click', function () { setView('usermgmt'); closeMobileMenu(); });
 }
@@ -4645,3 +4659,105 @@ setTimeout(() => {
     }).catch(console.error);
   }
 }, 3000);
+
+// ============================================
+// Archive Feature Logic
+// ============================================
+
+const archiveContent = document.getElementById('archive-content');
+const archiveAddBtn = document.getElementById('archive-add-btn');
+const archiveAddModal = document.getElementById('archive-add-modal');
+const archiveModalClose = document.getElementById('archive-modal-close');
+const archiveSubmitBtn = document.getElementById('archive-submit-btn');
+const archiveInputTitle = document.getElementById('archive-input-title');
+const archiveInputUrl = document.getElementById('archive-input-url');
+const archiveInputDesc = document.getElementById('archive-input-desc');
+
+function renderArchive() {
+  if (!archiveContent) return;
+  if (archiveData.length === 0) {
+    archiveContent.innerHTML = '<div style="width: 100%; text-align: center; color: #888; font-size: 14px; padding: 40px 0;">아직 추가된 아카이브가 없습니다.</div>';
+    return;
+  }
+  
+  archiveContent.innerHTML = archiveData.map(item => `
+    <a href="${escHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="archive-card">
+      <h3 class="archive-card__title">${escHtml(item.title)}</h3>
+      <div class="archive-card__url">${escHtml(item.url)}</div>
+      <p class="archive-card__desc">${escHtml(item.desc)}</p>
+      <div class="archive-card__footer">
+        ${getUserDisplay(item.author)}
+        <span style="font-size: 11px; color: rgba(255,255,255,0.4);">${new Date(item.time).toLocaleDateString()}</span>
+      </div>
+    </a>
+  `).join('');
+}
+
+// Fetch Archive data
+db.collection('archives').orderBy('time', 'desc').onSnapshot(snap => {
+  archiveData = [];
+  snap.forEach(doc => {
+    archiveData.push({ id: doc.id, ...doc.data() });
+  });
+  if (currentView === 'archive') {
+    renderArchive();
+  }
+});
+
+// Modal Toggles
+if (archiveAddBtn) {
+  archiveAddBtn.addEventListener('click', () => {
+    requireLogin(() => {
+      if (archiveAddModal) {
+        archiveAddModal.classList.remove('hidden');
+        archiveAddModal.setAttribute('aria-hidden', 'false');
+      }
+    });
+  });
+}
+
+function closeArchiveModal() {
+  if (archiveAddModal) {
+    archiveAddModal.classList.add('hidden');
+    archiveAddModal.setAttribute('aria-hidden', 'true');
+    archiveInputTitle.value = '';
+    archiveInputUrl.value = '';
+    archiveInputDesc.value = '';
+  }
+}
+
+if (archiveModalClose) archiveModalClose.addEventListener('click', closeArchiveModal);
+
+if (archiveSubmitBtn) {
+  archiveSubmitBtn.addEventListener('click', () => {
+    const title = archiveInputTitle.value.trim();
+    const url = archiveInputUrl.value.trim();
+    const desc = archiveInputDesc.value.trim();
+    const author = currentUser ? currentUser.id : (localStorage.getItem('pl_author') || 'Anonymous');
+
+    if (!title || !url || !desc) {
+      showToast('모든 입력칸을 채워주세요.');
+      return;
+    }
+
+    archiveSubmitBtn.disabled = true;
+    archiveSubmitBtn.textContent = '추가 중...';
+
+    db.collection('archives').add({
+      title,
+      url,
+      desc,
+      author,
+      time: Date.now()
+    }).then(() => {
+      showToast('아카이브가 추가되었습니다!');
+      closeArchiveModal();
+    }).catch(err => {
+      console.error(err);
+      showToast('추가 중 오류가 발생했습니다.');
+    }).finally(() => {
+      archiveSubmitBtn.disabled = false;
+      archiveSubmitBtn.textContent = '추가하기';
+    });
+  });
+}
