@@ -430,6 +430,58 @@ function applyLoginState() {
 }
 
 // --- Login ---
+let loginFailCount = 0;
+
+function openFindPwMode() {
+  const loginWrap = document.getElementById('login-fields-wrap');
+  if (loginWrap) loginWrap.classList.add('hidden');
+  const findPwWrap = document.getElementById('find-pw-fields-wrap');
+  if (findPwWrap) findPwWrap.classList.remove('hidden');
+  
+  const title = document.querySelector('.login-modal__title');
+  if (title) title.textContent = '비밀번호 찾기';
+  const subtitle = document.querySelector('.login-modal__subtitle');
+  if (subtitle) subtitle.textContent = '이름과 질문의 정답을 입력해주세요';
+  
+  const errEl = document.getElementById('find-pw-error');
+  if (errEl) errEl.classList.add('hidden');
+  
+  setTimeout(() => {
+    const pwId = document.getElementById('find-pw-id');
+    if (pwId) pwId.focus();
+  }, 100);
+}
+
+function closeFindPwMode() {
+  const loginWrap = document.getElementById('login-fields-wrap');
+  if (loginWrap) loginWrap.classList.remove('hidden');
+  const findPwWrap = document.getElementById('find-pw-fields-wrap');
+  if (findPwWrap) findPwWrap.classList.add('hidden');
+  
+  const title = document.querySelector('.login-modal__title');
+  if (title) title.textContent = '로그인';
+  const subtitle = document.querySelector('.login-modal__subtitle');
+  if (subtitle) subtitle.textContent = '아이디와 비밀번호를 입력해주세요';
+  
+  const pwId = document.getElementById('find-pw-id');
+  if (pwId) pwId.value = '';
+  const pwAns = document.getElementById('find-pw-answer');
+  if (pwAns) pwAns.value = '';
+  loginFailCount = 0;
+}
+
+function handlePasswordFail() {
+  loginFailCount++;
+  if (loginFailCount >= 4) {
+    showLoginError('비밀번호를 잊으셨나요?');
+    setTimeout(() => {
+      openFindPwMode();
+    }, 1500);
+  } else {
+    showLoginError('비밀번호가 올바르지 않습니다.');
+  }
+}
+
 function attemptLogin() {
   const id = loginIdInput.value.trim();
   const pw = loginPwInput.value.trim();
@@ -444,10 +496,11 @@ function attemptLogin() {
   // Check admin
   if (id.toLowerCase() === 'admin') {
     if (pw === AUTH_CREDENTIALS.admin.password) {
+      loginFailCount = 0;
       loginSuccess({ id: 'admin', role: 'admin' });
       return;
     } else {
-      showLoginError('비밀번호가 올바르지 않습니다.');
+      handlePasswordFail();
       return;
     }
   }
@@ -455,10 +508,11 @@ function attemptLogin() {
   // Check guest
   if (id.toLowerCase() === 'guest' || id.toLowerCase() === '게스트') {
     if (pw === AUTH_CREDENTIALS.guest.password) {
+      loginFailCount = 0;
       loginSuccess({ id: 'guest', role: 'guest' });
       return;
     } else {
-      showLoginError('비밀번호가 올바르지 않습니다.');
+      handlePasswordFail();
       return;
     }
   }
@@ -482,9 +536,10 @@ function attemptLogin() {
           return;
         }
         if (data.password === pw) {
+          loginFailCount = 0;
           loginSuccess({ id: canonicalId, role: 'user' });
         } else {
-          showLoginError('비밀번호가 올바르지 않습니다.');
+          handlePasswordFail();
         }
       } else {
         showLoginError('아직 가입되지 않은 계정입니다. 회원가입을 해주세요.');
@@ -624,6 +679,7 @@ function openLoginModal(afterLoginAction) {
   loginIdInput.value = '';
   loginPwInput.value = '';
   setModalSignUpMode(false);
+  closeFindPwMode();
   loginError.classList.add('hidden');
   loginModal.classList.add('is-open');
   loginModal.setAttribute('aria-hidden', 'false');
@@ -753,8 +809,92 @@ if (loginModalToggleBtn) {
 const findPwBtn = document.getElementById('login-modal-find-pw-btn');
 if (findPwBtn) {
   findPwBtn.addEventListener('click', () => {
-    alert('비밀번호를 잊으셨나요?\n\n사내 관리자(admin)에게 문의하시거나, 관리자 페이지를 통해 비밀번호를 조회/초기화해 주세요.');
+    openFindPwMode();
   });
+}
+
+const findPwBackBtn = document.getElementById('find-pw-back-btn');
+if (findPwBackBtn) {
+  findPwBackBtn.addEventListener('click', () => {
+    closeFindPwMode();
+  });
+}
+
+const findPwSubmit = document.getElementById('find-pw-submit');
+if (findPwSubmit) {
+  findPwSubmit.addEventListener('click', attemptFindPw);
+}
+
+const findPwAnswerInput = document.getElementById('find-pw-answer');
+if (findPwAnswerInput) {
+  findPwAnswerInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') attemptFindPw();
+  });
+}
+
+const findPwIdInput = document.getElementById('find-pw-id');
+if (findPwIdInput) {
+  findPwIdInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') findPwAnswerInput.focus();
+  });
+}
+
+function attemptFindPw() {
+  const idInput = document.getElementById('find-pw-id').value.trim();
+  const ansInput = document.getElementById('find-pw-answer').value.trim();
+  const errEl = document.getElementById('find-pw-error');
+  
+  if (!idInput || !ansInput) {
+    errEl.textContent = '아이디와 정답을 모두 입력해주세요.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+  
+  if (ansInput.toLowerCase().replace(/\s/g, '') !== 'wearelfd') {
+    errEl.textContent = '정답이 올바르지 않습니다.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+  
+  const upperId = idInput.toUpperCase();
+  const matchedKey = Object.keys(FF_MEMBERS).find(k => k.toUpperCase() === upperId);
+  
+  if (!matchedKey) {
+    errEl.textContent = '등록된 멤버가 아닙니다.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+  
+  const ff = FF_MEMBERS[matchedKey];
+  const canonicalId = Object.keys(FF_MEMBERS).find(k => FF_MEMBERS[k].name === ff.name && k === k.toUpperCase() && k.length <= 3) || matchedKey;
+
+  db.collection('member_accounts').doc(canonicalId).get()
+    .then((doc) => {
+      if (doc.exists) {
+        const data = doc.data();
+        if (data.isSuspended === true) {
+          errEl.textContent = '정지되었거나 휴식기 중인 계정입니다. 관리자에게 문의해 주세요.';
+          errEl.classList.remove('hidden');
+          return;
+        }
+        
+        // Find Password Success
+        loginFailCount = 0;
+        
+        // Alert the password so the user can see it!
+        alert(`비밀번호는 [ ${data.password} ] 입니다.\n로그인 화면으로 이동합니다.`);
+        closeFindPwMode();
+        
+      } else {
+        errEl.textContent = '아직 가입되지 않은 계정입니다.';
+        errEl.classList.remove('hidden');
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      errEl.textContent = '처리 중 오류가 발생했습니다.';
+      errEl.classList.remove('hidden');
+    });
 }
 
 const profileModal = document.getElementById('profile-modal');

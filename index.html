@@ -246,23 +246,43 @@
       <h2 class="login-modal__title">로그인</h2>
       <p class="login-modal__subtitle">아이디와 비밀번호를 입력해주세요</p>
       <div class="login-modal__form">
-        <div class="login-modal__field">
-          <label class="login-modal__label" for="login-id">아이디 (이름)</label>
-          <input type="text" class="login-modal__input" id="login-id" placeholder="예: 태영" maxlength="10"
-            autocomplete="off" spellcheck="false" />
+        <!-- LOGIN / SIGNUP SECTION -->
+        <div id="login-fields-wrap">
+          <div class="login-modal__field">
+            <label class="login-modal__label" for="login-id">아이디 (이름)</label>
+            <input type="text" class="login-modal__input" id="login-id" placeholder="예: 태영" maxlength="10"
+              autocomplete="off" spellcheck="false" />
+          </div>
+          <div class="login-modal__field">
+            <label class="login-modal__label" for="login-pw">비밀번호</label>
+            <input type="password" class="login-modal__input" id="login-pw" placeholder="비밀번호 입력" maxlength="20" />
+          </div>
+          <p class="login-modal__error hidden" id="login-error">아이디 또는 비밀번호가 올바르지 않습니다.</p>
+          <button class="login-modal__submit" id="login-submit">로그인</button>
+          <div class="login-modal__toggle-wrap" style="margin-top: 16px; text-align: center; font-size: 13px;">
+            <span id="login-modal-toggle-text" style="color: #666;">계정이 없으신가요?</span>
+            <button id="login-modal-toggle-btn" style="background: none; border: none; color: #0071e3; font-weight: 600; cursor: pointer; padding: 0 4px; font-family: inherit;">회원가입하기</button>
+          </div>
+          <div style="margin-top: 8px; text-align: center;">
+            <button id="login-modal-find-pw-btn" style="background: none; border: none; color: #888; font-size: 12px; cursor: pointer; padding: 4px 0; font-family: inherit;">비밀번호를 잊으셨나요?</button>
+          </div>
         </div>
-        <div class="login-modal__field">
-          <label class="login-modal__label" for="login-pw">비밀번호</label>
-          <input type="password" class="login-modal__input" id="login-pw" placeholder="비밀번호 입력" maxlength="20" />
-        </div>
-        <p class="login-modal__error hidden" id="login-error">아이디 또는 비밀번호가 올바르지 않습니다.</p>
-        <button class="login-modal__submit" id="login-submit">로그인</button>
-        <div class="login-modal__toggle-wrap" style="margin-top: 16px; text-align: center; font-size: 13px;">
-          <span id="login-modal-toggle-text" style="color: #666;">계정이 없으신가요?</span>
-          <button id="login-modal-toggle-btn" style="background: none; border: none; color: #0071e3; font-weight: 600; cursor: pointer; padding: 0 4px; font-family: inherit;">회원가입하기</button>
-        </div>
-        <div style="margin-top: 8px; text-align: center;">
-          <button id="login-modal-find-pw-btn" style="background: none; border: none; color: #888; font-size: 12px; cursor: pointer; padding: 4px 0; font-family: inherit;">비밀번호를 잊으셨나요?</button>
+
+        <!-- FIND PASSWORD SECTION -->
+        <div id="find-pw-fields-wrap" class="hidden">
+          <div class="login-modal__field">
+            <label class="login-modal__label" for="find-pw-id">아이디 (이름)</label>
+            <input type="text" class="login-modal__input" id="find-pw-id" placeholder="예: 태영" maxlength="10" autocomplete="off" spellcheck="false" />
+          </div>
+          <div class="login-modal__field">
+            <label class="login-modal__label" for="find-pw-answer" style="font-size: 11.5px;">우리는엘에프디다 영어로 작성하면?</label>
+            <input type="text" class="login-modal__input" id="find-pw-answer" placeholder="정답을 입력해주세요" maxlength="20" autocomplete="off" spellcheck="false" />
+          </div>
+          <p class="login-modal__error hidden" id="find-pw-error">정답이 올바르지 않거나 존재하지 않는 아이디입니다.</p>
+          <button class="login-modal__submit" id="find-pw-submit">비밀번호 확인</button>
+          <div style="margin-top: 16px; text-align: center;">
+            <button id="find-pw-back-btn" style="background: none; border: none; color: #888; font-size: 12px; cursor: pointer; padding: 4px 0; font-family: inherit;">로그인으로 돌아가기</button>
+          </div>
         </div>
       </div>
     </div>
