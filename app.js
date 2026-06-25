@@ -996,9 +996,9 @@ function renderUserMgmtPage() {
       div.style.alignItems = 'center';
       div.style.justifyContent = 'space-between';
       div.style.padding = '12px 16px';
-      div.style.background = '#f9f9fb';
+      div.style.background = 'rgba(255, 255, 255, 0.05)';
       div.style.borderRadius = 'var(--r-md)';
-      div.style.border = '1px solid rgba(0,0,0,0.03)';
+      div.style.border = '1px solid rgba(255,255,255,0.05)';
       
       const avatarSrc = s.img ? s.img : '';
       const avatarHtml = avatarSrc 
@@ -1028,8 +1028,8 @@ function renderUserMgmtPage() {
         <div style="display:flex; align-items:center; gap:12px;">
           ${avatarHtml}
           <div>
-            <div style="font-weight:700; font-size:14px; color:#000; display:flex; align-items:center; gap:6px;">
-              ${s.name} <span style="font-weight:800; font-size:12px; color:#0071e3; margin-left:2px;">${s.role}</span>
+            <div style="font-weight:700; font-size:14px; color:#fff; display:flex; align-items:center; gap:6px;">
+              ${s.name} <span style="font-weight:800; font-size:12px; color:#00AEEF; margin-left:2px;">${s.role}</span>
               <span style="color:#34c759; font-size:11px; font-weight:700; padding:1px 6px; background:rgba(52,199,89,0.1); border-radius:10px;">${memberType}</span>
             </div>
             <div style="font-size:12px; color:#888; margin-top:2px;">${s.team}</div>
@@ -4432,7 +4432,7 @@ window.closeMobileMenu = function() {
   if (mobileMenuOverlay) mobileMenuOverlay.classList.remove('is-open');
   
   // Restore input bar when closing mobile menu, unless in library view or usermgmt view
-  if (inputBar && typeof currentView !== 'undefined' && currentView !== 'library' && currentView !== 'usermgmt') {
+  if (inputBar && typeof currentView !== 'undefined' && currentView !== 'library' && currentView !== 'usermgmt' && currentView !== 'archive') {
     inputBar.classList.remove('hidden');
   }
 };
@@ -4447,7 +4447,7 @@ if (mobileMenuBtn && mobileMenuOverlay) {
       if (isOpen) {
         inputBar.classList.add('hidden');
       } else {
-        if (typeof currentView !== 'undefined' && currentView !== 'library' && currentView !== 'usermgmt') {
+        if (typeof currentView !== 'undefined' && currentView !== 'library' && currentView !== 'usermgmt' && currentView !== 'archive') {
           inputBar.classList.remove('hidden');
         }
       }
