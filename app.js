@@ -4560,13 +4560,13 @@ if (toggleGalleryBtn && toggleListBtn) {
   toggleGalleryBtn.addEventListener('click', function() {
     libLayoutMode = 'gallery';
     toggleGalleryBtn.classList.add('is-active');
-    toggleGalleryBtn.style.background = '#fff';
-    toggleGalleryBtn.style.color = '#333';
-    toggleGalleryBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)';
+    toggleGalleryBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+    toggleGalleryBtn.style.color = '#fff';
+    toggleGalleryBtn.style.boxShadow = 'none';
     
     toggleListBtn.classList.remove('is-active');
     toggleListBtn.style.background = 'transparent';
-    toggleListBtn.style.color = '#777';
+    toggleListBtn.style.color = 'rgba(255, 255, 255, 0.5)';
     toggleListBtn.style.boxShadow = 'none';
     
     renderLibrary();
@@ -4575,13 +4575,13 @@ if (toggleGalleryBtn && toggleListBtn) {
   toggleListBtn.addEventListener('click', function() {
     libLayoutMode = 'list';
     toggleListBtn.classList.add('is-active');
-    toggleListBtn.style.background = '#fff';
-    toggleListBtn.style.color = '#333';
-    toggleListBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)';
+    toggleListBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+    toggleListBtn.style.color = '#fff';
+    toggleListBtn.style.boxShadow = 'none';
     
     toggleGalleryBtn.classList.remove('is-active');
     toggleGalleryBtn.style.background = 'transparent';
-    toggleGalleryBtn.style.color = '#777';
+    toggleGalleryBtn.style.color = 'rgba(255, 255, 255, 0.5)';
     toggleGalleryBtn.style.boxShadow = 'none';
     
     renderLibrary();
