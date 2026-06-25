@@ -146,10 +146,18 @@ body {
 .global-nav__title {
   font-size: 18px;
   font-weight: 600;
-  color: #00b0ff;
+  color: #ffffff;
   letter-spacing: -0.12px;
   cursor: pointer;
   user-select: none;
+  line-height: 1;
+}
+
+.global-nav__logo {
+  height: 20px;
+  width: auto;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 
 .global-nav__links {
