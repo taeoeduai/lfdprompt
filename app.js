@@ -993,6 +993,74 @@ profileBtnDelete.addEventListener('click', () => {
   }).catch(e => showToast('삭제 실패: ' + e.message));
 });
 
+// Password Change Handler
+const mypagePwChangeBtn = document.getElementById('mypage-pw-change-btn');
+if (mypagePwChangeBtn) {
+  mypagePwChangeBtn.addEventListener('click', function() {
+    if (!isLoggedIn) return;
+    const currentPwInput = document.getElementById('mypage-pw-current');
+    const newPwInput = document.getElementById('mypage-pw-new');
+    const confirmPwInput = document.getElementById('mypage-pw-confirm');
+    const errEl = document.getElementById('mypage-pw-error');
+    const successEl = document.getElementById('mypage-pw-success');
+
+    errEl.classList.add('hidden');
+    successEl.classList.add('hidden');
+
+    const currentPw = currentPwInput.value.trim();
+    const newPw = newPwInput.value.trim();
+    const confirmPw = confirmPwInput.value.trim();
+
+    if (!currentPw || !newPw || !confirmPw) {
+      errEl.textContent = '모든 필드를 입력해주세요.';
+      errEl.classList.remove('hidden');
+      return;
+    }
+
+    if (newPw.length < 4) {
+      errEl.textContent = '새 비밀번호는 4자리 이상이어야 합니다.';
+      errEl.classList.remove('hidden');
+      return;
+    }
+
+    if (newPw !== confirmPw) {
+      errEl.textContent = '새 비밀번호가 일치하지 않습니다.';
+      errEl.classList.remove('hidden');
+      return;
+    }
+
+    const uId = currentUser.id.toUpperCase();
+    db.collection('member_accounts').doc(uId).get().then(function(doc) {
+      if (!doc.exists) {
+        errEl.textContent = '계정 정보를 찾을 수 없습니다.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      const data = doc.data();
+      if (data.password !== currentPw) {
+        errEl.textContent = '현재 비밀번호가 올바르지 않습니다.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      // Update password
+      db.collection('member_accounts').doc(uId).update({ password: newPw }).then(function() {
+        successEl.textContent = '비밀번호가 성공적으로 변경되었습니다!';
+        successEl.classList.remove('hidden');
+        currentPwInput.value = '';
+        newPwInput.value = '';
+        confirmPwInput.value = '';
+        showToast('비밀번호가 변경되었습니다.');
+      }).catch(function(e) {
+        errEl.textContent = '변경 실패: ' + e.message;
+        errEl.classList.remove('hidden');
+      });
+    }).catch(function(e) {
+      errEl.textContent = '오류가 발생했습니다: ' + e.message;
+      errEl.classList.remove('hidden');
+    });
+  });
+}
+
 profileInput.addEventListener('change', function(e) {
   const file = e.target.files[0];
   if (!file) return;
