@@ -150,13 +150,125 @@ body {
 /* ============================================
    PROFILE MODAL
    ============================================ */
+.profile-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
 .profile-modal.is-open {
   display: flex !important;
   opacity: 1 !important;
 }
 
+.profile-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.profile-modal__card {
+  position: relative;
+  background: rgba(10, 10, 20, 0.85);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  width: 90%;
+  max-width: 380px;
+  border-radius: var(--r-xl);
+  padding: var(--sp-xl);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  text-align: center;
+  transform: scale(0.95);
+  transition: transform 0.2s;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
 .profile-modal.is-open .profile-modal__card {
   transform: scale(1) !important;
+}
+
+.profile-modal__stats {
+  display: flex;
+  gap: 12px;
+  justify-content: space-around;
+  margin-bottom: 24px;
+  padding: 16px 0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--r-lg);
+}
+
+.profile-modal__stats-divider {
+  width: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.profile-modal__stat-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 4px;
+}
+
+.profile-modal__divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 8px 0 20px;
+}
+
+.profile-modal__card input[type="password"] {
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--color-ink);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid #AEAEB2;
+  border-radius: var(--r-md);
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Light theme overrides for Profile Modal */
+body.light-theme .profile-modal__card {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 
+    0 24px 80px rgba(0, 0, 0, 0.08), 
+    0 8px 24px rgba(0, 0, 0, 0.04), 
+    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+}
+
+body.light-theme .profile-modal__stats {
+  background: rgba(0, 0, 0, 0.03) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+body.light-theme .profile-modal__stats-divider {
+  background: rgba(0, 0, 0, 0.08) !important;
+}
+
+body.light-theme .profile-modal__stat-label {
+  color: rgba(0, 0, 0, 0.45) !important;
+}
+
+body.light-theme .profile-modal__divider {
+  background: rgba(0, 0, 0, 0.08) !important;
+}
+
+body.light-theme .profile-modal__card input[type="password"] {
+  background: rgba(0, 0, 0, 0.02) !important;
+  border: 1.5px solid rgba(0, 0, 0, 0.12) !important;
+  color: var(--color-ink) !important;
 }
 
 
@@ -2143,7 +2255,7 @@ body.light-theme .input-bar__send {
   }
 }
 
-.lib-add-btn {
+.lib-add-btn, .archive-add-btn {
   font-family: inherit;
   font-size: 13px;
   font-weight: 600;
@@ -2154,17 +2266,21 @@ body.light-theme .input-bar__send {
   border-radius: var(--r-pill);
   cursor: pointer;
   transition: all var(--t-fast);
-  margin-left: auto;
   display: flex;
   align-items: center;
   gap: 4px;
   box-shadow: 0 2px 8px rgba(0, 174, 239, 0.15);
+  text-decoration: none;
 }
 
-.lib-add-btn:hover {
+.lib-add-btn:hover, .archive-add-btn:hover {
   background: linear-gradient(135deg, #00c2ff, #00004d);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 174, 239, 0.3);
+}
+
+.lib-add-btn {
+  margin-left: auto;
 }
 
 .lib-add-btn.hidden {
@@ -3024,15 +3140,46 @@ body {
   color: rgba(255, 255, 255, 0.3) !important;
 }
 
-/* 2. Detail prompt tabs (KO/EN) alignment for Dark Theme */
-.lib-prompt-tab {
+/* 2. Detail prompt and edit tabs (KO/EN) alignment for Dark/Light Themes */
+.lib-prompt-tab,
+.lib-edit-tab {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 16px;
+  border-radius: var(--r-pill);
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   background: transparent !important;
   color: rgba(255, 255, 255, 0.5) !important;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .lib-prompt-tab.is-active {
   background: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+}
+
+.lib-edit-tab.is-active {
+  background: #0071E3 !important;
+  color: #ffffff !important;
+}
+
+/* Light Theme overrides for tabs */
+body.light-theme .lib-prompt-tab,
+body.light-theme .lib-edit-tab {
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  background: transparent !important;
+  color: rgba(0, 0, 0, 0.45) !important;
+}
+
+body.light-theme .lib-prompt-tab.is-active {
+  background: rgba(0, 0, 0, 0.06) !important;
+  color: var(--color-ink) !important;
+}
+
+body.light-theme .lib-edit-tab.is-active {
+  background: #0071E3 !important;
   color: #ffffff !important;
 }
 
@@ -3056,7 +3203,6 @@ body {
   align-items: center;
   overflow-y: auto;
   background: var(--color-main-bg) no-repeat fixed;
-  padding: 40px var(--sp-md);
   box-sizing: border-box;
 }
 
@@ -3064,9 +3210,23 @@ body {
   display: none !important;
 }
 
-.archive-view__header, .archive-view__content {
+.archive-view__header {
   width: 100%;
   max-width: 980px;
+  padding-left: var(--sp-md);
+  padding-right: var(--sp-md);
+  margin-top: var(--sp-xl);
+  margin-bottom: var(--sp-md);
+  flex-shrink: 0;
+}
+
+.archive-view__content {
+  width: 100%;
+  max-width: 980px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--sp-lg);
+  padding: var(--sp-md) var(--sp-lg) var(--sp-xl) var(--sp-lg);
 }
 
 .archive-card {
@@ -3125,11 +3285,38 @@ body {
 }
 
 /* Archive Modal Specific */
+.archive-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.archive-modal.hidden {
+  display: none !important;
+}
+
 .archive-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
   animation: fadeIn var(--t-fast) ease forwards;
 }
 
 .archive-modal__content {
+  position: relative;
+  background: rgba(10, 10, 20, 0.85);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  width: 90%;
+  max-width: 480px;
+  border-radius: var(--r-xl);
+  padding: var(--sp-xl);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
   animation: slideUp var(--t-fast) ease forwards;
 }
 
@@ -3197,4 +3384,57 @@ body.light-theme .lib-view-toggle button.is-active {
   background: #ffffff;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   color: var(--color-ink);
+}
+
+/* --- Light Mode Modals & Popups Styling --- */
+body.light-theme .lib-modal__sheet,
+body.light-theme .login-modal__card,
+body.light-theme .lib-type-modal__content,
+body.light-theme .archive-modal__content {
+  background: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(40px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.12) !important;
+  border-left: 1px solid rgba(0, 0, 0, 0.08) !important;
+  border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 
+    0 24px 80px rgba(0, 0, 0, 0.08), 
+    0 8px 24px rgba(0, 0, 0, 0.04), 
+    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+}
+
+body.light-theme .lib-modal__prompt-wrap {
+  background: rgba(0, 0, 0, 0.02) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+body.light-theme .archive-modal__content label,
+body.light-theme .login-modal__card label {
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+
+body.light-theme .archive-modal__content input,
+body.light-theme .archive-modal__content select,
+body.light-theme .archive-modal__content textarea,
+body.light-theme .login-modal__card input {
+  background: rgba(0, 0, 0, 0.02) !important;
+  border: 1.5px solid rgba(0, 0, 0, 0.12) !important;
+  color: var(--color-ink) !important;
+}
+
+body.light-theme .archive-modal__content option {
+  background: #ffffff !important;
+  color: var(--color-ink) !important;
+}
+
+body.light-theme .lib-type-modal__btn {
+  background: rgba(0, 0, 0, 0.03) !important;
+  border: 1.5px solid rgba(0, 0, 0, 0.08) !important;
+  color: var(--color-ink) !important;
+}
+
+body.light-theme .lib-type-modal__btn:hover {
+  background: rgba(0, 0, 0, 0.06) !important;
+  border-color: var(--color-primary) !important;
 }

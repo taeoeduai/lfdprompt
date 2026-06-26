@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet"
     href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
-  <link rel="stylesheet" href="style.css?v=3.3" />
+  <link rel="stylesheet" href="style.css?v=3.4" />
   <link rel="icon" href="favicon.png" type="image/png" />
 </head>
 
@@ -288,9 +288,9 @@
   </div>
 
   <!-- Profile Modal -->
-  <div class="profile-modal" id="profile-modal" aria-hidden="true" style="position: fixed; inset: 0; z-index: 2000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s;">
-    <div class="profile-modal__backdrop" id="profile-modal-backdrop" style="position: absolute; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);"></div>
-    <div class="profile-modal__card" style="position: relative; background: rgba(10, 10, 20, 0.85); backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.12); width: 90%; max-width: 380px; border-radius: var(--r-xl); padding: var(--sp-xl); box-shadow: 0 24px 80px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1); text-align: center; transform: scale(0.95); transition: transform 0.2s; max-height: 90vh; overflow-y: auto;">
+  <div class="profile-modal" id="profile-modal" aria-hidden="true">
+    <div class="profile-modal__backdrop" id="profile-modal-backdrop"></div>
+    <div class="profile-modal__card">
       <button class="profile-modal__close" id="profile-modal-close" aria-label="닫기" style="position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border: none; background: transparent; color: var(--color-ink); opacity: 0.6; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
@@ -299,15 +299,15 @@
       </div>
       <h2 class="profile-modal__title" id="profile-modal-title" style="margin: 0 0 24px; font-size: 20px; font-weight: 700; color: var(--color-ink);">마이페이지</h2>
       
-      <div style="display: flex; gap: 12px; justify-content: space-around; margin-bottom: 24px; padding: 16px 0; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--r-lg);">
+      <div class="profile-modal__stats">
         <div style="text-align: center; flex: 1;">
           <div style="font-size: 24px; font-weight: 800; color: var(--color-ink);" id="mypage-stat-prompts">0</div>
-          <div style="font-size: 11.5px; font-weight: 600; color: rgba(255,255,255,0.5); margin-top: 4px;">작성한 프롬프트</div>
+          <div class="profile-modal__stat-label">작성한 프롬프트</div>
         </div>
-        <div style="width: 1px; background: rgba(255,255,255,0.1);"></div>
+        <div class="profile-modal__stats-divider"></div>
         <div style="text-align: center; flex: 1;">
           <div style="font-size: 24px; font-weight: 800; color: var(--color-ink);" id="mypage-stat-library">0</div>
-          <div style="font-size: 11.5px; font-weight: 600; color: rgba(255,255,255,0.5); margin-top: 4px;">업로드한 라이브러리</div>
+          <div class="profile-modal__stat-label">업로드한 라이브러리</div>
         </div>
       </div>
 
@@ -319,7 +319,7 @@
       </div>
 
       <!-- Divider -->
-      <div style="height: 1px; background: rgba(255,255,255,0.08); margin: 8px 0 20px;"></div>
+      <div class="profile-modal__divider"></div>
 
       <!-- Password Change Section -->
       <div style="text-align: left; margin-bottom: 20px;">
@@ -328,9 +328,9 @@
           비밀번호 변경
         </div>
         <div style="display: flex; flex-direction: column; gap: 8px;">
-          <input type="password" id="mypage-pw-current" placeholder="현재 비밀번호" style="font-family: inherit; font-size: 14px; color: var(--color-ink); background: rgba(255,255,255,0.04); border: 1.5px solid #AEAEB2; border-radius: var(--r-md); padding: 10px 14px; outline: none; transition: border-color 0.2s; width: 100%; box-sizing: border-box;" />
-          <input type="password" id="mypage-pw-new" placeholder="새 비밀번호" style="font-family: inherit; font-size: 14px; color: var(--color-ink); background: rgba(255,255,255,0.04); border: 1.5px solid #AEAEB2; border-radius: var(--r-md); padding: 10px 14px; outline: none; transition: border-color 0.2s; width: 100%; box-sizing: border-box;" />
-          <input type="password" id="mypage-pw-confirm" placeholder="새 비밀번호 확인" style="font-family: inherit; font-size: 14px; color: var(--color-ink); background: rgba(255,255,255,0.04); border: 1.5px solid #AEAEB2; border-radius: var(--r-md); padding: 10px 14px; outline: none; transition: border-color 0.2s; width: 100%; box-sizing: border-box;" />
+          <input type="password" id="mypage-pw-current" placeholder="현재 비밀번호" />
+          <input type="password" id="mypage-pw-new" placeholder="새 비밀번호" />
+          <input type="password" id="mypage-pw-confirm" placeholder="새 비밀번호 확인" />
           <p id="mypage-pw-error" class="hidden" style="font-size: 12px; color: #ff3b30; margin: 0; padding-left: 2px;"></p>
           <p id="mypage-pw-success" class="hidden" style="font-size: 12px; color: #34c759; margin: 0; padding-left: 2px;"></p>
           <button id="mypage-pw-change-btn" style="padding: 12px; background: var(--color-lfd-60); color: #fff; border: none; border-radius: var(--r-md); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 4px;">비밀번호 변경하기</button>
@@ -404,12 +404,8 @@
       <!-- Read-only prompt -->
       <div class="lib-modal__prompt-tabs" id="lib-modal-prompt-tabs"
         style="display: flex; gap: 8px; margin-bottom: 8px;">
-        <button class="lib-prompt-tab is-active" id="lib-prompt-tab-ko"
-          style="font-family: inherit; font-size: 12px; font-weight: 600; padding: 6px 16px; border-radius: var(--r-pill); border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.15); color: #ffffff; cursor: pointer; transition: all 0.2s;">한글
-          (KO)</button>
-        <button class="lib-prompt-tab" id="lib-prompt-tab-en"
-          style="font-family: inherit; font-size: 12px; font-weight: 600; padding: 6px 16px; border-radius: var(--r-pill); border: 1px solid rgba(255,255,255,0.08); background: transparent; color: rgba(255,255,255,0.4); cursor: pointer; transition: all 0.2s;">영어
-          (EN)</button>
+        <button class="lib-prompt-tab is-active" id="lib-prompt-tab-ko">한글 (KO)</button>
+        <button class="lib-prompt-tab" id="lib-prompt-tab-en">영어 (EN)</button>
       </div>
       <div class="lib-modal__prompt-wrap" id="lib-modal-prompt-wrap">
         <pre class="lib-modal__prompt" id="lib-modal-prompt"></pre>
@@ -508,12 +504,8 @@
         </div>
 
         <div class="lib-modal__edit-tabs" style="display: flex; gap: 8px; margin: 8px 0;">
-          <button class="lib-edit-tab is-active" id="lib-edit-tab-ko"
-            style="font-family: inherit; font-size: 12px; font-weight: 600; padding: 6px 16px; border-radius: var(--r-pill); border: 1px solid rgba(255,255,255,0.08); background: #0071E3; color: #ffffff; cursor: pointer; transition: all 0.2s;">한글
-            편집 (KO)</button>
-          <button class="lib-edit-tab" id="lib-edit-tab-en"
-            style="font-family: inherit; font-size: 12px; font-weight: 600; padding: 6px 16px; border-radius: var(--r-pill); border: 1px solid rgba(255,255,255,0.08); background: transparent; color: rgba(255,255,255,0.4); cursor: pointer; transition: all 0.2s;">영어
-            편집 (EN)</button>
+          <button class="lib-edit-tab is-active" id="lib-edit-tab-ko">한글 편집 (KO)</button>
+          <button class="lib-edit-tab" id="lib-edit-tab-en">영어 편집 (EN)</button>
         </div>
 
         <textarea class="lib-modal__edit-textarea" id="lib-modal-edit-textarea-ko" rows="10"
@@ -551,13 +543,13 @@
   </div>
 
   <!-- Archive Add Modal -->
-  <div class="archive-modal hidden" id="archive-add-modal" aria-hidden="true" style="position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center;">
-    <div class="archive-modal__backdrop" id="archive-modal-backdrop" style="position: absolute; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);"></div>
-    <div class="archive-modal__content" style="position: relative; background: rgba(10, 10, 20, 0.85); backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.12); width: 90%; max-width: 480px; border-radius: var(--r-xl); padding: var(--sp-xl); box-shadow: 0 24px 80px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1);">
+  <div class="archive-modal hidden" id="archive-add-modal" aria-hidden="true">
+    <div class="archive-modal__backdrop" id="archive-modal-backdrop"></div>
+    <div class="archive-modal__content">
       <button class="archive-modal__close" id="archive-modal-close" aria-label="닫기" style="position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border: none; background: transparent; color: var(--color-ink); opacity: 0.6; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
-      <h2 style="margin: 0 0 24px; font-size: 20px; font-weight: 700; color: var(--color-ink);">새 아카이브 추가</h2>
+      <h2 id="archive-modal-title" style="margin: 0 0 24px; font-size: 20px; font-weight: 700; color: var(--color-ink);">새 아카이브 추가</h2>
       <div style="display: flex; flex-direction: column; gap: 16px;">
         <div>
           <label style="display: block; font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.6); margin-bottom: 6px;">사이트 이름 / 제목</label>
@@ -580,7 +572,10 @@
           <label style="display: block; font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.6); margin-bottom: 6px;">설명</label>
           <textarea id="archive-input-desc" placeholder="어떤 점이 좋은지, 어떻게 활용하면 좋은지 적어주세요." rows="4" style="width: 100%; font-family: inherit; font-size: 14px; color: var(--color-ink); padding: 12px; border-radius: var(--r-md); border: 1.5px solid #AEAEB2; background: rgba(255,255,255,0.04); outline: none; resize: vertical; box-sizing: border-box;"></textarea>
         </div>
-        <button id="archive-submit-btn" style="width: 100%; padding: 14px; margin-top: 8px; font-family: inherit; font-size: 15px; font-weight: 600; color: #fff; background: var(--color-lfd-60); border: none; border-radius: var(--r-md); cursor: pointer; transition: all 0.2s;">추가하기</button>
+        <div style="display: flex; gap: 8px; margin-top: 8px; width: 100%;">
+          <button id="archive-delete-btn" class="hidden" style="flex: 1; padding: 14px; font-family: inherit; font-size: 15px; font-weight: 600; color: #fff; background: #ff3b30; border: none; border-radius: var(--r-md); cursor: pointer; transition: all 0.2s;">삭제하기</button>
+          <button id="archive-submit-btn" style="flex: 2; padding: 14px; font-family: inherit; font-size: 15px; font-weight: 600; color: #fff; background: var(--color-lfd-60); border: none; border-radius: var(--r-md); cursor: pointer; transition: all 0.2s;">추가하기</button>
+        </div>
       </div>
     </div>
   </div>
@@ -612,7 +607,7 @@
   <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-analytics-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore-compat.js"></script>
-  <script src="app.js?v=3.3"></script>
+  <script src="app.js?v=3.4"></script>
 </body>
 
 </html>

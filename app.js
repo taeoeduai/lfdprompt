@@ -3488,21 +3488,11 @@ function updatePromptDisplay() {
   let activePrompt = '';
   if (libActiveLang === 'ko') {
     activePrompt = libEditingItem.promptKo || libEditingItem.prompt || '';
-    tabKo.style.background = 'rgba(255, 255, 255, 0.15)';
-    tabKo.style.color = '#ffffff';
     tabKo.classList.add('is-active');
-    
-    tabEn.style.background = 'transparent';
-    tabEn.style.color = 'rgba(255, 255, 255, 0.4)';
     tabEn.classList.remove('is-active');
   } else {
     activePrompt = libEditingItem.promptEn || libEditingItem.prompt || '';
-    tabEn.style.background = 'rgba(255, 255, 255, 0.15)';
-    tabEn.style.color = '#ffffff';
     tabEn.classList.add('is-active');
-    
-    tabKo.style.background = 'transparent';
-    tabKo.style.color = 'rgba(255, 255, 255, 0.4)';
     tabKo.classList.remove('is-active');
   }
 
@@ -3523,20 +3513,16 @@ document.getElementById('lib-prompt-tab-en').addEventListener('click', function(
 // Add event listeners for edit view tabs
 document.getElementById('lib-edit-tab-ko').addEventListener('click', function() {
   libEditActiveLang = 'ko';
-  document.getElementById('lib-edit-tab-ko').style.background = '#0071E3';
-  document.getElementById('lib-edit-tab-ko').style.color = '#ffffff';
-  document.getElementById('lib-edit-tab-en').style.background = 'transparent';
-  document.getElementById('lib-edit-tab-en').style.color = 'rgba(255, 255, 255, 0.4)';
+  document.getElementById('lib-edit-tab-ko').classList.add('is-active');
+  document.getElementById('lib-edit-tab-en').classList.remove('is-active');
   
   libModalEditTextareaKo.classList.remove('hidden');
   libModalEditTextareaEn.classList.add('hidden');
 });
 document.getElementById('lib-edit-tab-en').addEventListener('click', function() {
   libEditActiveLang = 'en';
-  document.getElementById('lib-edit-tab-en').style.background = '#0071E3';
-  document.getElementById('lib-edit-tab-en').style.color = '#ffffff';
-  document.getElementById('lib-edit-tab-ko').style.background = 'transparent';
-  document.getElementById('lib-edit-tab-ko').style.color = 'rgba(255, 255, 255, 0.4)';
+  document.getElementById('lib-edit-tab-en').classList.add('is-active');
+  document.getElementById('lib-edit-tab-ko').classList.remove('is-active');
   
   libModalEditTextareaEn.classList.remove('hidden');
   libModalEditTextareaKo.classList.add('hidden');
@@ -3713,10 +3699,8 @@ function enterEditMode() {
   libModalEditTextareaEn.value = libEditingItem.promptEn || libEditingItem.prompt || '';
   
   // Reset tab UI to Korean
-  document.getElementById('lib-edit-tab-ko').style.background = '#0071E3';
-  document.getElementById('lib-edit-tab-ko').style.color = '#ffffff';
-  document.getElementById('lib-edit-tab-en').style.background = 'transparent';
-  document.getElementById('lib-edit-tab-en').style.color = 'rgba(255, 255, 255, 0.4)';
+  document.getElementById('lib-edit-tab-ko').classList.add('is-active');
+  document.getElementById('lib-edit-tab-en').classList.remove('is-active');
   
   libModalEditTextareaKo.classList.remove('hidden');
   libModalEditTextareaEn.classList.add('hidden');
@@ -4849,6 +4833,8 @@ const archiveSubmitBtn = document.getElementById('archive-submit-btn');
 const archiveInputTitle = document.getElementById('archive-input-title');
 const archiveInputUrl = document.getElementById('archive-input-url');
 const archiveInputDesc = document.getElementById('archive-input-desc');
+const archiveDeleteBtn = document.getElementById('archive-delete-btn');
+let archiveEditingItem = null;
 
 function renderArchiveFilters() {
   const filterContainer = document.getElementById('archive-filters');
@@ -4891,20 +4877,69 @@ function renderArchive() {
     return;
   }
   
-  archiveContent.innerHTML = filteredData.map(item => `
-    <a href="${escHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="archive-card">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-        <h3 class="archive-card__title" style="margin: 0; line-height: 1.3;">${escHtml(item.title)}</h3>
-        <span style="font-size: 10.5px; font-weight: 700; color: var(--color-primary); background-color: var(--color-glass-bg-strong); padding: 2px 6px; border-radius: 4px; display: inline-block;">${escHtml(item.category || '레퍼런스')}</span>
+  archiveContent.innerHTML = filteredData.map(item => {
+    const isOwner = currentUser && (currentUser.id === item.author || (localStorage.getItem('pl_author') && localStorage.getItem('pl_author').toUpperCase() === item.author.toUpperCase()));
+    const canEdit = isAdmin || isOwner;
+    
+    return `
+      <div class="archive-card" data-id="${item.id}" data-can-edit="${canEdit ? 'true' : 'false'}" style="cursor: pointer;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+          <h3 class="archive-card__title" style="margin: 0; line-height: 1.3;">${escHtml(item.title)}</h3>
+          <span style="font-size: 10.5px; font-weight: 700; color: var(--color-primary); background-color: var(--color-glass-bg-strong); padding: 2px 6px; border-radius: 4px; display: inline-block;">${escHtml(item.category || '레퍼런스')}</span>
+        </div>
+        <div class="archive-card__url">
+          <a href="${escHtml(item.url)}" target="_blank" rel="noopener noreferrer">${escHtml(item.url)}</a>
+        </div>
+        <p class="archive-card__desc">${escHtml(item.desc)}</p>
+        <div class="archive-card__footer">
+          ${getUserDisplay(item.author)}
+          <span style="font-size: 11px; color: var(--color-body-muted); opacity: 0.6;">${new Date(item.time).toLocaleDateString()}</span>
+        </div>
       </div>
-      <div class="archive-card__url">${escHtml(item.url)}</div>
-      <p class="archive-card__desc">${escHtml(item.desc)}</p>
-      <div class="archive-card__footer">
-        ${getUserDisplay(item.author)}
-        <span style="font-size: 11px; color: var(--color-body-muted); opacity: 0.6;">${new Date(item.time).toLocaleDateString()}</span>
-      </div>
-    </a>
-  `).join('');
+    `;
+  }).join('');
+
+  // Add click listeners to cards
+  archiveContent.querySelectorAll('.archive-card').forEach(card => {
+    const id = card.getAttribute('data-id');
+    const canEdit = card.getAttribute('data-can-edit') === 'true';
+    const item = archiveData.find(d => d.id === id);
+
+    // Stop propagation on URL click
+    const link = card.querySelector('.archive-card__url a');
+    if (link) {
+      link.addEventListener('click', e => {
+        e.stopPropagation();
+      });
+    }
+
+    card.addEventListener('click', () => {
+      if (canEdit && item) {
+        openArchiveEditModal(item);
+      } else if (item) {
+        window.open(item.url, '_blank', 'noopener,noreferrer');
+      }
+    });
+  });
+}
+
+function openArchiveEditModal(item) {
+  archiveEditingItem = item;
+  archiveInputTitle.value = item.title;
+  archiveInputUrl.value = item.url;
+  archiveInputDesc.value = item.desc;
+  const categorySelect = document.getElementById('archive-input-category');
+  if (categorySelect) categorySelect.value = item.category || '레퍼런스';
+
+  if (archiveDeleteBtn) archiveDeleteBtn.classList.remove('hidden');
+  const titleEl = document.getElementById('archive-modal-title');
+  if (titleEl) titleEl.textContent = '아카이브 수정';
+  if (archiveSubmitBtn) archiveSubmitBtn.textContent = '수정하기';
+
+  if (archiveAddModal) {
+    archiveAddModal.classList.remove('hidden');
+    archiveAddModal.setAttribute('aria-hidden', 'false');
+  }
 }
 
 // Fetch Archive data
@@ -4923,6 +4958,12 @@ db.collection('archives').orderBy('time', 'desc').onSnapshot(snap => {
 if (archiveAddBtn) {
   archiveAddBtn.addEventListener('click', () => {
     requireLogin(() => {
+      archiveEditingItem = null;
+      if (archiveDeleteBtn) archiveDeleteBtn.classList.add('hidden');
+      const titleEl = document.getElementById('archive-modal-title');
+      if (titleEl) titleEl.textContent = '새 아카이브 추가';
+      if (archiveSubmitBtn) archiveSubmitBtn.textContent = '추가하기';
+      
       if (archiveAddModal) {
         archiveAddModal.classList.remove('hidden');
         archiveAddModal.setAttribute('aria-hidden', 'false');
@@ -4940,10 +4981,32 @@ function closeArchiveModal() {
     archiveInputDesc.value = '';
     const categorySelect = document.getElementById('archive-input-category');
     if (categorySelect) categorySelect.selectedIndex = 0;
+    archiveEditingItem = null;
   }
 }
 
 if (archiveModalClose) archiveModalClose.addEventListener('click', closeArchiveModal);
+
+if (archiveDeleteBtn) {
+  archiveDeleteBtn.addEventListener('click', () => {
+    if (!archiveEditingItem) return;
+    if (!confirm('이 아카이브를 정말 삭제하시겠습니까?')) return;
+
+    archiveDeleteBtn.disabled = true;
+    archiveDeleteBtn.textContent = '삭제 중...';
+
+    db.collection('archives').doc(archiveEditingItem.id).delete().then(() => {
+      showToast('아카이브가 삭제되었습니다.');
+      closeArchiveModal();
+    }).catch(err => {
+      console.error(err);
+      showToast('삭제 중 오류가 발생했습니다.');
+    }).finally(() => {
+      archiveDeleteBtn.disabled = false;
+      archiveDeleteBtn.textContent = '삭제하기';
+    });
+  });
+}
 
 if (archiveSubmitBtn) {
   archiveSubmitBtn.addEventListener('click', () => {
@@ -4960,25 +5023,43 @@ if (archiveSubmitBtn) {
     }
 
     archiveSubmitBtn.disabled = true;
-    archiveSubmitBtn.textContent = '추가 중...';
+    archiveSubmitBtn.textContent = archiveEditingItem ? '수정 중...' : '추가 중...';
 
-    db.collection('archives').add({
-      title,
-      url,
-      desc,
-      category,
-      author,
-      time: Date.now()
-    }).then(() => {
-      showToast('아카이브가 추가되었습니다!');
-      closeArchiveModal();
-    }).catch(err => {
-      console.error(err);
-      showToast('추가 중 오류가 발생했습니다.');
-    }).finally(() => {
-      archiveSubmitBtn.disabled = false;
-      archiveSubmitBtn.textContent = '추가하기';
-    });
+    if (archiveEditingItem) {
+      db.collection('archives').doc(archiveEditingItem.id).update({
+        title,
+        url,
+        desc,
+        category
+      }).then(() => {
+        showToast('아카이브가 수정되었습니다!');
+        closeArchiveModal();
+      }).catch(err => {
+        console.error(err);
+        showToast('수정 중 오류가 발생했습니다.');
+      }).finally(() => {
+        archiveSubmitBtn.disabled = false;
+        archiveSubmitBtn.textContent = '수정하기';
+      });
+    } else {
+      db.collection('archives').add({
+        title,
+        url,
+        desc,
+        category,
+        author,
+        time: Date.now()
+      }).then(() => {
+        showToast('아카이브가 추가되었습니다!');
+        closeArchiveModal();
+      }).catch(err => {
+        console.error(err);
+        showToast('추가 중 오류가 발생했습니다.');
+      }).finally(() => {
+        archiveSubmitBtn.disabled = false;
+        archiveSubmitBtn.textContent = '추가하기';
+      });
+    }
   });
 }
 
