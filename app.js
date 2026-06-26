@@ -54,10 +54,45 @@ const filterOldest = document.getElementById('filter-oldest');
 // --- State ---
 let prompts = [];
 let archiveData = [];
+let archiveCurrentCat = 'all';
 let currentView = '';
 let sortOrder = 'newest';
 let unauthorizedClicksCount = 0;
 let selectedAuthorFilter = null;
+
+// --- Theme Toggle ---
+const themeToggleBtn = document.getElementById('theme-toggle-btn');
+const themeToggleDarkIcon = document.querySelector('.theme-toggle-dark-icon');
+const themeToggleLightIcon = document.querySelector('.theme-toggle-light-icon');
+
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  if (savedTheme === 'light') {
+    document.body.classList.add('light-theme');
+    if (themeToggleDarkIcon) themeToggleDarkIcon.classList.add('hidden');
+    if (themeToggleLightIcon) themeToggleLightIcon.classList.remove('hidden');
+  } else {
+    document.body.classList.remove('light-theme');
+    if (themeToggleDarkIcon) themeToggleDarkIcon.classList.remove('hidden');
+    if (themeToggleLightIcon) themeToggleLightIcon.classList.add('hidden');
+  }
+}
+
+if (themeToggleBtn) {
+  themeToggleBtn.addEventListener('click', () => {
+    const isLight = document.body.classList.toggle('light-theme');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    if (isLight) {
+      if (themeToggleDarkIcon) themeToggleDarkIcon.classList.add('hidden');
+      if (themeToggleLightIcon) themeToggleLightIcon.classList.remove('hidden');
+    } else {
+      if (themeToggleDarkIcon) themeToggleDarkIcon.classList.remove('hidden');
+      if (themeToggleLightIcon) themeToggleLightIcon.classList.add('hidden');
+    }
+  });
+}
+
+initTheme();
 let userProfiles = {};
 let usermgmtStaffFilter = 'all';
 
@@ -182,7 +217,7 @@ function getUserDisplay(initials) {
     const displayName = ff.name;
     return `
       <div class="user-display-wrap">
-        ${imgSrc ? `<img src="${imgSrc}" class="profile-img-list" alt="${displayName}" />` : `<div class="profile-img-list" style="background:#f0f0f5; display:flex; align-items:center; justify-content:center; color:#555; font-size:14px; font-weight:700;">${displayName.slice(-2)}</div>`}
+        ${imgSrc ? `<img src="${imgSrc}" class="profile-img-list" alt="${displayName}" />` : `<div class="profile-img-list" style="background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; color:var(--color-ink); font-size:14px; font-weight:700; border:1px solid rgba(255,255,255,0.1);">${displayName.slice(-2)}</div>`}
         <div class="user-display-info" style="display: flex; flex-direction: column;">
           <span class="user-display-role" style="font-weight: 700; color: var(--color-ink); font-size: 14px;">${ff.role}</span>
           <span class="user-display-name" style="font-weight: 500; color: #888; font-size: 12px; margin-top: 1px;">${ff.name}</span>
@@ -194,7 +229,7 @@ function getUserDisplay(initials) {
   // Fallback for unknown users
   return `
     <div class="user-display-wrap">
-      ${imgSrc ? `<img src="${imgSrc}" class="profile-img-list" alt="${initials}" />` : `<div class="profile-img-list" style="background:#f0f0f5; display:flex; align-items:center; justify-content:center; color:#555; font-size:14px; font-weight:700;">${initials}</div>`}
+      ${imgSrc ? `<img src="${imgSrc}" class="profile-img-list" alt="${initials}" />` : `<div class="profile-img-list" style="background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; color:var(--color-ink); font-size:14px; font-weight:700; border:1px solid rgba(255,255,255,0.1);">${initials}</div>`}
       <div class="user-display-info">
         <span class="user-display-name">${initials}</span>
       </div>
@@ -297,7 +332,7 @@ function updateAuthUI() {
       if (avatarSrc) {
         navUserBadge.innerHTML = `<img src="${avatarSrc}" class="profile-img-badge" alt="${displayName}" />`;
         navUserBadge.style.padding = '0';
-        navUserBadge.style.border = '1px solid rgba(0,0,0,0.1)';
+        navUserBadge.style.border = '1px solid rgba(255,255,255,0.12)';
         navUserBadge.style.overflow = 'hidden';
         navUserBadge.classList.remove('is-admin-badge');
       } else {
@@ -478,7 +513,7 @@ function handlePasswordFail() {
       openFindPwMode();
     }, 1500);
   } else {
-    showLoginError('비밀번호가 올바르지 않습니다.');
+    showLoginError(`비밀번호가 틀렸습니다. (오류 횟수: ${loginFailCount}/3)`);
   }
 }
 
@@ -1211,7 +1246,7 @@ function renderUserMgmtPage() {
       const avatarSrc = s.img ? s.img : '';
       const avatarHtml = avatarSrc 
         ? `<img src="${avatarSrc}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />`
-        : `<div style="width:36px; height:36px; border-radius:50%; background:#eaeaea; display:flex; align-items:center; justify-content:center; font-weight:700; color:#888; font-size:13px;">${s.name.slice(-2)}</div>`;
+        : `<div style="width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--color-ink); font-size:13px; border:1px solid rgba(255,255,255,0.1);">${s.name.slice(-2)}</div>`;
 
       const memberType = isExec ? '임원' : '운영진';
       const mData = membersData[s.id];
@@ -3157,7 +3192,7 @@ function renderLibrary() {
       }
 
       card.innerHTML = `
-        ${thumbHtml ? `<div style="width: 80px; flex-shrink: 0;">${thumbHtml.replace('class="lib-card__thumb', 'style="margin-bottom: 0;" class="lib-card__thumb')}</div>` : '<div style="width: 80px; height: 60px; background: rgba(0,0,0,0.04); border-radius: var(--r-sm); flex-shrink:0;"></div>'}
+        ${thumbHtml ? `<div style="width: 80px; flex-shrink: 0;">${thumbHtml.replace('class="lib-card__thumb', 'style="margin-bottom: 0;" class="lib-card__thumb')}</div>` : '<div style="width: 80px; height: 60px; background: rgba(255,255,255,0.05); border-radius: var(--r-sm); flex-shrink:0; border:1px dashed rgba(255,255,255,0.12);"></div>'}
         <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
           <h3 class="lib-card__title" style="margin: 0; font-size: 15px; display: flex; align-items: center;">${pendingBadge}${escHtml(item.title)}</h3>
           ${programHtmlList}
@@ -4135,19 +4170,19 @@ function setupUploadSlot(slot, input, imageIndex) {
   slot.addEventListener('dragover', function(e) {
     e.preventDefault();
     slot.style.borderColor = 'var(--color-primary)';
-    slot.style.background = '#f0f5ff';
+    slot.style.background = 'rgba(0, 113, 227, 0.15)';
   });
 
   slot.addEventListener('dragleave', function(e) {
     e.preventDefault();
-    slot.style.borderColor = 'rgba(0,0,0,0.12)';
-    slot.style.background = '#f9f9fb';
+    slot.style.borderColor = 'rgba(255,255,255,0.15)';
+    slot.style.background = 'rgba(255,255,255,0.05)';
   });
 
   slot.addEventListener('drop', async function(e) {
     e.preventDefault();
-    slot.style.borderColor = 'rgba(0,0,0,0.12)';
-    slot.style.background = '#f9f9fb';
+    slot.style.borderColor = 'rgba(255,255,255,0.15)';
+    slot.style.background = 'rgba(255,255,255,0.05)';
     
     if (!libEditingItem) return;
     const isNewCustom = String(libEditingItem.id).startsWith('lib-custom-');
@@ -4621,6 +4656,7 @@ function setView(v) {
     renderLibrary();
   } else if (v === 'archive') {
     if (archiveView) archiveView.classList.remove('hidden');
+    renderArchiveFilters();
     renderArchive();
   } else if (v === 'usermgmt') {
     if (usermgmtView) {
@@ -4801,6 +4837,151 @@ setInterval(function () {
   if (currentView === 'float') renderFloat();
 }, 3600000);
 
+// ============================================
+// Archive Feature Logic
+// ============================================
+
+const archiveContent = document.getElementById('archive-content');
+const archiveAddBtn = document.getElementById('archive-add-btn');
+const archiveAddModal = document.getElementById('archive-add-modal');
+const archiveModalClose = document.getElementById('archive-modal-close');
+const archiveSubmitBtn = document.getElementById('archive-submit-btn');
+const archiveInputTitle = document.getElementById('archive-input-title');
+const archiveInputUrl = document.getElementById('archive-input-url');
+const archiveInputDesc = document.getElementById('archive-input-desc');
+
+function renderArchiveFilters() {
+  const filterContainer = document.getElementById('archive-filters');
+  if (!filterContainer) return;
+
+  const categories = new Set();
+  archiveData.forEach(item => {
+    categories.add(item.category || '레퍼런스');
+  });
+
+  const categoryArray = Array.from(categories);
+  let html = `<button class="archive-filter-pill ${archiveCurrentCat === 'all' ? 'is-active' : ''}" data-cat="all">전체 <span class="lib-count">${archiveData.length}</span></button>`;
+
+  categoryArray.forEach(cat => {
+    const count = archiveData.filter(item => (item.category || '레퍼런스') === cat).length;
+    html += `<button class="archive-filter-pill ${archiveCurrentCat === cat ? 'is-active' : ''}" data-cat="${escHtml(cat)}">${escHtml(cat)} <span class="lib-count">${count}</span></button>`;
+  });
+
+  filterContainer.innerHTML = html;
+
+  // Add click handlers
+  filterContainer.querySelectorAll('.archive-filter-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      archiveCurrentCat = btn.getAttribute('data-cat');
+      renderArchiveFilters();
+      renderArchive();
+    });
+  });
+}
+
+function renderArchive() {
+  if (!archiveContent) return;
+  
+  const filteredData = archiveCurrentCat === 'all' 
+    ? archiveData 
+    : archiveData.filter(item => (item.category || '레퍼런스') === archiveCurrentCat);
+
+  if (filteredData.length === 0) {
+    archiveContent.innerHTML = '<div style="width: 100%; text-align: center; color: var(--color-ink); opacity: 0.6; font-size: 14px; padding: 40px 0;">이 카테고리에 아카이브가 없습니다.</div>';
+    return;
+  }
+  
+  archiveContent.innerHTML = filteredData.map(item => `
+    <a href="${escHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="archive-card">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+        <h3 class="archive-card__title" style="margin: 0; line-height: 1.3;">${escHtml(item.title)}</h3>
+        <span style="font-size: 10.5px; font-weight: 700; color: var(--color-primary); background-color: var(--color-glass-bg-strong); padding: 2px 6px; border-radius: 4px; display: inline-block;">${escHtml(item.category || '레퍼런스')}</span>
+      </div>
+      <div class="archive-card__url">${escHtml(item.url)}</div>
+      <p class="archive-card__desc">${escHtml(item.desc)}</p>
+      <div class="archive-card__footer">
+        ${getUserDisplay(item.author)}
+        <span style="font-size: 11px; color: var(--color-body-muted); opacity: 0.6;">${new Date(item.time).toLocaleDateString()}</span>
+      </div>
+    </a>
+  `).join('');
+}
+
+// Fetch Archive data
+db.collection('archives').orderBy('time', 'desc').onSnapshot(snap => {
+  archiveData = [];
+  snap.forEach(doc => {
+    archiveData.push({ id: doc.id, ...doc.data() });
+  });
+  if (currentView === 'archive') {
+    renderArchiveFilters();
+    renderArchive();
+  }
+});
+
+// Modal Toggles
+if (archiveAddBtn) {
+  archiveAddBtn.addEventListener('click', () => {
+    requireLogin(() => {
+      if (archiveAddModal) {
+        archiveAddModal.classList.remove('hidden');
+        archiveAddModal.setAttribute('aria-hidden', 'false');
+      }
+    });
+  });
+}
+
+function closeArchiveModal() {
+  if (archiveAddModal) {
+    archiveAddModal.classList.add('hidden');
+    archiveAddModal.setAttribute('aria-hidden', 'true');
+    archiveInputTitle.value = '';
+    archiveInputUrl.value = '';
+    archiveInputDesc.value = '';
+    const categorySelect = document.getElementById('archive-input-category');
+    if (categorySelect) categorySelect.selectedIndex = 0;
+  }
+}
+
+if (archiveModalClose) archiveModalClose.addEventListener('click', closeArchiveModal);
+
+if (archiveSubmitBtn) {
+  archiveSubmitBtn.addEventListener('click', () => {
+    const title = archiveInputTitle.value.trim();
+    const url = archiveInputUrl.value.trim();
+    const desc = archiveInputDesc.value.trim();
+    const categorySelect = document.getElementById('archive-input-category');
+    const category = categorySelect ? categorySelect.value : '레퍼런스';
+    const author = currentUser ? currentUser.id : (localStorage.getItem('pl_author') || 'Anonymous');
+
+    if (!title || !url || !desc) {
+      showToast('모든 입력칸을 채워주세요.');
+      return;
+    }
+
+    archiveSubmitBtn.disabled = true;
+    archiveSubmitBtn.textContent = '추가 중...';
+
+    db.collection('archives').add({
+      title,
+      url,
+      desc,
+      category,
+      author,
+      time: Date.now()
+    }).then(() => {
+      showToast('아카이브가 추가되었습니다!');
+      closeArchiveModal();
+    }).catch(err => {
+      console.error(err);
+      showToast('추가 중 오류가 발생했습니다.');
+    }).finally(() => {
+      archiveSubmitBtn.disabled = false;
+      archiveSubmitBtn.textContent = '추가하기';
+    });
+  });
+}
+
 // --- Init ---
 loadLibraryOverrides();
 startLibraryOverridesListener();
@@ -4868,104 +5049,3 @@ setTimeout(() => {
   }
 }, 3000);
 
-// ============================================
-// Archive Feature Logic
-// ============================================
-
-const archiveContent = document.getElementById('archive-content');
-const archiveAddBtn = document.getElementById('archive-add-btn');
-const archiveAddModal = document.getElementById('archive-add-modal');
-const archiveModalClose = document.getElementById('archive-modal-close');
-const archiveSubmitBtn = document.getElementById('archive-submit-btn');
-const archiveInputTitle = document.getElementById('archive-input-title');
-const archiveInputUrl = document.getElementById('archive-input-url');
-const archiveInputDesc = document.getElementById('archive-input-desc');
-
-function renderArchive() {
-  if (!archiveContent) return;
-  if (archiveData.length === 0) {
-    archiveContent.innerHTML = '<div style="width: 100%; text-align: center; color: #888; font-size: 14px; padding: 40px 0;">아직 추가된 아카이브가 없습니다.</div>';
-    return;
-  }
-  
-  archiveContent.innerHTML = archiveData.map(item => `
-    <a href="${escHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="archive-card">
-      <h3 class="archive-card__title">${escHtml(item.title)}</h3>
-      <div class="archive-card__url">${escHtml(item.url)}</div>
-      <p class="archive-card__desc">${escHtml(item.desc)}</p>
-      <div class="archive-card__footer">
-        ${getUserDisplay(item.author)}
-        <span style="font-size: 11px; color: rgba(255,255,255,0.4);">${new Date(item.time).toLocaleDateString()}</span>
-      </div>
-    </a>
-  `).join('');
-}
-
-// Fetch Archive data
-db.collection('archives').orderBy('time', 'desc').onSnapshot(snap => {
-  archiveData = [];
-  snap.forEach(doc => {
-    archiveData.push({ id: doc.id, ...doc.data() });
-  });
-  if (currentView === 'archive') {
-    renderArchive();
-  }
-});
-
-// Modal Toggles
-if (archiveAddBtn) {
-  archiveAddBtn.addEventListener('click', () => {
-    requireLogin(() => {
-      if (archiveAddModal) {
-        archiveAddModal.classList.remove('hidden');
-        archiveAddModal.setAttribute('aria-hidden', 'false');
-      }
-    });
-  });
-}
-
-function closeArchiveModal() {
-  if (archiveAddModal) {
-    archiveAddModal.classList.add('hidden');
-    archiveAddModal.setAttribute('aria-hidden', 'true');
-    archiveInputTitle.value = '';
-    archiveInputUrl.value = '';
-    archiveInputDesc.value = '';
-  }
-}
-
-if (archiveModalClose) archiveModalClose.addEventListener('click', closeArchiveModal);
-
-if (archiveSubmitBtn) {
-  archiveSubmitBtn.addEventListener('click', () => {
-    const title = archiveInputTitle.value.trim();
-    const url = archiveInputUrl.value.trim();
-    const desc = archiveInputDesc.value.trim();
-    const author = currentUser ? currentUser.id : (localStorage.getItem('pl_author') || 'Anonymous');
-
-    if (!title || !url || !desc) {
-      showToast('모든 입력칸을 채워주세요.');
-      return;
-    }
-
-    archiveSubmitBtn.disabled = true;
-    archiveSubmitBtn.textContent = '추가 중...';
-
-    db.collection('archives').add({
-      title,
-      url,
-      desc,
-      author,
-      time: Date.now()
-    }).then(() => {
-      showToast('아카이브가 추가되었습니다!');
-      closeArchiveModal();
-    }).catch(err => {
-      console.error(err);
-      showToast('추가 중 오류가 발생했습니다.');
-    }).finally(() => {
-      archiveSubmitBtn.disabled = false;
-      archiveSubmitBtn.textContent = '추가하기';
-    });
-  });
-}
