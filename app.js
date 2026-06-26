@@ -219,8 +219,8 @@ function getUserDisplay(initials) {
       <div class="user-display-wrap">
         ${imgSrc ? `<img src="${imgSrc}" class="profile-img-list" alt="${displayName}" />` : `<div class="profile-img-list" style="background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; color:var(--color-ink); font-size:14px; font-weight:700; border:1px solid rgba(255,255,255,0.1);">${displayName.slice(-2)}</div>`}
         <div class="user-display-info" style="display: flex; flex-direction: column;">
-          <span class="user-display-role" style="font-weight: 700; color: var(--color-ink); font-size: 14px;">${ff.role}</span>
-          <span class="user-display-name" style="font-weight: 500; color: #888; font-size: 12px; margin-top: 1px;">${ff.name}</span>
+          <span class="user-display-name" style="font-weight: 700; color: var(--color-ink); font-size: 14px;">${ff.name}</span>
+          <span class="user-display-role" style="font-weight: 500; color: #888; font-size: 11px; margin-top: 1px;">${ff.role}</span>
         </div>
       </div>
     `;
@@ -2100,7 +2100,7 @@ function renderFloat() {
     existingBubbles.forEach(b => b.remove());
     if (!emptyState) {
       canvas.insertAdjacentHTML('beforeend',
-        '<div class="empty-state"><p class="empty-state__text">아직 프롬프트가 없습니다.<br>아래에서 입력해 주세요.</p></div>');
+        '<div class="empty-state"><p class="empty-state__text">아직 게시글이 없습니다.</p></div>');
     }
     placed = [];
     return;
@@ -2258,7 +2258,7 @@ function renderList() {
 
   listContent.innerHTML = '';
   if (!prompts.length) {
-    listContent.innerHTML = '<div class="empty-state" style="position:relative;min-height:200px"><p class="empty-state__text">아직 프롬프트가 없습니다.</p></div>';
+    listContent.innerHTML = '<div class="empty-state" style="position:relative;min-height:200px"><p class="empty-state__text">아직 게시글이 없습니다.</p></div>';
     return;
   }
   
