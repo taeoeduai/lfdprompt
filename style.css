@@ -3117,6 +3117,35 @@ body {
   transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
+.lib-modal__edit-program-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(10, 10, 20, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--r-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 4px;
+  box-sizing: border-box;
+}
+
+.program-dropdown-item {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--color-ink);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s;
+}
+
+.program-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
 /* ============================================
    LFD DESIGN SYSTEM OVERRIDES & FIXES
    ============================================ */
@@ -3437,4 +3466,33 @@ body.light-theme .lib-type-modal__btn {
 body.light-theme .lib-type-modal__btn:hover {
   background: rgba(0, 0, 0, 0.06) !important;
   border-color: var(--color-primary) !important;
+}
+
+body.light-theme .lib-modal__edit-title,
+body.light-theme .lib-modal__edit-desc,
+body.light-theme .lib-modal__edit-tags,
+body.light-theme .lib-modal__edit-textarea,
+body.light-theme .lib-modal__edit-cat,
+body.light-theme #lib-modal-edit-program-input {
+  background: rgba(0, 0, 0, 0.02) !important;
+  border: 1.5px solid rgba(0, 0, 0, 0.12) !important;
+  color: var(--color-ink) !important;
+}
+
+body.light-theme .lib-modal__edit-title::placeholder,
+body.light-theme .lib-modal__edit-desc::placeholder,
+body.light-theme .lib-modal__edit-tags::placeholder,
+body.light-theme .lib-modal__edit-textarea::placeholder,
+body.light-theme #lib-modal-edit-program-input::placeholder {
+  color: rgba(0, 0, 0, 0.35) !important;
+}
+
+body.light-theme .lib-modal__edit-program-dropdown {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+body.light-theme .program-dropdown-item:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
 }

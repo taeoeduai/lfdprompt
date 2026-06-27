@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet"
     href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
-  <link rel="stylesheet" href="style.css?v=3.4" />
+  <link rel="stylesheet" href="style.css?v=3.6" />
   <link rel="icon" href="favicon.png" type="image/png" />
 </head>
 
@@ -490,15 +490,14 @@
           <div style="position: relative; width: 100%;">
             <input type="text" id="lib-modal-edit-program-input" placeholder="클릭하여 프로그램을 선택하거나 직접 입력하세요 (쉼표 구분)"
               style="font-family: inherit; font-size: 13.5px; color: var(--color-ink); background: rgba(255,255,255,0.04); border: 1.5px solid #AEAEB2; border-radius: var(--r-md); padding: 8px var(--sp-md); outline: none; transition: border-color var(--t-fast); width: 100%; box-sizing: border-box;" />
-            <div id="lib-modal-edit-program-dropdown" class="hidden"
-              style="position: absolute; top: 100%; left: 0; right: 0; background: rgba(10, 10, 20, 0.95); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--r-md); box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 100; max-height: 200px; overflow-y: auto; margin-top: 4px; box-sizing: border-box;">
-              <div class="program-dropdown-item" data-program="Midjourney" style="padding: 8px 12px; font-size: 13px; color: var(--color-ink); cursor: pointer; text-align: left; transition: background 0.2s;">Midjourney</div>
-              <div class="program-dropdown-item" data-program="Nanobanana Pro" style="padding: 8px 12px; font-size: 13px; color: var(--color-ink); cursor: pointer; text-align: left; transition: background 0.2s;">Nanobanana Pro</div>
-              <div class="program-dropdown-item" data-program="Nanobanana 2" style="padding: 8px 12px; font-size: 13px; color: var(--color-ink); cursor: pointer; text-align: left; transition: background 0.2s;">Nanobanana 2</div>
-              <div class="program-dropdown-item" data-program="GPT 2" style="padding: 8px 12px; font-size: 13px; color: var(--color-ink); cursor: pointer; text-align: left; transition: background 0.2s;">GPT 2</div>
-              <div class="program-dropdown-item" data-program="Vizcom" style="padding: 8px 12px; font-size: 13px; color: var(--color-ink); cursor: pointer; text-align: left; transition: background 0.2s;">Vizcom</div>
-              <div class="program-dropdown-item" data-program="Seedance 2.0" style="padding: 8px 12px; font-size: 13px; color: var(--color-ink); cursor: pointer; text-align: left; transition: background 0.2s;">Seedance 2.0</div>
-              <div class="program-dropdown-item" data-program="Kling" style="padding: 8px 12px; font-size: 13px; color: var(--color-ink); cursor: pointer; text-align: left; transition: background 0.2s;">Kling</div>
+            <div id="lib-modal-edit-program-dropdown" class="lib-modal__edit-program-dropdown hidden">
+              <div class="program-dropdown-item" data-program="Midjourney">Midjourney</div>
+              <div class="program-dropdown-item" data-program="Nanobanana Pro">Nanobanana Pro</div>
+              <div class="program-dropdown-item" data-program="Nanobanana 2">Nanobanana 2</div>
+              <div class="program-dropdown-item" data-program="GPT 2">GPT 2</div>
+              <div class="program-dropdown-item" data-program="Vizcom">Vizcom</div>
+              <div class="program-dropdown-item" data-program="Seedance 2.0">Seedance 2.0</div>
+              <div class="program-dropdown-item" data-program="Kling">Kling</div>
             </div>
           </div>
         </div>
@@ -607,7 +606,7 @@
   <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-analytics-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore-compat.js"></script>
-  <script src="app.js?v=3.4"></script>
+  <script src="app.js?v=3.6"></script>
 </body>
 
 </html>
