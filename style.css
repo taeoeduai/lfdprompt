@@ -96,7 +96,7 @@ body.light-theme .lib-card__copy {
 }
 
 body.light-theme .global-nav__logo {
-  filter: none;
+  filter: invert(1);
 }
 
 html {
