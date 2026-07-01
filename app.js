@@ -119,9 +119,9 @@ const FF_MEMBERS = {
   "태영": { name: "김태영", role: "COO", team: "INFJ", img: "profile/김태영.jpg" },
 
   // 문예은 (YE)
-  "YE": { name: "문예은", role: "OP", team: "MBTI", img: "profile/문예은.jpg" },
-  "문예은": { name: "문예은", role: "OP", team: "MBTI", img: "profile/문예은.jpg" },
-  "예은": { name: "문예은", role: "OP", team: "MBTI", img: "profile/문예은.jpg" },
+  "YE": { name: "문예은", role: "OP", team: "ESTJ", img: "profile/문예은.jpg" },
+  "문예은": { name: "문예은", role: "OP", team: "ESTJ", img: "profile/문예은.jpg" },
+  "예은": { name: "문예은", role: "OP", team: "ESTJ", img: "profile/문예은.jpg" },
 
   // 서채민 (CM)
   "CM": { name: "서채민", role: "VM", team: "INFJ", img: "profile/서채민.jpg" },
@@ -129,9 +129,9 @@ const FF_MEMBERS = {
   "채민": { name: "서채민", role: "VM", team: "INFJ", img: "profile/서채민.jpg" },
 
   // 설민규 (MK)
-  "MK": { name: "설민규", role: "PM", team: "MBTI", img: "profile/설민규.jpg" },
-  "설민규": { name: "설민규", role: "PM", team: "MBTI", img: "profile/설민규.jpg" },
-  "민규": { name: "설민규", role: "PM", team: "MBTI", img: "profile/설민규.jpg" },
+  "MK": { name: "설민규", role: "PM", team: "INFJ", img: "profile/설민규.jpg" },
+  "설민규": { name: "설민규", role: "PM", team: "INFJ", img: "profile/설민규.jpg" },
+  "민규": { name: "설민규", role: "PM", team: "INFJ", img: "profile/설민규.jpg" },
 
   // 심재정 (JJ)
   "JJ": { name: "심재정", role: "OP", team: "ENFJ", img: "profile/심재정.jpg" },
